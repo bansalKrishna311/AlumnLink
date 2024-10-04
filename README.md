@@ -99,7 +99,7 @@ To get a copy of the project up and running locally, follow these steps:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-repo/alumnlink.git
+git clone https://github.com/bansalKrishna311/AlumnLink.git
 cd alumnlink
 ```
 
