@@ -7,8 +7,6 @@ export default {
     "./src/**/**/*.{js,ts,jsx,tsx}",
     "./src/**/**/*.{js,ts,jsx,tsx}",
     "./src/**/**/**/*.{js,ts,jsx,tsx}",
-
-
   ],
   theme: {
     extend: {
@@ -21,12 +19,14 @@ export default {
       },
     },
   },
+  darkMode: 'class',  // Enable dark mode class-based
   plugins: [
     require('daisyui'),
   ],
   daisyui: {
     themes: [
-      'light', 
+      'light',    // Adding light theme
+      'dark',     // Adding dark theme
     ],
   },
 };
