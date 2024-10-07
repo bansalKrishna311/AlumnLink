@@ -11,8 +11,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#5E35B1',  // Replacing primary with your color code
-        secondary: '#2196F3', // Replacing secondary with your color code
+        primary: '#3f0a40',  // Replacing primary with your color code
+        secondary: '#6a246a', // Replacing secondary with your color code
+        started:'#aa51aa',
+       
         accent: '#FFD600',    // Replacing accent with your color code
         lightBlue: '#90CAF9', // Adding light blue
         lightPurple: '#B39DDB', // Adding light purple
