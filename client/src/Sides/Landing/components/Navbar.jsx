@@ -5,9 +5,26 @@ import whiteLogo from '../../../assets/logo-white.png'; // Dark mode logo
 
 const Navbar = () => {
   const [theme, setTheme] = useState('light');
+  const [scrolling, setScrolling] = useState(false);
 
   useEffect(() => {
     document.querySelector('html').setAttribute('data-theme', theme);
+
+    // Scroll event listener
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setScrolling(true);
+      } else {
+        setScrolling(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [theme]);
 
   const toggleTheme = () => {
@@ -16,56 +33,25 @@ const Navbar = () => {
 
   return (
     <div 
-      className="navbar bg-base-100 ps-8 pe-8 border-b-[0.5px]" 
+      className={`navbar bg-base-100 ps-8 pe-8 border-b-[0.5px] fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${scrolling ? 'shadow-lg bg-opacity-80 backdrop-blur-md' : ''}`} 
       style={{
         borderBottomColor: theme === 'light' ? 'rgba(128, 128, 128, 0.5)' : 'rgba(128, 128, 128, 0.3)', // Adjusted border opacity
       }}
     >
       <div className="navbar-start">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h8m-8 6h16"
-              />
-            </svg>
-          </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-          >
-            <li><a>Item 1</a></li>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li><a>Submenu 1</a></li>
-                <li><a>Submenu 2</a></li>
-              </ul>
-            </li>
-            <li><a>Item 3</a></li>
-          </ul>
-        </div>
         {/* Conditionally render logo based on the theme */}
         <a>
-          <img className="w-52" src={theme === 'light' ? logo : whiteLogo} alt="Logo" />
+          <img className="w-52 transition-transform duration-300 ease-in-out hover:scale-105" src={theme === 'light' ? logo : whiteLogo} alt="Logo" />
         </a>
       </div>
 
       <div className="navbar-end">
-        <a className="btn">Get Started</a>
+        <a className="btn transition-transform duration-300 ease-in-out hover:scale-105">Get Started</a>
       </div>
+
       <div className="flex-none">
         <div className="dropdown dropdown-end">
-          <button tabIndex={0} className="btn btn-square btn-ghost">
+          <button tabIndex={0} className="btn btn-square btn-ghost transition-transform duration-300 ease-in-out hover:scale-105">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -82,10 +68,10 @@ const Navbar = () => {
           </button>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow transition-all duration-300 ease-in-out"
           >
             <li>
-              <button onClick={toggleTheme} className="btn flex items-center gap-3">
+              <button onClick={toggleTheme} className="btn flex items-center justify-between transition-transform duration-300 ease-in-out hover:scale-105">
                 {/* Left Icon */}
                 {theme === 'light' ? (
                   <FiSun className="h-5 w-5 mr-2 text-yellow-500" />
