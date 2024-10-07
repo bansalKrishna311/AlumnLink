@@ -22,7 +22,7 @@ export default {
       colors: {
         primary: '#3f0a40',  // Replacing primary with your color code
         secondary: '#6a246a', // Replacing secondary with your color code
-        started:'#aa51aa',
+        started:'#6b21a8',
        
         accent: '#FFD600',    // Replacing accent with your color code
         lightBlue: '#90CAF9', // Adding light blue
