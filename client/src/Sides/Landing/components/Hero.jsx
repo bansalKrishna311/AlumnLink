@@ -5,14 +5,14 @@ import Btn from './Btn';
 const Hero = () => {
   return (
     <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center">
+      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center gap-10">
         <div className='h-96'>
         <Features/>
         </div>
         
         <div>
           <h1 className="text-[52px] font-bold flex items-center">
-            <span className='text-[#6A246A] me-2'> Unlock </span> Your Network
+            <span className='text-[#6b21a8] me-2'> Unlock </span> Your Network
           </h1>
 
           {/* Avatar */}
@@ -49,7 +49,7 @@ const Hero = () => {
           </div>
           {/* Avatar end */}
 
-          <p className="py-6 ">
+          <p className="py-6 text-gray-500 font-medium">
             AlumnLink offers a unique platform to engage with alumni networks, <br /> share experiences, and collaborate on projects that enhance career development and professional growth.
           </p>
           <div>
