@@ -9,7 +9,7 @@ import card6 from '../../../assets/hero/6.png';
 const Features = () => {
   return (
     <div className="bg-base-200  min-h-full ">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-x-12 gap-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-x-6 gap-y-6">
         {/* Cards with hover effects */}
         {[card1, card2, card3, card4, card5, card6].map((card, index) => (
           <div
