@@ -19,14 +19,14 @@ export default {
       },
     },
   },
-  darkMode: 'class',  // Enable dark mode class-based
+  darkMode: 'class', 
   plugins: [
     require('daisyui'),
   ],
   daisyui: {
     themes: [
-      'light',    // Adding light theme
-      'dark',     // Adding dark theme
+      'light',    
+      'dark',     
     ],
   },
 };
