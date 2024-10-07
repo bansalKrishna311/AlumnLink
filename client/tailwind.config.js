@@ -21,7 +21,7 @@ export default {
       },                    
       colors: {
         primary: '#3f0a40',  // Replacing primary with your color code
-        secondary: '#330044', // Replacing secondary with your color code
+        secondary: '#440065', // Replacing secondary with your color code
         started:'#6b21a8',
        
         accent: '#FFD600',    // Replacing accent with your color code
