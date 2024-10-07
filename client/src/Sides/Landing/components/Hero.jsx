@@ -49,7 +49,7 @@ const Hero = () => {
           {/* Avatar end */}
 
           <p className="py-6">
-            AlumnLink offers a unique platform to engage with alumni networks,  share experiences, and collaborate on projects that enhance career development and professional growth.
+            AlumnLink offers a unique platform to engage with alumni networks, <br /> share experiences, and collaborate on projects that enhance career development and professional growth.
           </p>
           <button className="btn btn-primary">Get Started</button>
         </div>

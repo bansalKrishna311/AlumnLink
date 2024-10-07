@@ -10,23 +10,17 @@ const Features = () => {
   return (
     <div className="bg-base-200 p-8 min-h-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {/* Card 1 */}
-        <img src={card1} alt="" className="w-full h-auto object-contain" />
-
-        {/* Card 2 */}
-        <img src={card2} alt="" className="w-full h-auto object-contain" />
-
-        {/* Card 3 */}
-        <img src={card3} alt="" className="w-full h-auto object-contain" />
-
-        {/* Card 4 */}
-        <img src={card4} alt="" className="w-full h-auto object-contain" />
-
-        {/* Card 5 */}
-        <img src={card5} alt="" className="w-full h-auto object-contain" />
-
-        {/* Card 6 */}
-        <img src={card6} alt="" className="w-full h-auto object-contain" />
+        {/* Cards with hover effects */}
+        {[card1, card2, card3, card4, card5, card6].map((card, index) => (
+          <div 
+            key={index}
+            className="relative overflow-hidden rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:scale-y-105 hover:translate-y-[-10px]"
+            style={{ transformOrigin: 'bottom' }} // Set transform origin to bottom
+          >
+            <img src={card} alt="" className="w-full h-auto object-cover transition-transform duration-300 ease-in-out" />
+            <div className="absolute inset-0 transition-opacity duration-300 ease-in-out" />
+          </div>
+        ))}
       </div>
     </div>
   );
