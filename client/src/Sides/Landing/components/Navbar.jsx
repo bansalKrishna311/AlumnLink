@@ -85,7 +85,7 @@ const Navbar = () => {
             className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
           >
             <li>
-              <button onClick={toggleTheme} className="btn flex items-center justify-between">
+              <button onClick={toggleTheme} className="btn flex items-center gap-3">
                 {/* Left Icon */}
                 {theme === 'light' ? (
                   <FiSun className="h-5 w-5 mr-2 text-yellow-500" />
