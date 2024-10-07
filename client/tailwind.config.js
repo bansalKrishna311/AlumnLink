@@ -10,6 +10,15 @@ export default {
   ],
   theme: {
     extend: {
+      animation: {
+        'infinite-scroll': 'infinite-scroll 25s linear infinite',
+      },
+      keyframes: {
+        'infinite-scroll': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-100%)' },
+        }
+      },                    
       colors: {
         primary: '#3f0a40',  // Replacing primary with your color code
         secondary: '#6a246a', // Replacing secondary with your color code

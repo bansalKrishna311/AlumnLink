@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FiSun, FiMoon, FiArrowRight } from 'react-icons/fi'; // Import icons from react-icons
+import { FiSun, FiMoon } from 'react-icons/fi'; // Import icons from react-icons
 import logo from '../../../../src/assets/logo copy.png'; // Light mode logo
 import whiteLogo from '../../../assets/logo-white.png'; // Dark mode logo
+import Btn from './Btn';
 
 const Navbar = () => {
   const [theme, setTheme] = useState('light');
@@ -46,10 +47,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-end flex items-center gap-4"> {/* Added gap to create space */}
-        <a className="btn rounded-full max-w-lg px-5 transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center mx-4"> {/* Added horizontal margin */}
-          Get Started
-          <FiArrowRight className="ml-2 h-5 w-5" /> {/* Icon added here */}
-        </a>
+       <Btn/>
 
         <div className="flex-none">
           <div className="dropdown dropdown-end">
