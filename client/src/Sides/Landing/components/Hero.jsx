@@ -12,7 +12,7 @@ const Hero = () => {
         
         <div>
           <h1 className="text-5xl font-bold flex items-center">
-            <span className='text-[#6A246A]'> Unlock </span> Your Network
+            <span className='text-[#6A246A] me-2'> Unlock </span> Your Network
           </h1>
 
           {/* Avatar */}
