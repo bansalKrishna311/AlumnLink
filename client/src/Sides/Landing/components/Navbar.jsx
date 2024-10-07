@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // import React from 'react'
 // import logo from '../../../../src/assets/logo copy.png'
 // const Navbar = () => {
@@ -115,60 +114,6 @@ const Navbar = () => {
         <a><img className='w-52' src={logo} alt="" /></a>
       </div>
 
-=======
-import React, { useState, useEffect } from 'react';
-import { FiSun, FiMoon } from 'react-icons/fi'; // Import icons from react-icons
-
-const Navbar = () => {
-  const [theme, setTheme] = useState('light');
-
-  useEffect(() => {
-    document.querySelector('html').setAttribute('data-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  return (
-    <div className="navbar bg-base-100">
-      <div className="navbar-start">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h8m-8 6h16"
-              />
-            </svg>
-          </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-          >
-            <li><a>Item 1</a></li>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li><a>Submenu 1</a></li>
-                <li><a>Submenu 2</a></li>
-              </ul>
-            </li>
-            <li><a>Item 3</a></li>
-          </ul>
-        </div>
-        <a className="btn btn-ghost text-xl">daisyUI</a>
-      </div>
-
->>>>>>> 3fad803a1a4a060a1883f53887848f0543cbebf7
       <div className="navbar-end">
         <a className="btn">Get Started</a>
       </div>
@@ -213,8 +158,4 @@ const Navbar = () => {
   );
 };
 
-<<<<<<< HEAD
 export default Navbar;
-=======
-export default Navbar;
->>>>>>> 3fad803a1a4a060a1883f53887848f0543cbebf7
