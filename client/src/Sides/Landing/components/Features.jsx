@@ -12,13 +12,25 @@ const Features = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {/* Cards with hover effects */}
         {[card1, card2, card3, card4, card5, card6].map((card, index) => (
-          <div 
+          <div
             key={index}
-            className="relative overflow-hidden rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:scale-y-105 hover:translate-y-[-10px]"
-            style={{ transformOrigin: 'bottom' }} // Set transform origin to bottom
+            className="relative overflow-hidden rounded-lg shadow-lg transition-transform duration-500 ease-in-out hover:translate-y-[-10px]"
+            style={{
+              width: '260px', // Set max width
+              height: '124px', // Set max height
+              transformOrigin: 'bottom',
+            }}
           >
-            <img src={card} alt="" className="w-full h-auto object-cover transition-transform duration-300 ease-in-out" />
-            <div className="absolute inset-0 transition-opacity duration-300 ease-in-out" />
+            <img 
+              src={card} 
+              alt={`Card ${index + 1}`} 
+              className="w-full h-full object-cover transition-transform duration-500 ease-in-out" 
+              style={{
+                maxWidth: '100%',  // Ensure it scales within the container
+                maxHeight: '100%', // Ensure it scales within the container
+              }}
+            />
+            <div className="absolute inset-0 transition-opacity duration-500 ease-in-out" />
           </div>
         ))}
       </div>
