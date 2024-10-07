@@ -5,7 +5,7 @@ import Btn from './Btn';
 const Hero = () => {
   return (
     <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center gap-24">
+      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
         <div className='h-96'>
         <Features/>
         </div>
@@ -52,9 +52,11 @@ const Hero = () => {
           <p className="py-6 text-gray-500 font-medium">
             AlumnLink offers a unique platform to engage with alumni networks,  share<br /> experiences, and collaborate on projects that enhance career <br />development and professional growth.
           </p>
-          <div>
+
+          <div className='w-[200px] -ms-5'>
           <Btn/>
           </div>
+
         </div>
       </div>
     </div>
