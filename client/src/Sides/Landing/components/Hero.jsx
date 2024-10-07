@@ -1,14 +1,14 @@
 import React from 'react';
+import Features from './Features';
 
 const Hero = () => {
   return (
     <div className="hero bg-base-200 min-h-screen">
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center">
-        <img
-          src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp"
-          className="max-w-sm rounded-lg shadow-2xl"
-          alt="Hero"
-        />
+        <div className='h-96'>
+        <Features/>
+        </div>
+        
         <div>
           <h1 className="text-5xl font-bold flex items-center">
             <span className='text-[#6A246A]'>Unlock</span> Your Network
