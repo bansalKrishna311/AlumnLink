@@ -79,7 +79,7 @@ const Navbar = () => {
                   ) : (
                     <FiMoon className="h-5 w-5 mr-2 text-gray-600" />
                   )}
-                  <span>{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
+                  <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
                 </button>
               </li>
             </ul>
