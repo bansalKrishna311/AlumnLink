@@ -6,14 +6,17 @@ const Hero = () => {
   return (
     <div className="hero bg-base-200 min-h-screen">
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
-        <div className='h-96'>
+        <div>
         <Features/>
         </div>
         
         <div>
-          <h1 className="text-[52px] font-bold flex items-center">
-            <span className='text-[#6b21a8] me-2'> Unlock </span> Your Network
-          </h1>
+        <h1 className="font-bold flex items-center">
+  <span className='text-[#6b21a8] me-2 text-[30px] sm:text-[40px] md:text-[52px]'>Unlock</span>
+  <p className='text-[30px] sm:text-[48px] md:text-[52px]'>Your Network</p>
+</h1>
+
+
 
           {/* Avatar */}
           <div className="flex items-center mt-2">
