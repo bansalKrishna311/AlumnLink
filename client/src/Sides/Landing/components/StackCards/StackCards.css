@@ -1,0 +1,7 @@
+.stack-cards__item {
+    position: sticky;
+    top: 50px;
+    transform-origin: center top;
+    transition: transform 0.2s ease-out;
+  }
+  
