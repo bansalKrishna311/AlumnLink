@@ -1,64 +1,97 @@
-import React, { useEffect, useRef } from 'react';
-import './StackCards.css'; // Import any additional CSS if necessary
+import React, { useEffect } from 'react';
+import { ScrollObserver, valueAtPercentage } from 'aatjs';
 
 const StackCards = () => {
-  const stackRef = useRef(null);
-  const itemsRef = useRef([]);
-
   useEffect(() => {
-    const element = stackRef.current;
-    const items = itemsRef.current;
+    const cardsContainer = document.querySelector('.cards');
+    const cards = document.querySelectorAll('.card');
 
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        window.addEventListener('scroll', handleScroll);
-      } else {
-        window.removeEventListener('scroll', handleScroll);
-      }
-    });
+    if (cardsContainer && cards.length > 0) {
+      cardsContainer.style.setProperty('--cards-count', cards.length);
+      cardsContainer.style.setProperty('--card-height', `${cards[0].clientHeight}px`);
 
-    observer.observe(element);
+      Array.from(cards).forEach((card, index) => {
+        const offsetTop = 20 + index * 20; // Fine-tune spacing between cards
+        card.style.paddingTop = `${offsetTop}px`;
 
-    const handleScroll = () => {
-      window.requestAnimationFrame(() => {
-        animateStackCards(element, items);
+        if (index === cards.length - 1) return; // Skip last card, no animation needed for it
+
+        const toScale = 1 - (cards.length - 1 - index) * 0.1;
+        const nextCard = cards[index + 1];
+        const cardInner = card.querySelector('.card__inner');
+
+        ScrollObserver.Element(nextCard, {
+          offsetTop,
+          offsetBottom: window.innerHeight - card.clientHeight,
+        }).onScroll(({ percentageY }) => {
+          cardInner.style.transform = `scale(${valueAtPercentage({
+            from: 1,
+            to: toScale,
+            percentage: percentageY,
+          })})`;
+          cardInner.style.filter = `brightness(${valueAtPercentage({
+            from: 1,
+            to: 0.6,
+            percentage: percentageY,
+          })})`;
+        });
       });
-    };
-
-    const animateStackCards = (element, items) => {
-      const top = element.getBoundingClientRect().top;
-
-      const cardTop = 100; // Dummy value for card top
-      const cardHeight = 300; // Dummy value for card height
-      const marginY = 20; // Dummy value for vertical margin
-
-      for (let i = 0; i < items.length; i++) {
-        const scrolling = cardTop - top - i * (cardHeight + marginY);
-        if (scrolling > 0) {
-          const scaleValue = (cardHeight - scrolling * 0.05) / cardHeight;
-          items[i].style.transform = `translateY(${marginY * i}px) scale(${scaleValue})`;
-        }
-      }
-    };
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    }
   }, []);
 
+  const cardData = [
+    {
+      title: "Card Title 1",
+      description: "Description for the first card. Lorem ipsum dolor sit amet.",
+      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+    },
+    {
+      title: "Card Title 2",
+      description: "Description for the second card. Sed ut perspiciatis unde omnis iste natus error.",
+      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+    },
+    {
+      title: "Card Title 3",
+      description: "Description for the third card. At vero eos et accusamus et iusto odio dignissimos.",
+      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+    },
+  ];
+
   return (
-    <ul className="stack-cards space-y-4" ref={stackRef}>
-      {[...Array(5)].map((_, i) => (
-        <li
-          key={i}
-          className="stack-cards__item card bg-base-200 shadow-lg w-full p-5"
-          ref={(el) => (itemsRef.current[i] = el)}
-        >
-          <h2 className="card-title">Card {i + 1}</h2>
-          <p>This is a demo card using DaisyUI and Tailwind CSS.</p>
-        </li>
-      ))}
-    </ul>
+    <div>
+      {/* Navbar */}
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-lg z-20 p-4">
+        <h1 className="text-center text-xl font-bold">Navbar</h1>
+      </div>
+
+      {/* Heading */}
+      <h1 className="text-center text-3xl font-bold mt-[80px] z-10 relative">Explore Our Stack Cards</h1>
+
+      {/* Cards section */}
+      <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10">
+        {cardData.map((card, index) => (
+          <div className="card sticky top-16" key={index}>
+            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
+              <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
+                <img
+                  className="card__image w-full h-full object-cover"
+                  src={card.image}
+                  alt={`Card ${index + 1}`}
+                  loading="lazy"
+                />
+              </div>
+              <div className="card__content p-6">
+                <h1 className="card__title text-3xl font-bold text-gray-900 mb-2">{card.title}</h1>
+                <p className="card__description text-lg text-gray-700">{card.description}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Spacer for scrolling */}
+      <div className="h-[90vh]"></div>
+    </div>
   );
 };
 
