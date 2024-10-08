@@ -11,9 +11,10 @@ const StackCards = () => {
       cardsContainer.style.setProperty('--card-height', `${cards[0].clientHeight}px`);
 
       Array.from(cards).forEach((card, index) => {
-        const offsetTop = 20 + index * 20;
+        const offsetTop = 20 + index * 20; // Fine-tune spacing between cards
         card.style.paddingTop = `${offsetTop}px`;
-        if (index === cards.length - 1) return;
+
+        if (index === cards.length - 1) return; // Skip last card, no animation needed for it
 
         const toScale = 1 - (cards.length - 1 - index) * 0.1;
         const nextCard = cards[index + 1];
@@ -38,7 +39,6 @@ const StackCards = () => {
     }
   }, []);
 
-  // Define an array of card data
   const cardData = [
     {
       title: "Card Title 1",
@@ -59,38 +59,37 @@ const StackCards = () => {
 
   return (
     <div>
-      {/* Navbar (adjust the height and style as necessary) */}
+      {/* Navbar */}
       <div className="fixed top-0 left-0 right-0 bg-white shadow-lg z-20 p-4">
         <h1 className="text-center text-xl font-bold">Navbar</h1>
       </div>
 
-      {/* Add the heading here */}
+      {/* Heading */}
       <h1 className="text-center text-3xl font-bold mt-[80px] z-10 relative">Explore Our Stack Cards</h1>
 
-      
       {/* Cards section */}
-      <div className="cards w-full max-w-3xl mx-auto grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10 mt-16">
+      <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10">
         {cardData.map((card, index) => (
-          <div className="card sticky top-16" data-index={index} key={index}>
-            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top scale-100">
-              <div className="card__image-container flex w-2/5 overflow-hidden rounded-l-lg">
+          <div className="card sticky top-16" key={index}>
+            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
+              <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
                 <img
                   className="card__image w-full h-full object-cover"
                   src={card.image}
                   alt={`Card ${index + 1}`}
+                  loading="lazy"
                 />
               </div>
-              <div className="card__content p-10 flex flex-col w-3/5">
-                <h1 className="card__title text-5xl font-bold text-gray-900 mb-2">{card.title}</h1>
-                <p className="card__description text-lg text-gray-700">
-                  {card.description}
-                </p>
+              <div className="card__content p-6">
+                <h1 className="card__title text-3xl font-bold text-gray-900 mb-2">{card.title}</h1>
+                <p className="card__description text-lg text-gray-700">{card.description}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Spacer for scrolling */}
       <div className="h-[90vh]"></div>
     </div>
   );
