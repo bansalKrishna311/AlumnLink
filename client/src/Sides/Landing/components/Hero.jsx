@@ -4,7 +4,7 @@ import Btn from './Btn';
 
 const Hero = () => {
   return (
-    <div className="hero bg-base-200 min-h-screen">
+    <div className="hero bg-base-[#ECF2FF] md:pt-20">
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
         <div className='max-w-full mt-14'>
         <Features/>
