@@ -4,6 +4,7 @@ import Navbar from './Sides/Landing/components/Navbar'
 import LogoSlider from './Sides/Landing/components/LogoSlider'
 import StackCards from './Sides/Landing/components/StackCards/StackCards'
 import Action from './Sides/Landing/components/Action'
+import TargetCustomer from './Sides/Landing/components/TargetCustomer'
 
 const App = () => {
   return (<>
@@ -12,6 +13,7 @@ const App = () => {
     <Action/>
    {/* <LogoSlider/> */}
 <StackCards/>
+<TargetCustomer/>
     </>
   )
 }

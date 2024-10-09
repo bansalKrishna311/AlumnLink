@@ -1,7 +1,7 @@
 import React from 'react';
 import Features from './Features';
 import Btn from './Btn';
-
+  
 const Hero = () => {
   return (
     <div className="hero bg-base-[#ECF2FF] md:pt-20">
