@@ -10,7 +10,7 @@ const CardSlider = () => {
       title: 'Comprehensive Alumni Management Platform', 
       content: 'A powerful platform to manage alumni networks with integrated mobile app features.', 
       image: '/path/to/image1.jpg',
-      icon: '/path/to/icon1.png', // Add the icon path here
+      icon: '/path/to/icon1.png', 
       button: 'Start Now',
     },
     { 
@@ -18,7 +18,7 @@ const CardSlider = () => {
       title: 'Dedicated Support Services', 
       content: 'Expert guidance for running successful alumni programs and engagement.', 
       image: '/path/to/image2.jpg',
-      icon: '/path/to/icon2.png', // Add the icon path here
+      icon: '/path/to/icon2.png', 
       button: 'Get Support',
     },
     { 
@@ -26,7 +26,7 @@ const CardSlider = () => {
       title: 'Tailored Engagement Solutions', 
       content: 'Custom offerings that cater to various alumni personas, fostering deeper connections.', 
       image: '/path/to/image3.jpg',
-      icon: '/path/to/icon3.png', // Add the icon path here
+      icon: '/path/to/icon3.png', 
       button: 'Explore Solutions',
     },
     { 
@@ -34,7 +34,7 @@ const CardSlider = () => {
       title: 'Career Assistance & Job Opportunities', 
       content: 'Job boards and networking to help alumni connect with potential employers.', 
       image: '/path/to/image4.jpg',
-      icon: '/path/to/icon4.png', // Add the icon path here
+      icon: '/path/to/icon4.png', 
       button: 'View Jobs',
     },
     { 
@@ -42,7 +42,7 @@ const CardSlider = () => {
       title: 'Alumni Relations Leadership Program', 
       content: 'A structured training program for administrators to drive alumni relations.', 
       image: '/path/to/image5.jpg',
-      icon: '/path/to/icon5.png', // Add the icon path here
+      icon: '/path/to/icon5.png', 
       button: 'Learn More',
     },
   ];
@@ -70,9 +70,9 @@ const CardSlider = () => {
             setOpenCard(card.id);  // Open the card on hover
             setLastInteractedCard(card.id);  // Keep track of the last hovered card
           }}
-          className={`relative flex flex-col items-start justify-center rounded-lg ${
-            openCard === card.id ? 'w-[500px] z-10 bg-white shadow-xl' : 'w-[250px] bg-gray-100'
-          } h-80 border border-gray-300 transition-all duration-500 ease-in-out group`}
+          className={`relative flex flex-col items-start justify-center transition-all duration-500 ease-in-out group 
+            ${openCard === card.id ? 'w-[500px] z-10 bg-base-100 shadow-xl' : 'w-[250px] bg-base-200'}
+            h-80 border border-base-300`}
           style={{
             boxShadow: openCard === card.id ? '0 10px 40px rgba(0, 0, 0, 0.15)' : '0 5px 10px rgba(0, 0, 0, 0.1)',
             marginRight: openCard === card.id ? '0' : '-1px', // Remove gap between cards
@@ -89,15 +89,15 @@ const CardSlider = () => {
           <img
             src={card.image}
             alt={card.title}
-            className="absolute inset-0 object-cover w-full h-full rounded-lg"
+            className="absolute inset-0 object-cover w-full h-full "
           />
 
           {/* Title and Content */}
           <div className={`absolute top-4 left-20 right-4 transition-opacity duration-300 ease-in-out ${
             openCard === card.id ? 'opacity-100' : 'opacity-50'
           }`}>
-            <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>
-            <p className="text-sm text-gray-600">{card.content}</p>
+            <h3 className="text-lg font-semibold text-base-content">{card.title}</h3>
+            <p className="text-sm text-base-content">{card.content}</p>
           </div>
 
           {/* Button */}
