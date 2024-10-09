@@ -2,11 +2,36 @@ import React from 'react';
 
 const CardSlider = () => {
   const cards = [
-    { id: 1, title: 'Card 1', content: 'This is card 1', image: '/path/to/image1.jpg' },
-    { id: 2, title: 'Card 2', content: 'This is card 2', image: '/path/to/image2.jpg' },
-    { id: 3, title: 'Card 3', content: 'This is card 3', image: '/path/to/image3.jpg' },
-    { id: 4, title: 'Card 4', content: 'This is card 4', image: '/path/to/image4.jpg' },
-    { id: 5, title: 'Card 5', content: 'This is card 5', image: '/path/to/image5.jpg' },
+    { 
+      id: 1, 
+      title: 'Comprehensive Alumni Management Platform', 
+      content: 'A powerful, user-friendly platform to manage alumni networks with integrated features, including a responsive mobile app for on-the-go connectivity.', 
+      image: '/path/to/image1.jpg' 
+    },
+    { 
+      id: 2, 
+      title: 'Dedicated Support Services', 
+      content: 'Expert guidance to assist institutions in running successful alumni programs, ensuring smooth and impactful alumni engagement.', 
+      image: '/path/to/image2.jpg' 
+    },
+    { 
+      id: 3, 
+      title: 'Tailored Engagement Solutions', 
+      content: 'Customized offerings that cater to diverse alumni groups, fostering deeper connections and maximizing participation across your network.', 
+      image: '/path/to/image3.jpg' 
+    },
+    { 
+      id: 4, 
+      title: 'Career Assistance & Job Opportunities', 
+      content: 'Exclusive job boards, career guidance, and professional networking opportunities to help alumni advance in their careers and connect with potential employers.', 
+      image: '/path/to/image4.jpg' 
+    },
+    { 
+      id: 5, 
+      title: 'Alumni Relations Leadership Program', 
+      content: 'A structured, multi-track training program designed for administrators, based on AlumnLink’s proprietary framework to drive alumni relations excellence.', 
+      image: '/path/to/image5.jpg' 
+    },
   ];
 
   return (
