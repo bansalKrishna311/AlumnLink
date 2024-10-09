@@ -65,21 +65,21 @@ const Navbar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
               </svg>
             </button>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-56 p-2 shadow transition-all duration-300 ease-in-out">
+            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60  p-2 shadow transition-all duration-300 ease-in-out">
               {/* Show Get Started button inside the dropdown on mobile */}
               {isMobile && (
-                <li>
+                <li className='w-full -ms-7'>
                   <Btn />
                 </li>
               )}
               <li>
                 <button onClick={toggleTheme} className="btn flex items-center gap-3 transition-transform duration-300 ease-in-out hover:scale-105">
                   {theme === 'light' ? (
-                    <FiSun className="h-5 w-5 mr-2 text-yellow-500" />
-                  ) : (
                     <FiMoon className="h-5 w-5 mr-2 text-gray-600" />
+                  ) : (
+                    <FiSun className="h-5 w-5 mr-2 text-yellow-500" />
                   )}
-                  <span>{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
+                  <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
                 </button>
               </li>
             </ul>
