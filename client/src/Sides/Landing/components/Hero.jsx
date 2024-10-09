@@ -1,12 +1,9 @@
 import React from 'react';
 import Features from './Features';
 import Btn from './Btn';
-<<<<<<< HEAD
-  
-=======
+
 import { FiArrowRight } from 'react-icons/fi'; // Import FiArrowRight from react-icons
 
->>>>>>> ed3cf941f748d7aa362c80bc84484501a1ff3774
 const Hero = () => {
   return (
     <div className="hero bg-base-[#ECF2FF] md:pt-20">
