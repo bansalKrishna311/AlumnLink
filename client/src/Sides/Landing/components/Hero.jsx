@@ -10,6 +10,7 @@ const Hero = () => {
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
         <div className='max-w-full mt-14'>
         <Features/>
+        
         </div>
         
         <div className='lg:mt-14 md:mt-0 '>
