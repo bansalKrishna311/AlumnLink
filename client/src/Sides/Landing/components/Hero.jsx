@@ -1,6 +1,7 @@
 import React from 'react';
 import Features from './Features';
 import Btn from './Btn';
+import { FiArrowRight } from 'react-icons/fi'; // Import FiArrowRight from react-icons
 
 const Hero = () => {
   return (
@@ -57,7 +58,7 @@ const Hero = () => {
           </p>
 
           <div className='w-[200px] -ms-5'>
-          <Btn/>
+           <Btn text="Get Started" Icon={FiArrowRight} />
           </div>
 
         </div>

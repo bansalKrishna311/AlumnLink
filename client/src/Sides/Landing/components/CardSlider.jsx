@@ -11,7 +11,7 @@ const CardSlider = () => {
       content: 'A powerful platform to manage alumni networks with integrated mobile app features.', 
       image: '/path/to/image1.jpg',
       icon: '/path/to/icon1.png', 
-      button: 'Start Now',
+     
     },
     { 
       id: 2, 
@@ -19,7 +19,7 @@ const CardSlider = () => {
       content: 'Expert guidance for running successful alumni programs and engagement.', 
       image: '/path/to/image2.jpg',
       icon: '/path/to/icon2.png', 
-      button: 'Get Support',
+     
     },
     { 
       id: 3, 
@@ -27,7 +27,7 @@ const CardSlider = () => {
       content: 'Custom offerings that cater to various alumni personas, fostering deeper connections.', 
       image: '/path/to/image3.jpg',
       icon: '/path/to/icon3.png', 
-      button: 'Explore Solutions',
+     
     },
     { 
       id: 4, 
@@ -35,7 +35,7 @@ const CardSlider = () => {
       content: 'Job boards and networking to help alumni connect with potential employers.', 
       image: '/path/to/image4.jpg',
       icon: '/path/to/icon4.png', 
-      button: 'View Jobs',
+    
     },
     { 
       id: 5, 
@@ -43,7 +43,7 @@ const CardSlider = () => {
       content: 'A structured training program for administrators to drive alumni relations.', 
       image: '/path/to/image5.jpg',
       icon: '/path/to/icon5.png', 
-      button: 'Learn More',
+      
     },
   ];
 
@@ -98,12 +98,7 @@ const CardSlider = () => {
             className="absolute inset-0 object-cover w-full h-full "
           />
 
-          {/* Button */}
-          <div className={`absolute bottom-4 left-4 transition-opacity duration-300 ${openCard === card.id ? 'opacity-100' : 'opacity-0'}`}>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors">
-              {card.button} ➜
-            </button>
-          </div>
+         
         </div>
       ))}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSun, FiMoon } from 'react-icons/fi'; // Import icons from react-icons
+import { FiSun, FiMoon, FiArrowRight } from 'react-icons/fi'; // Import icons from react-icons
 import logo from '../../../../src/assets/logo copy.png'; // Light mode logo
 import whiteLogo from '../../../assets/logo-white.png'; // Dark mode logo
 import Btn from './Btn';
@@ -13,11 +13,7 @@ const Navbar = () => {
     document.querySelector('html').setAttribute('data-theme', theme);
 
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolling(true);
-      } else {
-        setScrolling(false);
-      }
+      setScrolling(window.scrollY > 50);
     };
 
     const handleResize = () => {
@@ -34,7 +30,7 @@ const Navbar = () => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
   return (
@@ -56,7 +52,7 @@ const Navbar = () => {
 
       <div className="navbar-end flex items-center gap-4">
         {/* Show button directly if not on mobile */}
-        {!isMobile && <Btn />}
+        {!isMobile && <Btn text="Get Started" Icon={FiArrowRight} />}
 
         <div className="flex-none">
           <div className="dropdown dropdown-end">
@@ -65,11 +61,11 @@ const Navbar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
               </svg>
             </button>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60  p-2 shadow transition-all duration-300 ease-in-out">
+            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60 p-2 shadow transition-all duration-300 ease-in-out">
               {/* Show Get Started button inside the dropdown on mobile */}
               {isMobile && (
                 <li className='w-full -ms-7'>
-                  <Btn />
+                  <Btn text="Get Started" Icon={FiArrowRight} />
                 </li>
               )}
               <li>
