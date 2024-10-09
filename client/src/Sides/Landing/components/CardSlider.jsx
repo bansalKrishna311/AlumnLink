@@ -62,7 +62,7 @@ const CardSlider = () => {
   }, [lastInteractedCard]);
 
   return (
-    <div className="flex p-4 overflow-x-auto justify-center items-center bg-cover" style={{ backgroundImage: 'url(/path/to/your/background-image.jpg)' }}>
+    <div className="hidden md:flex p-4 px-32 overflow-x-auto justify-center items-center bg-cover" style={{ backgroundImage: 'url(/path/to/your/background-image.jpg)' }}>
       {cards.map((card) => (
         <div
           key={card.id}
@@ -85,6 +85,12 @@ const CardSlider = () => {
             className="absolute top-4 left-4 w-12 h-12 rounded-full"
           />
 
+          {/* Title and Content */}
+          <div className="absolute top-20 left-4 right-4 transition-opacity duration-300 ease-in-out">
+            <h3 className="text-lg font-semibold text-base-content">{card.title}</h3>
+            <p className="text-sm text-base-content">{card.content}</p>
+          </div>
+
           {/* Image section */}
           <img
             src={card.image}
@@ -92,18 +98,8 @@ const CardSlider = () => {
             className="absolute inset-0 object-cover w-full h-full "
           />
 
-          {/* Title and Content */}
-          <div className={`absolute top-4 left-20 right-4 transition-opacity duration-300 ease-in-out ${
-            openCard === card.id ? 'opacity-100' : 'opacity-50'
-          }`}>
-            <h3 className="text-lg font-semibold text-base-content">{card.title}</h3>
-            <p className="text-sm text-base-content">{card.content}</p>
-          </div>
-
           {/* Button */}
-          <div className={`absolute bottom-4 left-4 transition-opacity duration-300 ${
-            openCard === card.id ? 'opacity-100' : 'opacity-0'
-          }`}>
+          <div className={`absolute bottom-4 left-4 transition-opacity duration-300 ${openCard === card.id ? 'opacity-100' : 'opacity-0'}`}>
             <button className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors">
               {card.button} ➜
             </button>
