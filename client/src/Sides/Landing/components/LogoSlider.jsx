@@ -1,65 +1,77 @@
-import React from 'react';
-import logo from '../../../../src/assets/logo copy.png'; // Light mode logo
+import React from 'react'
 
-const LogoSlider = () => {
+const logos = [
+  {
+    name: 'Vercel',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715881430/vercel_wordmark_dark_mhv8u8.svg',
+  },
+  {
+    name: 'Nextjs',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715881475/nextjs_logo_dark_gfkf8m.svg',
+  },
+  {
+    name: 'Prime',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276558/logos/t2awrrfzdvmg1chnzyfr.svg',
+  },
+  {
+    name: 'Trustpilot',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276558/logos/tkfspxqmjflfllbuqxsi.svg',
+  },
+  {
+    name: 'Webflow',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276560/logos/nymiivu48d5lywhf9rpf.svg',
+  },
+
+  {
+    name: 'Airbnb',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276558/logos/pmblusboe7vkw8vxdknx.svg',
+  },
+  {
+    name: 'Tina',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276560/logos/afqhiygywyphuou6xtxc.svg',
+  },
+  {
+    name: 'Stackoverflow',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276558/logos/ts1j4mkooxqmscgptafa.svg',
+  },
+  {
+    name: 'mistral',
+    url: 'https://res.cloudinary.com/dfhp33ufc/image/upload/v1715276558/logos/tyos2ayezryjskox3wzs.svg',
+  },
+]
+
+const AnimatedLogoCloud = () => {
   return (
-    <div className="w-full overflow-hidden"> {/* Added overflow-hidden */}
-      <div className="inline-flex flex-nowrap">
-        <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll">
-          <li>
-            <img src={logo} alt="Facebook" />
-          </li>
-          <li>
-            <img src={logo} alt="Disney" />
-          </li>
-          <li>
-            <img src={logo} alt="Airbnb" />
-          </li>
-          <li>
-            <img src={logo} alt="Apple" />
-          </li>
-          <li>
-            <img src={logo} alt="Spark" />
-          </li>
-          <li>
-            <img src={logo} alt="Samsung" />
-          </li>
-          <li>
-            <img src={logo} alt="Quora" />
-          </li>
-          <li>
-            <img src={logo} alt="Sass" />
-          </li>
-        </ul>
-        <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll" aria-hidden="true">
-          <li>
-            <img src={logo} alt="Facebook" />
-          </li>
-          <li>
-            <img src={logo} alt="Disney" />
-          </li>
-          <li>
-            <img src={logo} alt="Airbnb" />
-          </li>
-          <li>
-            <img src={logo} alt="Apple" />
-          </li>
-          <li>
-            <img src={logo} alt="Spark" />
-          </li>
-          <li>
-            <img src={logo} alt="Samsung" />
-          </li>
-          <li>
-            <img src={logo} alt="Quora" />
-          </li>
-          <li>
-            <img src={logo} alt="Sass" />
-          </li>
-        </ul>
+    <div className="w-full py-12 sm:-mt-12 -mt-40">
+      <div className="mx-auto w-full px-4 md:px-8">
+        <div
+          className="group relative mt-6 flex gap-6 overflow-hidden p-2"
+          style={{
+            maskImage:
+              'linear-gradient(to left, transparent 0%, black 20%, black 80%, transparent 95%)',
+          }}
+        >
+          {Array(5)
+            .fill(null)
+            .map((index) => (
+              <div
+                key={index}
+                className="flex shrink-0 animate-logo-cloud flex-row justify-around gap-6"
+              >
+                {logos.map((logo, key) => (
+                  <img
+                    key={key}
+                    src={logo.url}
+                    className="h-10 w-28 px-2 brightness-0  dark:invert"
+                    alt={`${logo.name}`}
+                  />
+                ))}
+              </div>
+            ))}
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default LogoSlider;
+export default AnimatedLogoCloud
