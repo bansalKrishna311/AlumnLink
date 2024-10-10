@@ -7,6 +7,7 @@ import CardSlider from './Sides/Landing/components/CardSlider'
 import Action from './Sides/Landing/components/Action'
 import TargetCustomer from './Sides/Landing/components/TargetCustomer'
 import Bottomfootgutter from './Sides/Landing/components/Bottomfootgutter'
+import ContactUs from './Sides/Landing/components/ContactUs'
 
 const App = () => {
   return (<>
@@ -16,7 +17,8 @@ const App = () => {
    <LogoSlider/>
 <StackCards/>
 <TargetCustomer/>
-<CardSlider/>
+{/* <CardSlider/> */}
+<ContactUs/>
 <Bottomfootgutter/>
     </>
   )
