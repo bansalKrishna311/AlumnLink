@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ScrollObserver, valueAtPercentage } from 'aatjs';
+import { ScrollObserver, valueAtPercentage } from 'aatjs'; // Ensure this library is installed and imported
 import cardImage1 from "../../../../assets/StackCards/11.png";
 import cardImage2 from "../../../../assets/StackCards/22.png";
 import cardImage3 from "../../../../assets/StackCards/33.png";
@@ -14,11 +14,11 @@ const StackCards = () => {
 
     if (cardsContainer && cards.length > 0) {
       cardsContainer.style.setProperty('--cards-count', cards.length);
-      cardsContainer.style.setProperty('--card-height', ${cards[0].clientHeight}px);
+      cardsContainer.style.setProperty('--card-height', `${cards[0].clientHeight}px`);
 
       Array.from(cards).forEach((card, index) => {
         const offsetTop = 20 + index * 20; // Fine-tune spacing between cards
-        card.style.paddingTop = ${offsetTop}px;
+        card.style.paddingTop = `${offsetTop}px`;
 
         if (index === cards.length - 1) return; // Skip last card, no animation needed for it
 
@@ -101,9 +101,9 @@ const StackCards = () => {
             <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
               <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
                 <img
-                  className="card__image w-full  object-fill"
+                  className="card__image w-full object-fill"
                   src={card.image}
-                  alt={Card ${index + 1}}
+                  alt={`Card ${index + 1}`}
                   loading="lazy"
                 />
               </div>
@@ -117,7 +117,7 @@ const StackCards = () => {
       </div>
 
       {/* Spacer for scrolling */}
-      <div className="h-[90vh]"></div>
+     
     </div>
   );
 };
