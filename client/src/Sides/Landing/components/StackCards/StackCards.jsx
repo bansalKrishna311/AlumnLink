@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import { ScrollObserver, valueAtPercentage } from 'aatjs';
+import { ScrollObserver, valueAtPercentage } from 'aatjs'; // Ensure this library is installed and imported
+import cardImage1 from "../../../../assets/StackCards/11.png";
+import cardImage2 from "../../../../assets/StackCards/22.png";
+import cardImage3 from "../../../../assets/StackCards/33.png";
+import cardImage4 from "../../../../assets/StackCards/44.png";
+import cardImage5 from "../../../../assets/StackCards/55.png";
+import cardImage6 from "../../../../assets/StackCards/66.png";
 
 const StackCards = () => {
   useEffect(() => {
@@ -41,40 +47,53 @@ const StackCards = () => {
 
   const cardData = [
     {
-      title: "Card Title 1",
-      description: "Description for the first card. Lorem ipsum dolor sit amet.",
-      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+      title: "Build Lasting Connections",
+      description:
+        "Join a community where every connection counts. Reconnect with peers, share experiences, and foster lifelong bonds.",
+      image: cardImage1,
     },
     {
-      title: "Card Title 2",
-      description: "Description for the second card. Sed ut perspiciatis unde omnis iste natus error.",
-      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+      title: "Unlock Career Opportunities",
+      description:
+        "Discover job openings, internships, and career advancements tailored just for you. Your next big break is just a click away.",
+      image: cardImage2,
     },
     {
-      title: "Card Title 3",
-      description: "Description for the third card. At vero eos et accusamus et iusto odio dignissimos.",
-      image: "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=100",
+      title: "Expand Your Professional Circle",
+      description:
+        "Connect with industry leaders, alumni, and professionals from diverse fields to elevate your career journey.",
+      image: cardImage3,
+    },
+    {
+      title: "Guidance from Experts",
+      description:
+        "Tap into the wisdom of seasoned mentors. Get career advice, insights, and personalized guidance for your growth.",
+      image: cardImage4,
+    },
+    {
+      title: "Exclusive Events & Discussions",
+      description:
+        "Be part of interactive webinars, networking sessions, and alumni meetups. Stay engaged with the latest trends.",
+      image: cardImage5,
+    },
+    {
+      title: "Accelerate Your Career",
+      description:
+        "Leverage our curated resources, tools, and connections to fast-track your professional and personal growth.",
+      image: cardImage6,
     },
   ];
 
   return (
     <div>
-      {/* Navbar */}
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-lg z-20 p-4">
-        <h1 className="text-center text-xl font-bold">Navbar</h1>
-      </div>
-
-      {/* Heading */}
-      <h1 className="text-center text-3xl font-bold mt-[80px] z-10 relative">Explore Our Stack Cards</h1>
-
-      {/* Cards section */}
+      
       <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10">
         {cardData.map((card, index) => (
           <div className="card sticky top-16" key={index}>
             <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
               <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
                 <img
-                  className="card__image w-full h-full object-cover"
+                  className="card__image w-full object-fill"
                   src={card.image}
                   alt={`Card ${index + 1}`}
                   loading="lazy"
@@ -90,7 +109,7 @@ const StackCards = () => {
       </div>
 
       {/* Spacer for scrolling */}
-      <div className="h-[90vh]"></div>
+     <div className="h-[40vh]"></div>
     </div>
   );
 };
