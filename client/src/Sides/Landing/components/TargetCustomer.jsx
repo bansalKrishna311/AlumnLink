@@ -5,13 +5,13 @@ import { FaBuilding } from "react-icons/fa";
 
 const TargetCustomer = () => {
   return (
-    <div className="hero bg-base-[#ECF2FF] py-10 lg:py-20">
+    <div className="hero bg-[#f2eafa] py-10 lg:py-20">
       <div className="hero-content flex-col lg:flex-row items-center gap-10 lg:gap-20">
         {/* Left Content */}
         <div className="flex-1">
           <h1 className="font-bold mb-2 text-[36px] md:text-[46px] text-center">
-            <span className="text-[#6b21a8]">Unlock</span>
-            <span> Perfection</span>
+            <span className="text-[#6b21a8]">Unique</span>
+            <span> Solutions</span>
           </h1>
           <p className="text-gray-600 mb-6 text-[16px] md:text-[18px] text-center">
           We recognize that every alumni network has its own distinct needs. Discover how our tailored solutions <br/>cater to those specific requirements.
