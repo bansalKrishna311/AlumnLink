@@ -17,7 +17,7 @@ const App = () => {
 <StackCards/>
    <LogoSlider/>
 <TargetCustomer/>
-{/* <CardSlider/> */}
+
 <ContactUs/>
 <Bottomfootgutter/>
     </>
