@@ -12,7 +12,7 @@ const App = () => {
   return (<>
     <Navbar/>
     <Hero/>
-    <Action/>
+    {/* <Action/> */}
 <StackCards/>
    <LogoSlider/>
 <TargetCustomer/>
