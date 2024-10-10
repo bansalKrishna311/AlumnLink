@@ -86,15 +86,7 @@ const StackCards = () => {
 
   return (
     <div>
-      {/* Navbar */}
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-lg z-20 p-4">
-        <h1 className="text-center text-xl font-bold">Navbar</h1>
-      </div>
-
-      {/* Heading */}
-      <h1 className="text-center text-3xl font-bold mt-[80px] z-10 relative">Explore Our Stack Cards</h1>
-
-      {/* Cards section */}
+      
       <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10">
         {cardData.map((card, index) => (
           <div className="card sticky top-16" key={index}>
