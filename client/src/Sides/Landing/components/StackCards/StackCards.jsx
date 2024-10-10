@@ -142,7 +142,7 @@ const StackCards = () => {
       </div>
 
       {/* Stack Cards Section */}
-      <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10">
+      <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10 p-2">
         {cardData.map((card, index) => (
           <div className="card sticky top-16" key={index} ref={(el) => (cardRefs.current[index] = el)}>
             <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
