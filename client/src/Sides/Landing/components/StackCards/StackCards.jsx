@@ -117,7 +117,7 @@ const StackCards = () => {
       </div>
 
       {/* Spacer for scrolling */}
-     
+     <div className="h-[40vh]"></div>
     </div>
   );
 };
