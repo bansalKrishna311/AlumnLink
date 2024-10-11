@@ -6,7 +6,7 @@ import ParticlesComponent from './ParticlesComponent';
 
 const Hero = () => {
   return (
-    <div className="hero md:pt-20" style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <div className="hero md:pt-20" >
       <ParticlesComponent />
 
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
