@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FiSun, FiMoon, FiArrowRight } from 'react-icons/fi';
+import { FiSun, FiMoon } from 'react-icons/fi';
 import logo from '../../../../src/assets/logo copy.png';
 import whiteLogo from '../../../assets/logo-white.png';
-import Btn from './Btn';
-import ParticlesComponent from './ParticlesComponent'; // Import the ParticlesComponent
+import ParticlesComponent from './ParticlesComponent';
+import { AnimatedModalDemo } from './test'; // Import the modal component
 
 const Navbar = () => {
   const [theme, setTheme] = useState('light');
@@ -54,7 +54,8 @@ const Navbar = () => {
         </div>
 
         <div className="navbar-end flex items-center gap-4">
-          {!isMobile && <Btn text="Get Started" Icon={FiArrowRight} />}
+          {/* Render AnimatedModalDemo in place of the Get Started button */}
+          {!isMobile && <AnimatedModalDemo />}
           <div className="flex-none">
             <div className="dropdown dropdown-end">
               <button tabIndex={0} className="btn btn-square btn-ghost transition-transform duration-300 ease-in-out hover:scale-105">
@@ -65,7 +66,7 @@ const Navbar = () => {
               <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60 p-2 shadow transition-all duration-300 ease-in-out">
                 {isMobile && (
                   <li className='w-full -ms-7'>
-                    <Btn text="Get Started" Icon={FiArrowRight} />
+                    <AnimatedModalDemo />
                   </li>
                 )}
                 <li>
