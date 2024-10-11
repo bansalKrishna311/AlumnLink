@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Content() {
   return (
-    <div className={`py-8 px-12 h-full w-full flex flex-col justify-end ${window.matchMedia('(prefers-color-scheme: dark)').matches ? 'bg-base-100' : 'bg-[#f2eafa]'}`}>
+    <div className={`py-8 px-36 h-full w-full flex flex-col justify-end ${window.matchMedia('(prefers-color-scheme: dark)').matches ? 'bg-base-100' : 'bg-[#f2eafa]'}`}>
       <Section1 />
       <Section2 />
     </div>
