@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react';
 
-const ParticlesComponent = () => {
+const ParticlesComponent = ({ theme }) => {
   useEffect(() => {
     // Dynamically load particles.js from the CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
     script.async = true;
 
-    script.onload = () => {
-      // Determine the current theme from the body class
-      const isDarkMode = document.body.classList.contains('dark');
-
+    const initializeParticles = () => {
       // Set particle colors based on the theme
       const particlesConfig = {
         particles: {
@@ -22,7 +19,7 @@ const ParticlesComponent = () => {
             },
           },
           color: {
-            value: isDarkMode ? "#ffffff" : "#000000", // White in dark mode, black in light mode
+            value: theme === 'dark' ? "#ffffff" : "#808080", // White in dark mode, grey in light mode
           },
           shape: {
             type: "circle",
@@ -62,13 +59,13 @@ const ParticlesComponent = () => {
           line_linked: {
             enable: true,
             distance: 150,
-            color: isDarkMode ? "#ffffff" : "#000000", // White in dark mode, black in light mode
+            color: theme === 'dark' ? "#ffffff" : "#000", // White in dark mode, grey in light mode
             opacity: 0.4,
             width: 1,
           },
           move: {
             enable: true,
-            speed: 4,
+            speed: 10, // Increased speed from 6 to 10
             direction: "none",
             random: false,
             straight: false,
@@ -82,11 +79,11 @@ const ParticlesComponent = () => {
           },
         },
         interactivity: {
-          detect_on: "canvas",
+          detect_on: "window",
           events: {
             onhover: {
               enable: true,
-              mode: "repulse", // Set to "grab" for cursor-follow effect
+              mode: "repulse",
             },
             onclick: {
               enable: false,
@@ -96,7 +93,7 @@ const ParticlesComponent = () => {
           },
           modes: {
             grab: {
-              distance: 140, // Set distance for grab effect
+              distance: 140,
               line_linked: {
                 opacity: 1,
               },
@@ -109,7 +106,7 @@ const ParticlesComponent = () => {
               speed: 3,
             },
             repulse: {
-              distance: 200,
+              distance: 100,
               duration: 0.4,
             },
             push: {
@@ -123,16 +120,21 @@ const ParticlesComponent = () => {
         retina_detect: true,
       };
 
-      window.particlesJS('particles-js', particlesConfig);
+      // Check if particles.js is loaded before initializing
+      if (window.particlesJS) {
+        window.particlesJS('particles-js', particlesConfig);
+      }
     };
 
+    // Load the script and initialize particles
+    script.onload = initializeParticles;
     document.body.appendChild(script);
 
     // Clean up the script when the component unmounts
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, [theme]); // Run effect when the theme changes
 
   return (
     <div
@@ -143,7 +145,7 @@ const ParticlesComponent = () => {
         height: '100%',
         top: 0,
         left: 0,
-        zIndex: -1, // Set z-index to -1 to place behind hero
+        zIndex: -1,
       }}
     ></div>
   );
