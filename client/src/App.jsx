@@ -8,7 +8,7 @@ import Action from './Sides/Landing/components/Action';
 import TargetCustomer from './Sides/Landing/components/TargetCustomer';
 import Bottomfootgutter from './Sides/Landing/components/Bottomfootgutter';
 import ContactUs from './Sides/Landing/components/ContactUs';
-import ParticlesComponent from './Sides/Landing/components/ParticlesComponent';  t
+import ParticlesComponent from './Sides/Landing/components/ParticlesComponent';  
 
 const App = () => {
   return (
