@@ -1,16 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { ScrollObserver, valueAtPercentage } from 'aatjs'; // Ensure this library is installed and imported
+import { ScrollObserver, valueAtPercentage } from 'aatjs'; 
 import cardImage1 from "../../../../assets/StackCards/11.png";
 import cardImage2 from "../../../../assets/StackCards/22.png";
 import cardImage3 from "../../../../assets/StackCards/33.png";
 import cardImage4 from "../../../../assets/StackCards/44.png";
 import cardImage5 from "../../../../assets/StackCards/55.png";
 import cardImage6 from "../../../../assets/StackCards/66.png";
-// import ParticlesComponent fr om './ParticlesComponent'; 
-// import ParticlesComponent from './'; // Import the ParticlesComponent
+import ParticlesComponent from '../ParticlesComponent'; 
 
 const StackCards = () => {
-  const cardRefs = useRef([]); // Store references to each card
+  const cardRefs = useRef([]); 
 
   useEffect(() => {
     const cardsContainer = document.querySelector('.cards');
@@ -21,10 +20,10 @@ const StackCards = () => {
       cardsContainer.style.setProperty('--card-height', `${cards[0].clientHeight}px`);
 
       Array.from(cards).forEach((card, index) => {
-        const offsetTop = 20 + index * 20; // Fine-tune spacing between cards
+        const offsetTop = 20 + index * 20;
         card.style.paddingTop = `${offsetTop}px`;
 
-        if (index === cards.length - 1) return; // Skip last card, no animation needed for it
+        if (index === cards.length - 1) return;
 
         const toScale = 1 - (cards.length - 1 - index) * 0.1;
         const nextCard = cards[index + 1];
@@ -50,7 +49,6 @@ const StackCards = () => {
   }, []);
 
   const scrollToCard = (index) => {
-    // Scroll to the card with the provided index
     cardRefs.current[index]?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -100,14 +98,14 @@ const StackCards = () => {
   ];
 
   return (
-    <div>
-      {/* <ParticlesComponent /> Include ParticlesComponent here */}
+    <div className="relative">
+      {/* ParticlesComponent */}
+      <ParticlesComponent theme="light" />
+
       {/* Action Section as Navbar */}
       <div className='bg-base-[#ECF2FF] pb-5 pt-14 sm:opacity-0 md:opacity-100 opacity-0'>
         <div className="flex items-center justify-start space-x-6 p-3 bg-white rounded-lg shadow-md overflow-x-auto mx-6 relative">
-          {/* Blue indicator */}
           <div className="absolute left-0 top-0 bottom-0 w-2 bg-started rounded-l-full"></div>
-
           <div className="flex items-center bg-[#DFC5FE] rounded-full p-2 ml-6">
             <svg
               className="w-6 h-6"
@@ -126,7 +124,6 @@ const StackCards = () => {
             <span className="ml-2 mr-4 font-medium text-[12px] text-nowrap">I'm here to</span>
           </div>
 
-          {/* Buttons with onClick for scrolling */}
           {cardData.map((card, index) => (
             <button
               key={card.id}

@@ -5,6 +5,7 @@ import Bottomfootgutter from './Sides/Landing/components/Bottomfootgutter';
 import LandHome from './Sides/Landing/Pages/Home/LandHome';
 import PageTitle from './PageTitle';
 import Loader from './Loader'; // Import Loader component
+import StickyFooter from './Sides/Landing/components/footer/StickyFooter';
 
 
 
@@ -26,7 +27,9 @@ const App = () => {
       <PageTitle title="Welcome || AlumnLink" />
       <Navbar />
     <LandHome/>
-      <Bottomfootgutter />
+      {/* <Bottomfootgutter /> */}
+
+    <StickyFooter/>
     </>
   );
 };
