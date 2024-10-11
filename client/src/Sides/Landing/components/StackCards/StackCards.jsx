@@ -6,8 +6,8 @@ import cardImage3 from "../../../../assets/StackCards/33.png";
 import cardImage4 from "../../../../assets/StackCards/44.png";
 import cardImage5 from "../../../../assets/StackCards/55.png";
 import cardImage6 from "../../../../assets/StackCards/66.png";
-// import ParticlesComponent from './ParticlesComponent'; // Import the ParticlesComponent
-
+// import ParticlesComponent fr om './ParticlesComponent'; 
+// import ParticlesComponent from './'; // Import the ParticlesComponent
 
 const StackCards = () => {
   const cardRefs = useRef([]); // Store references to each card
@@ -101,7 +101,7 @@ const StackCards = () => {
 
   return (
     <div>
-      {/* <ParticlesComponent /> */}
+      {/* <ParticlesComponent /> Include ParticlesComponent here */}
       {/* Action Section as Navbar */}
       <div className='bg-base-[#ECF2FF] pb-5 pt-14 sm:opacity-0 md:opacity-100 opacity-0'>
         <div className="flex items-center justify-start space-x-6 p-3 bg-white rounded-lg shadow-md overflow-x-auto mx-6 relative">
