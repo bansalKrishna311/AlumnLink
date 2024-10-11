@@ -2,8 +2,8 @@ import React from "react";
 
 const ContactUs = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 pt-16 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl px-6 py-6 max-w-lg w-full transition-all duration-300 sm:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 pt-16 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl px-6 py-6 max-w-lg w-full transition-all duration-300 sm:px-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-purple-800 dark:text-purple-300 mb-4 text-center">
           Contact Us
         </h1>
@@ -72,7 +72,7 @@ const ContactUs = () => {
             ></textarea>
           </div>
 
-          <button className="w-full bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200">
+          <button className="w-full bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-500 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
             Send Message
           </button>
         </form>
