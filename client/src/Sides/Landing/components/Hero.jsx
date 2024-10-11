@@ -1,22 +1,20 @@
 import React from 'react';
 import Features from './Features';
 import Btn from './Btn';
-import { FiArrowRight } from 'react-icons/fi'; // Import FiArrowRight from react-icons
-import ParticlesComponent from './ParticlesComponent'; // Import the ParticlesComponent
+import { FiArrowRight } from 'react-icons/fi'; 
+import ParticlesComponent from './ParticlesComponent'; 
 
 const Hero = () => {
   return (
-    <div className="hero md:pt-20">
-      {/* Particles background */}
+    <div className="hero md:pt-20" style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
       <ParticlesComponent />
 
-      {/* Hero content */}
-      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24 relative z-10">
+      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
         <div className='max-w-full mt-14'>
           <Features />
         </div>
 
-        <div className='lg:mt-14 md:mt-0'>
+        <div className='lg:mt-14 md:mt-0 relative z-10'>
           <h1 className="font-bold flex items-center">
             <span className='text-[#6b21a8] me-2 text-[28px] sm:text-[40px] md:text-[52px]'>Unlock</span>
             <p className='text-[28px] sm:text-[48px] md:text-[52px]'>Your Network</p>
