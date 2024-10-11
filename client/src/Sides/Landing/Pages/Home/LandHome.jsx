@@ -16,7 +16,7 @@ const LandHome = () => {
     <StackCards />
       <LogoSlider />
       <TargetCustomer />
-      <ContactUs />
+      {/* <ContactUs /> */}
     </>
   )
 }

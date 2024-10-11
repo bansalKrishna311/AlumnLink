@@ -6,10 +6,30 @@ import cardImage3 from "../../../../assets/StackCards/33.png";
 import cardImage4 from "../../../../assets/StackCards/44.png";
 import cardImage5 from "../../../../assets/StackCards/55.png";
 import cardImage6 from "../../../../assets/StackCards/66.png";
-import ParticlesComponent from '../ParticlesComponent';
+import ParticlesComponent from '../ParticlesComponent'; 
 
 const StackCards = () => {
   const cardRefs = useRef([]);
+
+  // Helper function for throttling
+  const throttle = (func, limit) => {
+    let lastFunc;
+    let lastRan;
+    return function (...args) {
+      if (!lastRan) {
+        func(...args);
+        lastRan = Date.now();
+      } else {
+        clearTimeout(lastFunc);
+        lastFunc = setTimeout(() => {
+          if (Date.now() - lastRan >= limit) {
+            func(...args);
+            lastRan = Date.now();
+          }
+        }, limit - (Date.now() - lastRan));
+      }
+    };
+  };
 
   useEffect(() => {
     const cardsContainer = document.querySelector('.cards');
@@ -25,29 +45,28 @@ const StackCards = () => {
 
         if (index === cards.length - 1) return;
 
-        const toScale = 1 - (cards.length - 1 - index) * 0.08; // Reduce scale difference
+        const toScale = 1 - (cards.length - 1 - index) * 0.1;
         const nextCard = cards[index + 1];
         const cardInner = card.querySelector('.card__inner');
 
-        // Apply hardware acceleration
-        cardInner.style.willChange = 'transform, filter';
-
+        // Apply throttle for scroll events
         ScrollObserver.Element(nextCard, {
           offsetTop,
           offsetBottom: window.innerHeight - card.clientHeight,
-        }).onScroll(({ percentageY }) => {
-          cardInner.style.transform = `scale(${valueAtPercentage({
-            from: 1,
-            to: toScale,
-            percentage: percentageY,
-          })}) translateZ(0)`; // Force hardware acceleration
-
-          cardInner.style.filter = `brightness(${valueAtPercentage({
-            from: 1,
-            to: 0.8, // Increase minimum brightness to make it smoother
-            percentage: percentageY,
-          })})`;
-        });
+        }).onScroll(
+          throttle(({ percentageY }) => {
+            cardInner.style.transform = `scale(${valueAtPercentage({
+              from: 1,
+              to: toScale,
+              percentage: percentageY,
+            })})`;
+            cardInner.style.filter = `brightness(${valueAtPercentage({
+              from: 1,
+              to: 0.6,
+              percentage: percentageY,
+            })})`;
+          }, 50) // Throttle the scroll event handling to run every 50ms
+        );
       });
     }
   }, []);
@@ -149,10 +168,10 @@ const StackCards = () => {
       <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10 p-2">
         {cardData.map((card, index) => (
           <div className="card sticky top-16" key={index} ref={(el) => (cardRefs.current[index] = el)}>
-            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
+            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top will-change-transform">
               <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
                 <img
-                  className="card__image w-full object-fill"
+                  className="card__image w-full object-cover transition-opacity duration-500"
                   src={card.image}
                   alt={`Card ${index + 1}`}
                   loading="lazy"

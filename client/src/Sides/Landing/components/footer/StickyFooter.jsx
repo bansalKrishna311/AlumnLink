@@ -1,15 +1,15 @@
-import React from 'react'
+import React from 'react';
 import Content from './Content';
 
 export default function StickyFooter() {
   return (
     <div 
-      className='relative h-[800px]'
-      style={{clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)"}}
+      className='relative bg-[#f2eafa] h-[60vh]'
+      style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
     >
       <div className='fixed bottom-0 h-[800px] w-full'>
         <Content />
       </div>
     </div>
-  )
+  );
 }
