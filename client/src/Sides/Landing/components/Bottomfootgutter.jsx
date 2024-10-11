@@ -38,6 +38,16 @@ const Bottomfootgutter = () => {
               <a className="link link-hover">Advertisement</a>
             </div>
           </nav>
+          <nav className="text-center mb-6 md:mb-0 md:text-left">
+            <h6 className="footer-title">Services</h6>
+            <div className="flex flex-col items-center md:items-start">
+              <a className="link link-hover">Branding</a>
+              <a className="link link-hover">Design</a>
+              <a className="link link-hover">Marketing</a>
+              <a className="link link-hover">Advertisement</a>
+            </div>
+          </nav>
+          
 
           <nav className="text-center mb-6 md:mb-0 md:text-left">
             <h6 className="footer-title">Company</h6>
