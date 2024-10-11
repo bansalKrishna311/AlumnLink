@@ -11,7 +11,7 @@ const Bottomfootgutter = () => {
 
   return (
     <div>
-      <footer className="footer bg-base-200 text-base-content p-10 flex flex-col items-center md:flex-row md:justify-between md:items-start md:px-10">
+      <footer className="footer bg-base-200 text-base-content p-12 flex flex-col items-center md:flex-row md:justify-between md:items-start md:px-28">
         <aside className="mb-6 text-center md:text-left">
           <img
             className="w-48 md:w-64 transition-transform duration-300 ease-in-out hover:scale-105"
@@ -39,17 +39,6 @@ const Bottomfootgutter = () => {
             </div>
           </nav>
           <nav className="text-center mb-6 md:mb-0 md:text-left">
-            <h6 className="footer-title">Services</h6>
-            <div className="flex flex-col items-center md:items-start">
-              <a className="link link-hover">Branding</a>
-              <a className="link link-hover">Design</a>
-              <a className="link link-hover">Marketing</a>
-              <a className="link link-hover">Advertisement</a>
-            </div>
-          </nav>
-          
-
-          <nav className="text-center mb-6 md:mb-0 md:text-left">
             <h6 className="footer-title">Company</h6>
             <div className="flex flex-col items-center md:items-start">
               <a className="link link-hover">About us</a>
@@ -65,14 +54,15 @@ const Bottomfootgutter = () => {
               <a className="link link-hover">Terms of use</a>
               <a className="link link-hover">Privacy policy</a>
               <a className="link link-hover">Cookie policy</a>
+              <a className="link link-hover">Join community</a>
             </div>
           </nav>
         </div>
       </footer>
 
-      <footer className="footer footer-center bg-base-200 text-base-content rounded p-10 md:px-10">
+      <footer className="footer footer-center bg-base-200 text-base-content rounded p-4 lg:px-32 md:px-36">
         <nav>
-          <div className="grid grid-flow-col gap-4 justify-center">
+          <div className="grid grid-flow-col gap-2 justify-center">
             <a href="https://twitter.com">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
