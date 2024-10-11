@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { ScrollObserver, valueAtPercentage } from 'aatjs'; 
+import { ScrollObserver, valueAtPercentage } from 'aatjs';
 import cardImage1 from "../../../../assets/StackCards/11.png";
 import cardImage2 from "../../../../assets/StackCards/22.png";
 import cardImage3 from "../../../../assets/StackCards/33.png";
 import cardImage4 from "../../../../assets/StackCards/44.png";
 import cardImage5 from "../../../../assets/StackCards/55.png";
 import cardImage6 from "../../../../assets/StackCards/66.png";
-import ParticlesComponent from '../ParticlesComponent'; 
+import ParticlesComponent from '../ParticlesComponent';
 
 const StackCards = () => {
-  const cardRefs = useRef([]); 
+  const cardRefs = useRef([]);
 
   useEffect(() => {
     const cardsContainer = document.querySelector('.cards');
@@ -25,9 +25,12 @@ const StackCards = () => {
 
         if (index === cards.length - 1) return;
 
-        const toScale = 1 - (cards.length - 1 - index) * 0.1;
+        const toScale = 1 - (cards.length - 1 - index) * 0.08; // Reduce scale difference
         const nextCard = cards[index + 1];
         const cardInner = card.querySelector('.card__inner');
+
+        // Apply hardware acceleration
+        cardInner.style.willChange = 'transform, filter';
 
         ScrollObserver.Element(nextCard, {
           offsetTop,
@@ -37,10 +40,11 @@ const StackCards = () => {
             from: 1,
             to: toScale,
             percentage: percentageY,
-          })})`;
+          })}) translateZ(0)`; // Force hardware acceleration
+
           cardInner.style.filter = `brightness(${valueAtPercentage({
             from: 1,
-            to: 0.6,
+            to: 0.8, // Increase minimum brightness to make it smoother
             percentage: percentageY,
           })})`;
         });

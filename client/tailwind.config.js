@@ -44,5 +44,10 @@ export default {
       'dark',     
     ],
   },
+  variants: {
+    extend: {
+      scrollBehavior: ['responsive'],
+    },
+  },
 };
 
