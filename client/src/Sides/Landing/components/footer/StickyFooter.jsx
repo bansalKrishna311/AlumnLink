@@ -1,6 +1,6 @@
 import React from 'react';
 import Content from './Content';
-import FooterBg from './FooterBg'; // Import the FooterBg component
+import FooterBg from './footerbg'; // Import the FooterBg component
 
 export default function StickyFooter({ theme }) {
   return (
