@@ -14,7 +14,7 @@ const Hero = () => {
           <Features />
         </div>
 
-        <div className='lg:mt-14 md:mt-0 relative z-10'>
+        <div className='lg:mt-14 md:mt-0 relative '>
           <h1 className="font-bold flex items-center">
             <span className='text-[#6b21a8] me-2 text-[28px] sm:text-[40px] md:text-[52px]'>Unlock</span>
             <p className='text-[28px] sm:text-[48px] md:text-[52px]'>Your Network</p>

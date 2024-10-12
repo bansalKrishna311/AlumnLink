@@ -19,7 +19,7 @@ const Btn = () => {
   ];
 
   return (
-    <div className="py-35 flex items-center justify-center z-50">
+    <div className="py-35 flex items-center justify-center z-50 sm:px-8 md:px-8">
       <Modal>
         <ModalTrigger>
           <div>
@@ -30,8 +30,8 @@ const Btn = () => {
           </div>
         </ModalTrigger>
 
-        <ModalBody>
-          <ModalContent className="z-50">
+        <ModalBody className="mt-10">
+          <ModalContent className="z-50 " >
             <h4 className="text-lg md:text-2xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-8">
               Get Started With{" "}
               <span className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 dark:border-neutral-700 border border-gray-200">
@@ -78,7 +78,7 @@ const Btn = () => {
             </div>
           </ModalContent>
           <ModalFooter className="gap-4">
-            <a href="#" target="_blank" className="no-underline">
+            <a href="#" target="_blank" className="no-underline">   
               <button className="w-40 h-10 rounded-xl bg-black border dark:border-white border-transparent text-white text-sm">
                 Request Demo
               </button>
