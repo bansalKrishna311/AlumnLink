@@ -38,7 +38,7 @@ const Navbar = () => {
     <>
       <ParticlesComponent theme={theme} /> {/* Pass theme prop here */}
       <div 
-        className={`navbar bg-base-100 px-4 md:px-8 lg:px-32 border-b-[0.5px] fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${scrolling ? 'shadow-lg bg-opacity-80 backdrop-blur-md' : ''}`} 
+        className={`navbar bg-base-100 px-4 md:px-8 lg:px-32 border-b-[0.5px] fixed top-0 left-0 w-full z-30 transition-all duration-300 ease-in-out ${scrolling ? 'shadow-lg bg-opacity-80 backdrop-blur-md' : ''}`} 
         style={{
           borderBottomColor: theme === 'light' ? 'rgba(128, 128, 128, 0.5)' : 'rgba(128, 128, 128, 0.3)',
         }}

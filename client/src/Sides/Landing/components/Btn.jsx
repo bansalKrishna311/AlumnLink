@@ -19,17 +19,19 @@ const Btn = () => {
   ];
 
   return (
-    <div className="py-35 flex items-center justify-center ">
+    <div className="py-35 flex items-center justify-center z-50">
       <Modal>
-      <ModalTrigger>
-  <div className="btn rounded-full w-56 px-16 transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center mx-4">
-    Get Started
-    <FiArrowRight className="ml-2 h-5 w-5" />
-  </div>
-</ModalTrigger>
+        <ModalTrigger>
+          <div>
+            <a className="btn rounded-full px-12 transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center">
+              Get Started
+              <FiArrowRight className="ml-2 h-5 w-5" />
+            </a>
+          </div>
+        </ModalTrigger>
 
         <ModalBody>
-          <ModalContent className="z-50"> {/* Added z-50 here */}
+          <ModalContent className="z-50">
             <h4 className="text-lg md:text-2xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-8">
               Get Started With{" "}
               <span className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 dark:border-neutral-700 border border-gray-200">
@@ -127,39 +129,34 @@ const ElevatorIcon = ({ className }) => (
     <path d="M10 16v-2h4v2" />
     <path d="M10 20v-2h4v2" />
     <path d="M4 12h4v-2H4v2z" />
-    <path d="M20 20h-4v-2h4v2z" />
+    <path d="M4 16h4v-2H4v2z" />
+    <path d="M4 8h4V6H4v2z" />
   </svg>
 );
 
 const FoodIcon = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M4 21h16" />
-    <path d="M4 3v18" />
-    <path d="M20 3v18" />
-    <path d="M16 17c0 1.1 -.9 2 -2 2s-2 -.9 -2 -2s.9 -2 2 -2s2 .9 2 2z" />
+    <path d="M10 8h4v4h-4z" />
+    <path d="M7 8v8a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2V8" />
   </svg>
 );
 
 const MicIcon = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M12 8v8" />
-    <path d="M9 12h6" />
-    <path d="M12 2v2a6 6 0 0 1 0 12v2" />
+    <path d="M12 1v5m0 4v4" />
+    <path d="M6 11h12a6 6 0 0 1 0 12h-12a6 6 0 0 1 0 -12z" />
   </svg>
 );
 
 const ParachuteIcon = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M12 3l3 3l3 -3m-6 2v6" />
-    <path d="M3 12h18" />
-    <path d="M3 15h3" />
-    <path d="M18 15h3" />
-    <path d="M12 12v6" />
+    <path d="M12 2l5 5h-10l5 -5z" />
+    <path d="M8 7v12h8V7" />
+    <path d="M12 15v6" />
   </svg>
 );
 
-// Default export
 export default Btn;

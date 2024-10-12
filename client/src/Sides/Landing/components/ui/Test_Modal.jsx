@@ -85,7 +85,7 @@ export const ModalBody = ({ children, className }) => {
             exit={{ opacity: 0, scale: 0.8, rotateX: 10 }}
             transition={{ type: "spring", stiffness: 260, damping: 15 }}
           >
-            <CloseIcon />
+            {/* <CloseIcon /> */}
             {children}
           </motion.div>
         </motion.div>

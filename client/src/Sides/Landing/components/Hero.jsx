@@ -6,7 +6,7 @@ import ParticlesComponent from './ParticlesComponent';
 
 const Hero = () => {
   return (
-    <div className="hero md:pt-24" >
+    <div className="hero md:pt-24">
       <ParticlesComponent />
 
       <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
@@ -58,10 +58,9 @@ const Hero = () => {
             AlumnLink offers a unique platform to engage with alumni networks, share<br /> experiences, and collaborate on projects that enhance career <br />development and professional growth.
           </p>
 
-          <div className='w-[200px] -ms-5'>
+          <div className='flex justify-start me-5'>
             <Btn/>
           </div>
-
         </div>
       </div>
     </div>
