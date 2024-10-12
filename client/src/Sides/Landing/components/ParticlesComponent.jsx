@@ -65,7 +65,7 @@ const ParticlesComponent = ({ theme }) => {
           },
           move: {
             enable: true,
-            speed: 10, // Increased speed from 6 to 10
+            speed: 6, // Increased speed from 6 to 10
             direction: "none",
             random: false,
             straight: false,
