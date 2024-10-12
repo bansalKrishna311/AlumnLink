@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ScrollObserver, valueAtPercentage } from 'aatjs';
+import { ScrollObserver, valueAtPercentage } from 'aatjs'; 
 import cardImage1 from "../../../../assets/StackCards/11.png";
 import cardImage2 from "../../../../assets/StackCards/22.png";
 import cardImage3 from "../../../../assets/StackCards/33.png";
@@ -9,27 +9,7 @@ import cardImage6 from "../../../../assets/StackCards/66.png";
 import ParticlesComponent from '../ParticlesComponent'; 
 
 const StackCards = () => {
-  const cardRefs = useRef([]);
-
-  // Helper function for throttling
-  const throttle = (func, limit) => {
-    let lastFunc;
-    let lastRan;
-    return function (...args) {
-      if (!lastRan) {
-        func(...args);
-        lastRan = Date.now();
-      } else {
-        clearTimeout(lastFunc);
-        lastFunc = setTimeout(() => {
-          if (Date.now() - lastRan >= limit) {
-            func(...args);
-            lastRan = Date.now();
-          }
-        }, limit - (Date.now() - lastRan));
-      }
-    };
-  };
+  const cardRefs = useRef([]); 
 
   useEffect(() => {
     const cardsContainer = document.querySelector('.cards');
@@ -49,24 +29,21 @@ const StackCards = () => {
         const nextCard = cards[index + 1];
         const cardInner = card.querySelector('.card__inner');
 
-        // Apply throttle for scroll events
         ScrollObserver.Element(nextCard, {
           offsetTop,
           offsetBottom: window.innerHeight - card.clientHeight,
-        }).onScroll(
-          throttle(({ percentageY }) => {
-            cardInner.style.transform = `scale(${valueAtPercentage({
-              from: 1,
-              to: toScale,
-              percentage: percentageY,
-            })})`;
-            cardInner.style.filter = `brightness(${valueAtPercentage({
-              from: 1,
-              to: 0.6,
-              percentage: percentageY,
-            })})`;
-          }, 50) // Throttle the scroll event handling to run every 50ms
-        );
+        }).onScroll(({ percentageY }) => {
+          cardInner.style.transform = `scale(${valueAtPercentage({
+            from: 1,
+            to: toScale,
+            percentage: percentageY,
+          })})`;
+          cardInner.style.filter = `brightness(${valueAtPercentage({
+            from: 1,
+            to: 0.6,
+            percentage: percentageY,
+          })})`;
+        });
       });
     }
   }, []);
@@ -121,12 +98,12 @@ const StackCards = () => {
   ];
 
   return (
-    <div className="relative -z-30">
+    <div className="relative">
       {/* ParticlesComponent */}
       <ParticlesComponent theme="light" />
 
       {/* Action Section as Navbar */}
-      <div className='bg-base-[#ECF2FF] pb-5 pt-14 sm:opacity-0 md:opacity-100 opacity-0 z-20'>
+      <div className='bg-base-[#ECF2FF] pb-5 pt-14 sm:opacity-0 md:opacity-100 opacity-0'>
         <div className="flex items-center justify-start space-x-6 p-3 bg-white rounded-lg shadow-md overflow-x-auto mx-6 relative">
           <div className="absolute left-0 top-0 bottom-0 w-2 bg-started rounded-l-full"></div>
           <div className="flex items-center bg-[#DFC5FE] rounded-full p-2 ml-6">
@@ -168,10 +145,10 @@ const StackCards = () => {
       <div className="cards w-full max-w-3xl mx-auto mt-16 grid grid-rows-[repeat(var(--cards-count),var(--card-height))] gap-10 p-2">
         {cardData.map((card, index) => (
           <div className="card sticky top-16" key={index} ref={(el) => (cardRefs.current[index] = el)}>
-            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top will-change-transform">
+            <div className="card__inner bg-white rounded-lg shadow-xl transform transition-transform origin-top">
               <div className="card__image-container w-full h-64 overflow-hidden rounded-t-lg">
                 <img
-                  className="card__image w-full object-cover transition-opacity duration-500"
+                  className="card__image w-full object-fill"
                   src={card.image}
                   alt={`Card ${index + 1}`}
                   loading="lazy"
