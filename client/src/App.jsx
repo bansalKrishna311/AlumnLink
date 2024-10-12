@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useScroll } from 'framer-motion'; // Import framer-motion components
-import Navbar from './Sides/Landing/components/Navbar';
-import Bottomfootgutter from './Sides/Landing/components/Bottomfootgutter';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import DefaultLayout from './Sides/Landing/DefaultLayout';
 import LandHome from './Sides/Landing/Pages/Home/LandHome';
 import PageTitle from './PageTitle';
-import Loader from './Loader'; // Import Loader component
-import StickyFooter from './Sides/Landing/components/footer/StickyFooter';
-import DefaultLayout from './Sides/Landing/DefaultLayout';
+import Loader from './Loader';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const { scrollYProgress } = useScroll(); // Add scroll progress hook
 
   // Simulate loading delay
   useEffect(() => {
@@ -20,16 +16,27 @@ const App = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  return loading ? (
-    <Loader />
-  ) : (
-    <>
-      
-      <PageTitle title="Welcome || AlumnLink" />
-      <DefaultLayout>
-        <LandHome />
-      </DefaultLayout>
-    </>
+  return (
+    <Router>
+      {loading ? (
+        <Loader />
+      ) : (
+        <Routes>
+          {/* Root Route */}
+          <Route
+            path="/"
+            element={
+              <DefaultLayout>
+                <PageTitle title="Welcome || AlumnLink" />
+                <LandHome />
+              </DefaultLayout>
+            }
+          />
+           
+          
+        </Routes>
+      )}
+    </Router>
   );
 };
 
