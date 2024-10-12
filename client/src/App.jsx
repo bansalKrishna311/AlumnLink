@@ -6,6 +6,7 @@ import LandHome from './Sides/Landing/Pages/Home/LandHome';
 import PageTitle from './PageTitle';
 import Loader from './Loader'; // Import Loader component
 import StickyFooter from './Sides/Landing/components/footer/StickyFooter';
+import DefaultLayout from './Sides/Landing/DefaultLayout';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -23,17 +24,11 @@ const App = () => {
     <Loader />
   ) : (
     <>
-      {/* Scroll progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-2 bg-red-500 transform origin-left"
-        style={{ scaleX: scrollYProgress }}
-      />
       
       <PageTitle title="Welcome || AlumnLink" />
-      <Navbar />
-      <LandHome />
-      {/* <Bottomfootgutter /> */}
-      <StickyFooter />
+      <DefaultLayout>
+        <LandHome />
+      </DefaultLayout>
     </>
   );
 };
