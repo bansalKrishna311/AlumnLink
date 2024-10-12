@@ -59,7 +59,7 @@ const Hero = () => {
           </p>
 
           <div className='w-[200px] -ms-5'>
-            <Btn text="Get Started" Icon={FiArrowRight} />
+            <Btn/>
           </div>
 
         </div>

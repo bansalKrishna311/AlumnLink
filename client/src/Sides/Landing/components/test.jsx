@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import {
   Modal,
@@ -19,14 +18,18 @@ export function AnimatedModalDemo() {
     "https://images.unsplash.com/photo-1546484475-7f7bd55792da?q=80&w=2581&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   ];
   return (
-    <div className="py-35 flex items-center justify-center mb-4">
+    <div className="py-35 flex items-center justify-center ">
       <Modal>
-        <ModalTrigger>
-          <div className="btn rounded-full max-w-lg px-5 transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center mx-4">
-            ABOUT ME
-            <FiArrowRight className="ml-2 h-5 w-5" />
-          </div>
-        </ModalTrigger>
+      <ModalTrigger className="justify-center group/modal-btn btn rounded-full max-w-lg transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center px-8 py-3 relative">
+  <span className="group-hover/modal-btn:translate-x-40 text-center transition duration-500">
+    Get Started
+  </span>
+  <div className="-translate-x-40 group-hover/modal-btn:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20">
+    <FiArrowRight className="h-5 w-5" />
+  </div>
+</ModalTrigger>
+
+
         <ModalBody>
           <ModalContent>
             <h4 className="text-lg md:text-2xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-8">
