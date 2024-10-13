@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import DefaultLayout from './Sides/Landing/DefaultLayout';
 import LandHome from './Sides/Landing/Pages/Home/LandHome';
 import PageTitle from './PageTitle';
@@ -17,7 +17,7 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
+    <>
       {loading ? (
         <Loader />
       ) : (
@@ -32,11 +32,10 @@ const App = () => {
               </DefaultLayout>
             }
           />
-           
-          
+          {/* Additional routes can be added here */}
         </Routes>
       )}
-    </Router>
+    </>
   );
 };
 
