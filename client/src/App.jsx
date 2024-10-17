@@ -1,30 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import DefaultLayout from './Sides/Landing/DefaultLayout';
-import LandHome from './Sides/Landing/Pages/Home/LandHome';
-import PageTitle from './PageTitle';
-import Loader from './Loader';
-import FloatingShape from './Auth/components/FloatingShape';
-import SignUpPage from './Auth/pages/SignUpPage';
-import LoginPage from './Auth/pages/LoginPage';
-import EmailVerificationPage from './Auth/pages/EmailVerificationPage';
-import DashboardPage from './Auth/pages/DashboardPage';
-import ForgotPasswordPage from './Auth/pages/ForgotPasswordPage';
-import ResetPasswordPage from './Auth/pages/ResetPasswordPage';
-import LoadingSpinner from './Auth/components/LoadingSpinner';
-import { Toaster } from 'react-hot-toast';
-import { useAuthStore } from './Auth/store/authStore';
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import DefaultLayout from "./Sides/Landing/DefaultLayout";
+import LandHome from "./Sides/Landing/Pages/Home/LandHome";
+import PageTitle from "./PageTitle";
+import Loader from "./Loader";
+import SignUpPage from "./Auth/pages/SignUpPage";
+import LoginPage from "./Auth/pages/LoginPage";
+import EmailVerificationPage from "./Auth/pages/EmailVerificationPage";
+import DashboardPage from "./Auth/pages/DashboardPage";
+import ForgotPasswordPage from "./Auth/pages/ForgotPasswordPage";
+import ResetPasswordPage from "./Auth/pages/ResetPasswordPage";
+import { Toaster } from "react-hot-toast";
+import { useAuthStore } from "./Auth/store/authStore";
+import LoginLayout from "./Auth/LoginLayout";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!user?.isVerified) {
-    return <Navigate to="/verify-email" replace />;
-  }
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!user?.isVerified) return <Navigate to="/verify-email" replace />;
 
   return children;
 };
@@ -32,134 +26,110 @@ const ProtectedRoute = ({ children }) => {
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  if (isAuthenticated && user?.isVerified) {
+  if (isAuthenticated && user?.isVerified)
     return <Navigate to="/dashboard" replace />;
-  }
 
   return children;
 };
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
   const { isCheckingAuth, checkAuth } = useAuthStore();
+  const [loading, setLoading] = useState(true);
 
-  // Simulate loading delay
+  // Check authentication status on component mount
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const initializeAuth = async () => {
+      await checkAuth(); // Assuming checkAuth is a promise
       setLoading(false);
-    }, 2000); // Adjust time as necessary
-    checkAuth();
-    return () => clearTimeout(timer);
+    };
+
+    initializeAuth();
   }, [checkAuth]);
 
-  if (loading || isCheckingAuth) {
-    return <Loader />;
-  }
+  if (loading || isCheckingAuth) return <Loader />;
 
   return (
-    <>
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900 flex items-center justify-center relative overflow-hidden">
-          <FloatingShape
-            color="bg-green-500"
-            size="w-64 h-64"
-            top="-5%"
-            left="10%"
-            delay={0}
-          />
-          <FloatingShape
-            color="bg-emerald-500"
-            size="w-48 h-48"
-            top="70%"
-            left="80%"
-            delay={5}
-          />
-          <FloatingShape
-            color="bg-lime-500"
-            size="w-32 h-32"
-            top="40%"
-            left="-10%"
-            delay={2}
-          />
+    <div>
+      <Routes>
+        {/* Main Landing Route */}
+        <Route
+          path="/"
+          element={
+            <DefaultLayout>
+              <PageTitle title="Welcome || AlumnLink" />
+              <LandHome />
+            </DefaultLayout>
+          }
+        />
 
-          <Routes>
-            {/* Main Landing Route */}
-            <Route
-              path="/"
-              element={
-                <DefaultLayout>
-                  <PageTitle title="Welcome || AlumnLink" />
-                  <LandHome />
-                </DefaultLayout>
-              }
-            />
+        {/* Authentication Routes Wrapped in LoginLayout */}
+        <Route
+          path="/signup"
+          element={
+            <LoginLayout>
+              <RedirectAuthenticatedUser>
+                <SignUpPage />
+              </RedirectAuthenticatedUser>
+            </LoginLayout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <LoginLayout>
+              <RedirectAuthenticatedUser>
+                <LoginPage />
+              </RedirectAuthenticatedUser>
+            </LoginLayout>
+          }
+        />
+        <Route
+          path="/verify-email"
+          element={
+            <LoginLayout>
+              <EmailVerificationPage />
+            </LoginLayout>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <LoginLayout>
+              <RedirectAuthenticatedUser>
+                <ForgotPasswordPage />
+              </RedirectAuthenticatedUser>
+            </LoginLayout>
+          }
+        />
+        <Route
+          path="/reset-password/:token"
+          element={
+            <LoginLayout>
+              <RedirectAuthenticatedUser>
+                <ResetPasswordPage />
+              </RedirectAuthenticatedUser>
+            </LoginLayout>
+          }
+        />
 
-            {/* Authentication Routes */}
-            <Route
-              path="/signup"
-              element={
-                <RedirectAuthenticatedUser>
-                  <SignUpPage />
-                </RedirectAuthenticatedUser>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <RedirectAuthenticatedUser>
-                  <LoginPage />
-                </RedirectAuthenticatedUser>
-              }
-            />
-            <Route path="/verify-email" element={<EmailVerificationPage />} />
-            <Route
-              path="/forgot-password"
-              element={
-                <RedirectAuthenticatedUser>
-                  <ForgotPasswordPage />
-                </RedirectAuthenticatedUser>
-              }
-            />
-            <Route
-              path="/reset-password/:token"
-              element={
-                <RedirectAuthenticatedUser>
-                  <ResetPasswordPage />
-                </RedirectAuthenticatedUser>
-              }
-            />
+        {/* Protected Dashboard Route */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <LoginLayout>
+                <DashboardPage />
+              </LoginLayout>
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Protected Dashboard Route */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
+        {/* Catch-all Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
-            {/* Additional Routes */}
-            <Route
-              path="/Get-Started"
-              element={
-                <>
-                  <PageTitle title="Get Started || AlumnLink" />
-                  <LoginPage />
-                </>
-              }
-            />
-
-            {/* Catch-all Route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-
-          <Toaster />
-        </div>
-      )}
-    </>
+      <Toaster />
+    </div>
   );
 };
 

@@ -8,6 +8,8 @@ import {
 } from "../components/ui/Test_Modal";
 import { motion } from "framer-motion";
 import { FiArrowRight } from "react-icons/fi"; // Import the FiArrowRight icon
+import { Link } from "react-router-dom";
+
 
 export function AnimatedModalDemo() {
   const images = [
@@ -108,25 +110,18 @@ export function AnimatedModalDemo() {
             </div>
           </ModalContent>
           <ModalFooter className="gap-4">
-            <a
-              href="#"
-              target="_blank"
-              className="no-underline"
-            >
-              <button className="w-40 h-10 rounded-xl bg-black border dark:border-white border-transparent text-white text-sm">
-                Request Demo
-              </button>
-            </a>
-            <a
-              href="#"
-              target="_blank"
-              className="no-underline"
-            >
-              <button className="w-40 h-10 rounded-xl bg-white text-black border border-black text-sm">
-                Login/Signup
-              </button>
-            </a>
-          </ModalFooter>
+  <Link to="#" className="no-underline">
+    <button className="w-40 h-10 rounded-xl bg-black border dark:border-white border-transparent text-white text-sm">
+      Request Demo
+    </button>
+  </Link>
+  <Link to="/login" className="no-underline">
+    <button className="w-40 h-10 rounded-xl bg-white text-black border border-black text-sm">
+      Login/Signup
+    </button>
+  </Link>
+</ModalFooter>
+
         </ModalBody>
       </Modal>
     </div>
