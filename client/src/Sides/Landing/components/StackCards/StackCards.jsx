@@ -98,7 +98,7 @@ const StackCards = () => {
   ];
 
   return (
-    <div className="relative mt-20 -z-30">
+    <div className="relative mt-20 -z-0x">
       {/* ParticlesComponent */}
       <ParticlesComponent theme="light" />
 

@@ -54,7 +54,7 @@ const Navbar = () => {
         </div>
 
         <div className="navbar-end flex items-center gap-4">
-          {/* Render AnimatedModalDemo in place of the Get Started button */}
+          {/* Render AnimatedModalDemo only on larger screens */}
           {!isMobile && <AnimatedModalDemo />}
           <div className="flex-none">
             <div className="dropdown dropdown-end">
@@ -64,11 +64,6 @@ const Navbar = () => {
                 </svg>
               </button>
               <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60 p-2 shadow transition-all duration-300 ease-in-out">
-                {isMobile && (
-                  <li className='w-full -ms-7'>
-                    <AnimatedModalDemo />
-                  </li>
-                )}
                 <li>
                   <button onClick={toggleTheme} className="btn flex items-center gap-3 transition-transform duration-300 ease-in-out hover:scale-105">
                     {theme === 'light' ? (
