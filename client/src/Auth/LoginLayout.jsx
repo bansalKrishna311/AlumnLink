@@ -1,4 +1,4 @@
-// LoginLayout.jsx
+    // LoginLayout.jsx
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 

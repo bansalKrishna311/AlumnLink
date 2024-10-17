@@ -17,6 +17,7 @@ const LoginPage = () => {
 	};
 
 	return (
+		<div className="cont flex items-center justify-center relative overflow-hidden">
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
@@ -72,6 +73,7 @@ const LoginPage = () => {
 				</p>
 			</div>
 		</motion.div>
+		</div>
 	);
 };
 

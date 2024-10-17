@@ -4,9 +4,9 @@ import StickyFooter from './components/footer/StickyFooter';
 
 const DefaultLayout = ({ children }) => {
   return (
-    <div className="layout-container">
+    <div className="layout-container]">
       <Navbar />
-      <main className="content">{children}</main>
+      <main className="content h-[100vh] ">{children}</main>
       <StickyFooter />
     </div>
   );

@@ -13,6 +13,7 @@ import ResetPasswordPage from "./Auth/pages/ResetPasswordPage";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./Auth/store/authStore";
 import LoginLayout from "./Auth/LoginLayout";
+import ContactForm from "./Sides/Landing/Pages/ContactPage/ContactUs";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -61,26 +62,35 @@ const App = () => {
             </DefaultLayout>
           }
         />
+    <Route
+          path="/Request-Demo"
+          element={
+            <DefaultLayout>
+              <PageTitle title="Contact || AlumnLink" />
+              <ContactForm/>
+            </DefaultLayout>
+          }
+        />
 
         {/* Authentication Routes Wrapped in LoginLayout */}
         <Route
           path="/signup"
           element={
-            <LoginLayout>
+            <DefaultLayout>
               <RedirectAuthenticatedUser>
                 <SignUpPage />
               </RedirectAuthenticatedUser>
-            </LoginLayout>
+            </DefaultLayout>
           }
         />
         <Route
           path="/login"
           element={
-            <LoginLayout>
+            <DefaultLayout>
               <RedirectAuthenticatedUser>
                 <LoginPage />
               </RedirectAuthenticatedUser>
-            </LoginLayout>
+            </DefaultLayout>
           }
         />
         <Route

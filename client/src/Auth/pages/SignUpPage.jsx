@@ -26,6 +26,8 @@ const SignUpPage = () => {
 	};
 
 	return (
+		<div className="cont flex items-center justify-center relative overflow-hidden align-middle	">
+
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
@@ -82,6 +84,7 @@ const SignUpPage = () => {
 				</p>
 			</div>
 		</motion.div>
+		</div>
 	);
 };
 
