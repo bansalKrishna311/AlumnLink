@@ -76,21 +76,21 @@ const App = () => {
         <Route
           path="/signup"
           element={
-            <DefaultLayout>
+            <LoginLayout>
               <RedirectAuthenticatedUser>
                 <SignUpPage />
               </RedirectAuthenticatedUser>
-            </DefaultLayout>
+            </LoginLayout>
           }
         />
         <Route
           path="/login"
           element={
-            <DefaultLayout>
+            <LoginLayout>
               <RedirectAuthenticatedUser>
                 <LoginPage />
               </RedirectAuthenticatedUser>
-            </DefaultLayout>
+            </LoginLayout>
           }
         />
         <Route
