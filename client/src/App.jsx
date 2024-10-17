@@ -14,6 +14,7 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./Auth/store/authStore";
 import LoginLayout from "./Auth/LoginLayout";
 import ContactForm from "./Sides/Landing/Pages/ContactPage/ContactUs";
+import Demo_Layout from "./Sides/Demo_LayOut";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -65,10 +66,10 @@ const App = () => {
     <Route
           path="/Request-Demo"
           element={
-            <DefaultLayout>
+            <Demo_Layout>
               <PageTitle title="Contact || AlumnLink" />
               <ContactForm/>
-            </DefaultLayout>
+            </Demo_Layout>
           }
         />
 
