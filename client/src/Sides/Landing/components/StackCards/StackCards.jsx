@@ -103,7 +103,7 @@ const StackCards = () => {
       <ParticlesComponent theme="light" />
 
       {/* Action Section as Navbar */}
-      <div className='bg-base-[#ECF2FF] pb-5 pt-14 sm:opacity-0 md:opacity-100 opacity-0'>
+      <div className='bg-base-[#ECF2FF] pb-5 pt-2 sm:opacity-0 md:opacity-100 opacity-0'>
         <div className="flex items-center justify-start space-x-6 p-3 bg-white rounded-lg shadow-md overflow-x-auto mx-6 relative">
           <div className="absolute left-0 top-0 bottom-0 w-2 bg-started rounded-l-full"></div>
           <div className="flex items-center bg-[#DFC5FE] rounded-full p-2 ml-6">
