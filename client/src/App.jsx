@@ -4,6 +4,7 @@ import DefaultLayout from './Sides/Landing/DefaultLayout';
 import LandHome from './Sides/Landing/Pages/Home/LandHome';
 import PageTitle from './PageTitle';
 import Loader from './Loader';
+import LoginPage from './Sides/Landing/components/Login/Signup/LoginPage';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,16 @@ const App = () => {
               </DefaultLayout>
             }
           />
+          <Route
+          path='/Get-Started'
+         element={
+              
+              <>
+                <PageTitle title="Get Started || AlumnLink" />
+                <LoginPage />
+            
+              </>
+            }/>
           {/* Additional routes can be added here */}
         </Routes>
       )}
