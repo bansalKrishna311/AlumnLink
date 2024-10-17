@@ -4,8 +4,8 @@
 	"description": "",
 	"main": "backend/index.js",
 	"scripts": {
-		"dev": " nodemon backend/index.js",
-		"start": "NODE_ENV=production node backend/index.js",
+	 "dev": "nodemon index.js",
+		"start": "node index.js",
 		"build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
 	},
 	"keywords": [],
