@@ -58,7 +58,7 @@ const Hero = () => {
             AlumnLink offers a unique platform to engage with alumni networks, share<br /> experiences, and collaborate on projects that enhance career <br />development and professional growth.
           </p>
 
-          <div className='flex justify-start me-5'>
+          <div className='-ms-80 '>
             <Btn />
           </div>
         </div>

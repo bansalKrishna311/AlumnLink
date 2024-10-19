@@ -19,16 +19,17 @@ const Btn = () => {
   ];
 
   return (
-    <div className="py-35 flex items-center justify-center z-50 sm:px-8 md:px-8">
+    <div className="py-35 flex items-center justify-center z-10 sm:px-8 md:px-8 ">
       <Modal>
-        <ModalTrigger>
-          <div>
-            <a className="btn rounded-full px-12 transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-started text-white flex items-center">
-              Get Started
-              <FiArrowRight className="ml-2 h-5 w-5" />
-            </a>
-          </div>
-        </ModalTrigger>
+      <ModalTrigger>
+  <div>
+    <a className="flex items-center justify-center rounded-full px-12 py-3 bg-started text-white transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white">
+      Get Started
+      <FiArrowRight className="ml-2 h-5 w-5" />
+    </a>
+  </div>
+</ModalTrigger>
+
 
         <ModalBody className="mt-10">
           <ModalContent className="z-50 " >
