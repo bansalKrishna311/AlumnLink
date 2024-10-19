@@ -9,12 +9,12 @@ const Hero = () => {
     <div className="hero md:pt-16">
       <ParticlesComponent />
 
-      <div className="hero-content flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24">
+      <div className="flex flex-col lg:flex-row-reverse align-middle justify-center items-center gap-24 hero-content">
         <div className='max-w-full mt-14'>
           <Features />
         </div>
 
-        <div className='lg:mt-14 md:mt-0 relative '>
+        <div className='lg:mt-14 md:mt-0 relative'>
           <h1 className="font-bold flex items-center">
             <span className='text-[#6b21a8] me-2 text-[28px] sm:text-[40px] md:text-[52px]'>Unlock</span>
             <p className='text-[28px] sm:text-[48px] md:text-[52px]'>Your Network</p>
@@ -59,7 +59,7 @@ const Hero = () => {
           </p>
 
           <div className='flex justify-start me-5'>
-            <Btn/>
+            <Btn />
           </div>
         </div>
       </div>

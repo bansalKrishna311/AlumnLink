@@ -43,15 +43,8 @@ export default {
     },
   },
   plugins: [
-    require('daisyui'),
     addVariablesForColors,
   ],
-  daisyui: {
-    themes: [
-      'light',
-      'dark',
-    ],
-  },
   variants: {
     extend: {
       scrollBehavior: ['responsive'],

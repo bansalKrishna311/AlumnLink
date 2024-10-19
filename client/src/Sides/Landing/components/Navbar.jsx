@@ -9,6 +9,7 @@ const Navbar = () => {
   const [theme, setTheme] = useState('light');
   const [scrolling, setScrolling] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown visibility
 
   useEffect(() => {
     document.querySelector('html').setAttribute('data-theme', theme);
@@ -34,16 +35,20 @@ const Navbar = () => {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prevState) => !prevState); // Toggle dropdown visibility
+  };
+
   return (
     <>
-      <ParticlesComponent theme={theme} /> {/* Pass theme prop here */}
+      <ParticlesComponent theme={theme} /> 
       <div 
-        className={`navbar bg-base-100 px-4 md:px-8 lg:px-32 border-b-[0.5px] fixed top-0 left-0 w-full z-30 transition-all duration-300 ease-in-out ${scrolling ? 'shadow-lg bg-opacity-80 backdrop-blur-md' : ''}`} 
+        className={`bg-base-100 px-4 md:px-8 lg:px-32 border-b-[0.5px] fixed top-0 left-0 w-full z-30 transition-all duration-300 ease-in-out ${scrolling ? 'shadow-lg bg-opacity-80 backdrop-blur-md' : ''}`} 
         style={{
           borderBottomColor: theme === 'light' ? 'rgba(128, 128, 128, 0.5)' : 'rgba(128, 128, 128, 0.3)',
         }}
       >
-        <div className="navbar-start">
+        <div className="flex justify-between items-center h-16">
           <a>
             <img 
               className="w-36 md:w-52 transition-transform duration-300 ease-in-out hover:scale-105" 
@@ -51,30 +56,41 @@ const Navbar = () => {
               alt="Logo" 
             />
           </a>
-        </div>
 
-        <div className="navbar-end flex items-center gap-4">
-          {/* Render AnimatedModalDemo only on larger screens */}
-          {!isMobile && <AnimatedModalDemo />}
-          <div className="flex-none">
-            <div className="dropdown dropdown-end">
-              <button tabIndex={0} className="btn btn-square btn-ghost transition-transform duration-300 ease-in-out hover:scale-105">
+          <div className="flex items-center gap-4">
+            {/* Render AnimatedModalDemo only on larger screens */}
+            {!isMobile && <AnimatedModalDemo />}
+            <div className="relative">
+              <button
+                onClick={toggleDropdown} // Toggle the dropdown on click
+                className="flex items-center p-2 transition-transform duration-300 ease-in-out hover:scale-105"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block h-5 w-5 stroke-current">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                 </svg>
               </button>
-              <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-60 p-2 shadow transition-all duration-300 ease-in-out">
-                <li>
-                  <button onClick={toggleTheme} className="btn flex items-center gap-3 transition-transform duration-300 ease-in-out hover:scale-105">
-                    {theme === 'light' ? (
-                      <FiMoon className="h-5 w-5 mr-2 text-gray-600" />
-                    ) : (
-                      <FiSun className="h-5 w-5 mr-2 text-yellow-500" />
-                    )}
-                    <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-                  </button>
-                </li>
-              </ul>
+
+              {/* Dropdown menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
+                  <ul className="py-2">
+                    <li>
+                      <button
+                        onClick={toggleTheme}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                      >
+                        {theme === 'light' ? (
+                          <FiMoon className="h-5 w-5 text-gray-600" />
+                        ) : (
+                          <FiSun className="h-5 w-5 text-yellow-500" />
+                        )}
+                        <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+                      </button>
+                    </li>
+                    {/* Add more dropdown options here if needed */}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>

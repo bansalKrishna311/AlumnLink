@@ -4,77 +4,94 @@ import { Mail, Lock, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuthStore } from "../store/authStore";
+import Login from '../../assets/Login.png';
+import icon from '../../assets/login-icon.webp';
 
 const LoginPage = () => {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-	const { login, isLoading, error } = useAuthStore();
+    const { login, isLoading, error } = useAuthStore();
 
-	const handleLogin = async (e) => {
-		e.preventDefault();
-		await login(email, password);
-	};
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        await login(email, password);
+    };
 
-	return (
-		<div className="cont flex items-center justify-center relative overflow-hidden">
-		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5 }}
-			className='max-w-md w-full bg-[#3f0a40] bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
-		>
-			<div className='p-8'>
-				<h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-[#6b21a8] to-[#440065] text-transparent bg-clip-text'>
-					Welcome Back
-				</h2>
+    return (
+        <div className="flex items-center justify-center h-full lg:h-[90vh] p-2 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
+            <div className="flex flex-col lg:flex-row w-full h-full max-w-6xl overflow-hidden">
+                {/* Left Side - Image Section */}
+                <div className="w-full lg:w-1/2 h-full hidden lg:block">
+                    <img
+                        src={Login}
+                        alt="Visual Representation"
+                        className="w-[26vw] h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
+                    />
+                </div>
 
-				<form onSubmit={handleLogin}>
-					<Input
-						icon={Mail}
-						type='email'
-						placeholder='Email Address'
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-					/>
+                {/* Right Side - Login Form */}
+                <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full lg:w-1/2 h-full flex items-center justify-center p-8 bg-opacity-50 backdrop-filter backdrop-blur-xl"
+                >
+                    <div className="w-full lg:w-[26vw]">
+                        <div className="flex items-center mb-6 justify-center">
+                            <img className="w-10 me-2" src={icon} alt="" />
+                            <h2 className="text-2xl font-medium text-center text-gray-800">
+                                Welcome Back to AlumnLink!
+                            </h2>
+                        </div>
 
-					<Input
-						icon={Lock}
-						type='password'
-						placeholder='Password'
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-					/>
+                        <form onSubmit={handleLogin}>
+                            <Input
+                                icon={Mail}
+                                type="email"
+                                placeholder="Email Address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
 
-					<div className='flex items-center mb-6'>
-						<Link to='/forgot-password' className='text-sm text-[#6b21a8] hover:underline'>
-							Forgot password?
-						</Link>
-					</div>
-					{error && <p className='text-red-500 font-semibold mb-2'>{error}</p>}
+                            <Input
+                                icon={Lock}
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
 
-					<motion.button
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
-						className='w-full py-3 px-4 bg-gradient-to-r from-[#6b21a8] to-[#440065] text-white font-bold rounded-lg shadow-lg hover:from-[#440065] hover:to-[#6b21a8] focus:outline-none focus:ring-2 focus:ring-[#6b21a8] focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200'
-						type='submit'
-						disabled={isLoading}
-					>
-						{isLoading ? <Loader className='w-6 h-6 animate-spin mx-auto' /> : "Login"}
-					</motion.button>
-				</form>
-			</div>
-			<div className='px-8 py-4 bg-[#440065] bg-opacity-50 flex justify-center'>
-				<p className='text-sm text-gray-400'>
-					Don't have an account?{" "}
-					<Link to='/signup' className='text-[#6b21a8] hover:underline'>
-						Sign up
-					</Link>
-				</p>
-			</div>
-		</motion.div>
-		</div>
-	);
+                            <div className="flex items-center mb-6">
+                                <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                            {error && <p className="text-red-500 font-semibold mb-2">{error}</p>}
+
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full py-3 px-4 bg-[#DFDFDF] text-slate-600 font-bold rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200"
+                                type="submit"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <Loader className="w-6 h-6 animate-spin mx-auto" /> : "Login"}
+                            </motion.button>
+                        </form>
+                        <div className="mt-6 text-center">
+                            <p className="text-md text-gray-600 border-2 border-opacity-20 p-3 rounded-full border-slate-500">
+                                Don't have an account?{" "}
+                                <Link to="/signup" className="text-blue-600 hover:underline">
+                                    Sign up
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+    );
 };
 
 export default LoginPage;
