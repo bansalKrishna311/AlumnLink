@@ -14,7 +14,8 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./Auth/store/authStore";
 import LoginLayout from "./Auth/LoginLayout";
 import ContactForm from "./Sides/Landing/Pages/ContactPage/ContactUs";
-import Demo_Layout from "./Sides/Demo_LayOut";
+import Demo_Layout from './Sides/Demo_Layout';
+
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
