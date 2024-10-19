@@ -3,7 +3,7 @@ import React from 'react';
 const ContactForm = () => {
   return (
     <div className="flex justify-center items-center min-h-screen ">
-      <form className=" p-8 rounded  w-full max-w-6xl" method='post' action='https://script.google.com/macros/s/AKfycbwZnN4cyWtQi8odasULT9EC-PnYx8DLyAhb8vJSmF9CRaQ0uSbwBEWUsntrmmmfLetI/exec'>
+      <form className=" p-8 rounded  w-full max-w-6xl" method='post' action='https://script.google.com/macros/s/AKfycbw54DoF1_yIZSHWNuhiw-u_CDJ62-lBhYxgEWlrhpkOpd1rnRxQUxsZR-28qk8SlY_6/exec'>
         <h2 className="text-2xl font-semibold mb-2">Schedule a Call</h2>
         <p className="text-gray-600 mb-6">
           Please drop your details here and our customer advisor will reach out to you for demo and other details
