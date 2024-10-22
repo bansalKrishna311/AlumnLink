@@ -81,7 +81,16 @@ const EmailVerificationPage = () => {
 				>
 					<div className="w-full lg:w-[26vw]">
 						<div className="flex items-center mb-6 justify-center">
-							<img className="w-10 me-2" src={icon} alt="Verification Icon" />
+							<motion.img
+								className="w-10 me-2"
+								src={icon}
+								alt="Verification Icon"
+								animate={{
+									rotate: [0, 15, 0, -15, 0], // Add waving effect
+									transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
+								}}
+								style={{ transformOrigin: "70% 70%" }} // Adjust pivot point for waving effect
+							/>
 							<h2 className="text-2xl font-medium text-center text-gray-800">
 								Verify Your Email
 							</h2>

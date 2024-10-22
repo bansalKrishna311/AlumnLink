@@ -39,7 +39,16 @@ const LoginPage = () => {
                 >
                     <div className="w-full lg:w-[26vw]">
                         <div className="flex items-center mb-6 justify-center">
-                            <img className="w-10 me-2" src={icon} alt="" />
+                            <motion.img
+                                className="w-10 me-2"
+                                src={icon}
+                                alt="Hand waving"
+                                animate={{
+                                    rotate: [0, 15, 0, -15, 0], // rotation angles
+                                    transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }, // repeat animation
+                                }}
+                                style={{ transformOrigin: "70% 70%" }} // pivot point for waving effect
+                            />
                             <h2 className="text-2xl font-medium text-center text-gray-800">
                                 Welcome Back to AlumnLink!
                             </h2>
