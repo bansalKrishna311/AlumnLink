@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { useAuthStore } from "../store/authStore";
-import Login from '../../assets/Login.png'; // You might want to replace this with a suitable image for SignUp
-import icon from '../../assets/login-icon.webp'; // Using the same icon as in the LoginPage
+import Login from "../../assets/login.png"; // Update with your image path
+import icon from "../../assets/login-icon.webp";// Update with your icon path
 
 const SignUpPage = () => {
 	const [name, setName] = useState("");
@@ -18,7 +18,6 @@ const SignUpPage = () => {
 
 	const handleSignUp = async (e) => {
 		e.preventDefault();
-
 		try {
 			await signup(email, password, name);
 			navigate("/verify-email");
@@ -30,10 +29,11 @@ const SignUpPage = () => {
 	return (
 		<div className="flex items-center justify-center h-full lg:h-[90vh] p-2 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
 			<div className="flex flex-col lg:flex-row w-full h-full max-w-6xl overflow-hidden">
+				
 				{/* Left Side - Image Section */}
 				<div className="w-full lg:w-1/2 h-full hidden lg:block">
 					<img
-						src={Login} // Change this if you have a specific signup image
+						src={Login}
 						alt="Visual Representation"
 						className="w-[26vw] h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
 					/>
@@ -53,10 +53,10 @@ const SignUpPage = () => {
 								alt="Waving Icon"
 								className="w-10 me-2"
 								animate={{
-									rotate: [0, 15, 0, -15, 0], // Add waving effect
+									rotate: [0, 15, 0, -15, 0],
 									transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
 								}}
-								style={{ transformOrigin: "70% 70%" }} // Adjust pivot point for waving effect
+								style={{ transformOrigin: "70% 70%" }}
 							/>
 							<h2 className="text-2xl font-medium text-center text-gray-800">
 								Create Account

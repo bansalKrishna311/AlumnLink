@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader } from "lucide-react"; // Import Loader for loading state
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
-import Login from '../../assets/Login.png'; // Import the login image
-import icon from '../../assets/login-icon.webp'; // Add your icon here
+import Login from "../../assets/Login.png"; // Replace with actual image path
+import icon from "../../assets/login-icon.webp"; // Replace with actual icon path
 
 const EmailVerificationPage = () => {
 	const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -17,19 +16,20 @@ const EmailVerificationPage = () => {
 	const handleChange = (index, value) => {
 		const newCode = [...code];
 
-		// Handle pasted content
 		if (value.length > 1) {
 			const pastedCode = value.slice(0, 6).split("");
 			for (let i = 0; i < 6; i++) {
 				newCode[i] = pastedCode[i] || "";
 			}
 			setCode(newCode);
+
 			const lastFilledIndex = newCode.findLastIndex((digit) => digit !== "");
 			const focusIndex = lastFilledIndex < 5 ? lastFilledIndex + 1 : 5;
 			inputRefs.current[focusIndex].focus();
 		} else {
 			newCode[index] = value;
 			setCode(newCode);
+
 			if (value && index < 5) {
 				inputRefs.current[index + 1].focus();
 			}
@@ -86,10 +86,10 @@ const EmailVerificationPage = () => {
 								src={icon}
 								alt="Verification Icon"
 								animate={{
-									rotate: [0, 15, 0, -15, 0], // Add waving effect
+									rotate: [0, 15, 0, -15, 0],
 									transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
 								}}
-								style={{ transformOrigin: "70% 70%" }} // Adjust pivot point for waving effect
+								style={{ transformOrigin: "70% 70%" }}
 							/>
 							<h2 className="text-2xl font-medium text-center text-gray-800">
 								Verify Your Email
@@ -106,7 +106,7 @@ const EmailVerificationPage = () => {
 										key={index}
 										ref={(el) => (inputRefs.current[index] = el)}
 										type="text"
-										maxLength="1" // Allow only a single character input
+										maxLength="1"
 										value={digit}
 										onChange={(e) => handleChange(index, e.target.value)}
 										onKeyDown={(e) => handleKeyDown(index, e)}
