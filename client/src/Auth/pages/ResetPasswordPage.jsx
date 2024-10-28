@@ -10,7 +10,6 @@ const ResetPasswordPage = () => {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const { resetPassword, error, isLoading, message } = useAuthStore();
-
 	const { token } = useParams();
 	const navigate = useNavigate();
 
