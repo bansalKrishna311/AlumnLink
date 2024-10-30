@@ -57,7 +57,7 @@ h2 {
 }
 
 .google-login,
-.linkedin-login,
+.AlumnLink-login,
 .login-button {
     width: 100%;
     padding: 10px;
@@ -76,7 +76,7 @@ h2 {
     color: white;
 }
 
-.linkedin-login {
+.AlumnLink-login {
     background-color: #0077b5;
     color: white;
 }
