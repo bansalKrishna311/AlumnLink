@@ -12,6 +12,8 @@ import NetworkPage from "./pages/NetworkPage";
 import PostPage from "./pages/PostPage";
 import ProfilePage from "./pages/ProfilePage";
 
+
+
 function App() {
 	const { data: authUser, isLoading } = useQuery({
 		queryKey: ["authUser"],
