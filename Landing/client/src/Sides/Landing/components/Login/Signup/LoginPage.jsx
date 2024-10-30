@@ -17,7 +17,7 @@ function LoginPage() {
           <h2>Welcome Back to AlumnLink!</h2>
           {/* hello */}
           <button className="google-login">Continue with Google</button>
-          <button className="linkedin-login">Login with LinkedIn</button>
+          <button className="AlumnLink-login">Login with AlumnLink</button>
           <div className="divider">Or login with email</div>
           <form className="login-form">
             <input type="email" placeholder="Email Id" required />
