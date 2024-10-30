@@ -107,6 +107,8 @@ const Post = ({ post }) => {
 							<p className='text-xs text-info'>
 								{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
 							</p>
+							{/* Display the post type here */}
+							<p className='text-xs text-accent font-medium mt-1'>Type: {post.type}</p>
 						</div>
 					</div>
 					{isOwner && (
@@ -120,7 +122,7 @@ const Post = ({ post }) => {
 
 				<div className='flex justify-between text-info'>
 					<PostAction
-						icon={<ThumbsUp size={18} className={isLiked ? "text-blue-500  fill-blue-300" : ""} />}
+						icon={<ThumbsUp size={18} className={isLiked ? "text-blue-500 fill-blue-300" : ""} />}
 						text={`Like (${post.likes.length})`}
 						onClick={handleLikePost}
 					/>
@@ -179,4 +181,5 @@ const Post = ({ post }) => {
 		</div>
 	);
 };
+
 export default Post;

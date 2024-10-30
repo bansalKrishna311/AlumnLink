@@ -10,23 +10,23 @@ import { useState } from "react";
 const HomePage = () => {
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-    const [searchQuery, setSearchQuery] = useState(""); // State for the search query
-    const [offset, setOffset] = useState(0); // State to track the offset
-    const [limit, setLimit] = useState(3); // State for limit, starts at 3
-    const [isLoading, setIsLoading] = useState(false); // State for loading
+    const [searchQuery, setSearchQuery] = useState("");
+    const [offset, setOffset] = useState(0);
+    const [limit, setLimit] = useState(3);
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedType, setSelectedType] = useState("all"); // State for the selected post type
 
     const { data: recommendedUsers, refetch } = useQuery({
-        queryKey: ["recommendedUsers", searchQuery, offset, limit], // Include limit in query key
+        queryKey: ["recommendedUsers", searchQuery, offset, limit],
         queryFn: async () => {
-            setIsLoading(true); // Set loading state
+            setIsLoading(true);
             const res = await axiosInstance.get("/users/suggestions", {
-                params: { search: searchQuery, offset, limit }, // Include limit in params
+                params: { search: searchQuery, offset, limit },
             });
-            setIsLoading(false); // Reset loading state
+            setIsLoading(false);
             return res.data;
         },
-        // Refetch data on search query change or offset/limit change
-        keepPreviousData: true, 
+        keepPreviousData: true,
     });
 
     const { data: posts } = useQuery({
@@ -38,16 +38,23 @@ const HomePage = () => {
     });
 
     const handleShowMore = () => {
-        setLimit((prevLimit) => prevLimit + 3); // Increase limit by 3
-        refetch(); // Refetch recommended users
+        setLimit((prevLimit) => prevLimit + 3);
+        refetch();
     };
 
     const handleSearch = (e) => {
-        setSearchQuery(e.target.value); // Update the search query
-        setOffset(0); // Reset offset when searching
-        setLimit(3); // Reset limit to 3 when a new search is initiated
-        refetch(); // Refetch recommended users with the new search query
+        setSearchQuery(e.target.value);
+        setOffset(0);
+        setLimit(3);
+        refetch();
     };
+
+    const handleTypeChange = (type) => {
+        setSelectedType(type); // Update selected type
+    };
+
+    // Filter posts based on the selected type
+    const filteredPosts = selectedType === "all" ? posts : posts?.filter(post => post.type === selectedType);
 
     return (
         <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
@@ -58,11 +65,25 @@ const HomePage = () => {
             <div className='col-span-1 lg:col-span-2 order-first lg:order-none'>
                 <PostCreation user={authUser} />
 
-                {posts?.map((post) => (
+                {/* Post Type Filters */}
+                <div className='flex space-x-4 mb-4'>
+                    {["all","discussion", "job", "internship", "event","personal","other"].map((type) => (
+                        <div
+                            key={type}
+                            className={`p-2 border rounded-lg cursor-pointer hover:bg-gray-200 ${selectedType === type ? 'bg-gray-300 font-semibold' : ''}`}
+                            onClick={() => handleTypeChange(type)}
+                        >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Display Filtered Posts */}
+                {filteredPosts?.map((post) => (
                     <Post key={post._id} post={post} />
                 ))}
 
-                {posts?.length === 0 && (
+                {filteredPosts?.length === 0 && (
                     <div className='bg-white rounded-lg shadow p-8 text-center'>
                         <div className='mb-6'>
                             <Users size={64} className='mx-auto text-blue-500' />
@@ -90,7 +111,7 @@ const HomePage = () => {
                         <button 
                             onClick={handleShowMore} 
                             className='mt-2 text-blue-500' 
-                            disabled={isLoading} // Disable button when loading
+                            disabled={isLoading}
                         >
                             {isLoading ? "Loading..." : "Show More"}
                         </button>
