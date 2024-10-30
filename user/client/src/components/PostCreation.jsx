@@ -78,7 +78,7 @@ const PostCreation = ({ user }) => {
 		<>
 			{/* Post Type Cards */}
 			<div className="grid grid-cols-2 gap-4 mb-4">
-				{["discussion", "job", "internship", "event","personal","other"].map((postType) => (
+				{["discussion", "job", "internship", "event","personal","Other"].map((postType) => (
 					<div
 						key={postType}
 						className="p-4 border rounded-lg cursor-pointer hover:bg-gray-200 flex items-center justify-center"
