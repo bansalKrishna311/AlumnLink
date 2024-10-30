@@ -9,6 +9,7 @@ const PostCreation = ({ user }) => {
 	const [image, setImage] = useState(null);
 	const [imagePreview, setImagePreview] = useState(null);
 	const [type, setType] = useState("discussion");
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const queryClient = useQueryClient();
 
@@ -31,8 +32,7 @@ const PostCreation = ({ user }) => {
 
 	const handlePostCreation = async () => {
 		try {
-			// Include the type in postData
-			const postData = { content, type }; 
+			const postData = { content, type };
 
 			if (image) postData.image = await readFileAsDataURL(image);
 
@@ -47,6 +47,7 @@ const PostCreation = ({ user }) => {
 		setImage(null);
 		setImagePreview(null);
 		setType("discussion");
+		setIsModalOpen(false);
 	};
 
 	const handleImageChange = (e) => {
@@ -68,52 +69,82 @@ const PostCreation = ({ user }) => {
 		});
 	};
 
+	const handleCardClick = (postType) => {
+		setType(postType);
+		setIsModalOpen(true);
+	};
+
 	return (
-		<div className='bg-secondary rounded-lg shadow mb-4 p-4'>
-			<div className='flex space-x-3'>
-				<img src={user.profilePicture || "/avatar.png"} alt={user.name} className='size-12 rounded-full' />
-				<textarea
-					placeholder="What's on your mind?"
-					className='w-full p-3 rounded-lg bg-base-100 hover:bg-base-200 focus:bg-base-200 focus:outline-none resize-none transition-colors duration-200 min-h-[100px]'
-					value={content}
-					onChange={(e) => setContent(e.target.value)}
-				/>
+		<>
+			{/* Post Type Cards */}
+			<div className="flex space-x-4 mb-4">
+				{["discussion", "job", "internship", "event"].map((postType) => (
+					<div
+						key={postType}
+						className="p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+						onClick={() => handleCardClick(postType)}
+					>
+						{postType.charAt(0).toUpperCase() + postType.slice(1)}
+					</div>
+				))}
 			</div>
 
-			{imagePreview && (
-				<div className='mt-4'>
-					<img src={imagePreview} alt='Selected' className='w-full h-auto rounded-lg' />
+			{/* Modal for post creation */}
+			{isModalOpen && (
+				<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+					<div className="bg-white rounded-lg shadow-lg p-6 relative">
+						<button onClick={() => setIsModalOpen(false)} className="absolute top-2 right-2">
+							&times;
+						</button>
+						<div>
+							<div className='flex space-x-3'>
+								<img src={user.profilePicture || "/avatar.png"} alt={user.name} className='size-12 rounded-full' />
+								<textarea
+									placeholder="What's on your mind?"
+									className='w-full p-3 rounded-lg bg-base-100 hover:bg-base-200 focus:bg-base-200 focus:outline-none resize-none transition-colors duration-200 min-h-[100px]'
+									value={content}
+									onChange={(e) => setContent(e.target.value)}
+								/>
+							</div>
+
+							{imagePreview && (
+								<div className='mt-4'>
+									<img src={imagePreview} alt='Selected' className='w-full h-auto rounded-lg' />
+								</div>
+							)}
+
+							<div className='flex justify-between items-center mt-4'>
+								<div className='flex space-x-4'>
+									<label className='flex items-center text-info hover:text-info-dark transition-colors duration-200 cursor-pointer'>
+										<Image size={20} className='mr-2' />
+										<span>Photo</span>
+										<input type='file' accept='image/*' className='hidden' onChange={handleImageChange} />
+									</label>
+									<select
+										value={type}
+										onChange={(e) => setType(e.target.value)}
+										className='bg-base-100 rounded-lg p-2'
+									>
+										<option value="discussion">Discussion</option>
+										<option value="job">Job</option>
+										<option value="internship">Internship</option>
+										<option value="event">Event</option>
+									</select>
+								</div>
+
+								<button
+									className='bg-primary text-white rounded-lg px-4 py-2 hover:bg-primary-dark transition-colors duration-200'
+									onClick={handlePostCreation}
+									disabled={isPending}
+								>
+									{isPending ? <Loader className='size-5 animate-spin' /> : "Share"}
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
-
-			<div className='flex justify-between items-center mt-4'>
-				<div className='flex space-x-4'>
-					<label className='flex items-center text-info hover:text-info-dark transition-colors duration-200 cursor-pointer'>
-						<Image size={20} className='mr-2' />
-						<span>Photo</span>
-						<input type='file' accept='image/*' className='hidden' onChange={handleImageChange} />
-					</label>
-					<select
-						value={type}
-						onChange={(e) => setType(e.target.value)}
-						className='bg-base-100 rounded-lg p-2'
-					>
-						<option value="discussion">Discussion</option>
-						<option value="job">Job</option>
-						<option value="internship">Internship</option>
-						<option value="event">Event</option>
-					</select>
-				</div>
-
-				<button
-					className='bg-primary text-white rounded-lg px-4 py-2 hover:bg-primary-dark transition-colors duration-200'
-					onClick={handlePostCreation}
-					disabled={isPending}
-				>
-					{isPending ? <Loader className='size-5 animate-spin' /> : "Share"}
-				</button>
-			</div>
-		</div>
+		</>
 	);
 };
 
