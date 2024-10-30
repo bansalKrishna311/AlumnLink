@@ -1,26 +1,60 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 
+// export const getSuggestedConnections = async (req, res) => {
+// 	try {
+// 		const currentUser = await User.findById(req.user._id).select("connections");
+
+// 		// find users who are not already connected, and also do not recommend our own profile!! right?
+// 		const suggestedUser = await User.find({
+// 			_id: {
+// 				$ne: req.user._id,
+// 				$nin: currentUser.connections,
+// 			},
+// 		})
+// 			.select("name username profilePicture headline")
+// 			.limit(3);
+
+// 		res.json(suggestedUser);
+// 	} catch (error) {
+// 		console.error("Error in getSuggestedConnections controller:", error);
+// 		res.status(500).json({ message: "Server error" });
+// 	}
+// };
+
+
 export const getSuggestedConnections = async (req, res) => {
-	try {
-		const currentUser = await User.findById(req.user._id).select("connections");
+    try {
+        const currentUser = await User.findById(req.user._id).select("connections");
 
-		// find users who are not already connected, and also do not recommend our own profile!! right?
-		const suggestedUser = await User.find({
-			_id: {
-				$ne: req.user._id,
-				$nin: currentUser.connections,
-			},
-		})
-			.select("name username profilePicture headline")
-			.limit(3);
+        // Default pagination parameters
+        const limit = parseInt(req.query.limit) || 3; // Number of users to return
+        const offset = parseInt(req.query.offset) || 0; // Start fetching from this index
+        const search = req.query.search || ""; // Get the search term
 
-		res.json(suggestedUser);
-	} catch (error) {
-		console.error("Error in getSuggestedConnections controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+        const suggestedUser = await User.find({
+            _id: {
+                $ne: req.user._id,
+                $nin: currentUser.connections,
+            },
+            // Search filter
+            $or: [
+                { name: { $regex: search, $options: "i" } }, // Search by name (case-insensitive)
+                { username: { $regex: search, $options: "i" } } // Search by username (case-insensitive)
+            ]
+        })
+            .select("name username profilePicture headline")
+            .skip(offset)
+            .limit(limit);
+
+        res.json(suggestedUser);
+    } catch (error) {
+        console.error("Error in getSuggestedConnections controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
+
+
 
 export const getPublicProfile = async (req, res) => {
 	try {
