@@ -4,7 +4,6 @@ const postSchema = new mongoose.Schema(
 	{
 		author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 		content: { type: String },
-		
 		image: { type: String },
 		likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		comments: [
@@ -14,6 +13,11 @@ const postSchema = new mongoose.Schema(
 				createdAt: { type: Date, default: Date.now },
 			},
 		],
+		type: {
+			type: String,
+			enum: ["discussion", "job", "internship", "event"],
+			required: true,
+		},
 	},
 	{ timestamps: true }
 );

@@ -19,8 +19,13 @@ export const getFeedPosts = async (req, res) => {
 
 export const createPost = async (req, res) => {
 	try {
-		const { content, image } = req.body;
+		const { content, image, type } = req.body;
+
 		let newPost;
+
+		if (!["discussion", "job", "internship", "event"].includes(type)) {
+			return res.status(400).json({ message: "Invalid post type" });
+		}
 
 		if (image) {
 			const imgResult = await cloudinary.uploader.upload(image);
@@ -28,11 +33,13 @@ export const createPost = async (req, res) => {
 				author: req.user._id,
 				content,
 				image: imgResult.secure_url,
+				type,
 			});
 		} else {
 			newPost = new Post({
 				author: req.user._id,
 				content,
+				type,
 			});
 		}
 
@@ -44,6 +51,7 @@ export const createPost = async (req, res) => {
 		res.status(500).json({ message: "Server error" });
 	}
 };
+
 
 export const deletePost = async (req, res) => {
 	try {
