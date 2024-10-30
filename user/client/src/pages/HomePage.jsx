@@ -67,7 +67,7 @@ const HomePage = () => {
 
                 {/* Post Type Filters */}
                 <div className='flex space-x-4 mb-4'>
-                    {["all", "discussion", "job", "internship", "event"].map((type) => (
+                    {["all","discussion", "job", "internship", "event","personal","other"].map((type) => (
                         <div
                             key={type}
                             className={`p-2 border rounded-lg cursor-pointer hover:bg-gray-200 ${selectedType === type ? 'bg-gray-300 font-semibold' : ''}`}
