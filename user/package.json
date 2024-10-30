@@ -8,6 +8,8 @@
 		"start": "node backend/server.js",
 		"build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
 	},
+
+	
 	"keywords": [],
 	"author": "",
 	"type": "module",
