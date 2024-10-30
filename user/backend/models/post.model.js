@@ -15,7 +15,7 @@ const postSchema = new mongoose.Schema(
 		],
 		type: {
 			type: String,
-			enum: ["discussion", "job", "internship", "event"],
+			enum: ["discussion", "job", "internship", "event","personal","other"],
 			required: true,
 		},
 	},

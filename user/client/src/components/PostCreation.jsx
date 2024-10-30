@@ -77,14 +77,16 @@ const PostCreation = ({ user }) => {
 	return (
 		<>
 			{/* Post Type Cards */}
-			<div className="flex space-x-4 mb-4">
-				{["discussion", "job", "internship", "event"].map((postType) => (
+			<div className="grid grid-cols-2 gap-4 mb-4">
+				{["discussion", "job", "internship", "event","personal","other"].map((postType) => (
 					<div
 						key={postType}
-						className="p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+						className="p-4 border rounded-lg cursor-pointer hover:bg-gray-200 flex items-center justify-center"
 						onClick={() => handleCardClick(postType)}
 					>
-						{postType.charAt(0).toUpperCase() + postType.slice(1)}
+						<span className="text-lg font-semibold">
+							{postType.charAt(0).toUpperCase() + postType.slice(1)}
+						</span>
 					</div>
 				))}
 			</div>
@@ -129,6 +131,8 @@ const PostCreation = ({ user }) => {
 										<option value="job">Job</option>
 										<option value="internship">Internship</option>
 										<option value="event">Event</option>
+										<option value="event">Other</option>
+										<option value="personal">Personal</option>
 									</select>
 								</div>
 
