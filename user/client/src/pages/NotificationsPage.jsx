@@ -38,7 +38,7 @@ const NotificationsPage = () => {
 
 			case "comment":
 				return <MessageSquare className='text-green-500' />;
-			case "connectionAccepted":
+			case "LinkAccepted":
 				return <UserPlus className='text-purple-500' />;
 			default:
 				return null;
@@ -62,13 +62,13 @@ const NotificationsPage = () => {
 						commented on your post
 					</span>
 				);
-			case "connectionAccepted":
+			case "LinkAccepted":
 				return (
 					<span>
 						<Link to={`/profile/${notification.relatedUser.username}`} className='font-bold'>
 							{notification.relatedUser.name}
 						</Link>{" "}
-						accepted your connection request
+						accepted your Link request
 					</span>
 				);
 			default:

@@ -1,3 +1,4 @@
+// main server file
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -7,11 +8,14 @@ import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
 import notificationRoutes from "./routes/notification.route.js";
-import connectionRoutes from "./routes/connection.route.js";
+import LinkRoutes from "./routes/Link.route.js";
 
-import { connectDB } from "./lib/db.js";
+import connectDB from "./lib/db.js"; // Correct the import
 
 dotenv.config();
+
+// Connect to MongoDB before setting up the server
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,7 +37,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/posts", postRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
-app.use("/api/v1/connections", connectionRoutes);
+app.use("/api/v1/Links", LinkRoutes);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "/frontend/dist")));
@@ -43,8 +47,6 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
-	connectDB();
 });

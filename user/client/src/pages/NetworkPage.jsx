@@ -10,12 +10,12 @@ const NetworkPage = () => {
 
 	const { data: connectionRequests } = useQuery({
 		queryKey: ["connectionRequests"],
-		queryFn: () => axiosInstance.get("/connections/requests"),
+		queryFn: () => axiosInstance.get("/Links/requests"),
 	});
 
-	const { data: connections } = useQuery({
-		queryKey: ["connections"],
-		queryFn: () => axiosInstance.get("/connections"),
+	const { data: Links } = useQuery({
+		queryKey: ["Links"],
+		queryFn: () => axiosInstance.get("/Links"),
 	});
 
 	return (
@@ -44,15 +44,15 @@ const NetworkPage = () => {
 								You don&apos;t have any pending connection requests at the moment.
 							</p>
 							<p className='text-gray-600 mt-2'>
-								Explore suggested connections below to expand your network!
+								Explore suggested Links below to expand your network!
 							</p>
 						</div>
 					)}
-					{connections?.data?.length > 0 && (
+					{Links?.data?.length > 0 && (
 						<div className='mb-8'>
-							<h2 className='text-xl font-semibold mb-4'>My Connections</h2>
+							<h2 className='text-xl font-semibold mb-4'>My Links</h2>
 							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-								{connections.data.map((connection) => (
+								{Links.data.map((connection) => (
 									<UserCard key={connection._id} user={connection} isConnection={true} />
 								))}
 							</div>
