@@ -1,10 +1,10 @@
-import { useEffect } from "react"; // Import useEffect
+import { useEffect, useState } from "react"; // Import useEffect and useState
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { UserPlus, Loader } from "lucide-react";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import debounce from "lodash.debounce";
+import RecommendedUser from "../components/RecommendedUser"; // Import the RecommendedUser component
 
 const NetworkPage = () => {
 	const { data: user } = useQuery({ queryKey: ["authUser"] });
@@ -81,10 +81,7 @@ const NetworkPage = () => {
 						) : recommendedUsers?.length > 0 ? (
 							<div className="space-y-4">
 								{recommendedUsers.map((user) => (
-									<div key={user._id} className="p-4 border rounded-lg">
-										<h3 className="font-semibold">{user.name}</h3>
-										<p className="text-gray-600">{user.bio}</p>
-									</div>
+									<RecommendedUser key={user._id} user={user} /> 
 								))}
 							</div>
 						) : (
