@@ -56,6 +56,17 @@ const NetworkPage = () => {
 		fetchRecommendedUsers(newOffset);
 	};
 
+	const handleRemoveLink = async (linkId) => {
+		// Add logic to remove the link
+		await axiosInstance.delete(`/Links/${linkId}`);
+		queryClient.invalidateQueries("Links"); // Refetch Links data
+	};
+
+	const handleOpenUserAccount = (userId) => {
+		// Navigate to the user's account page
+		window.location.href = `/user/${userId}`;
+	};
+
 	return (
 		<div className='flex flex-col items-center'>
 			<div className='bg-secondary rounded-lg shadow p-6 mb-6 w-full max-w-2xl'>
@@ -130,12 +141,32 @@ const NetworkPage = () => {
 						{isModalOpen && (
 							<div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
 								<div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg">
-									<h2 className="text-xl font-semibold mb-4">Links</h2>
+									<h2 className="text-xl font-semibold mb-4">My Links</h2>
 									<div className="space-y-4 max-h-80 overflow-y-auto">
-										{Links.data.map((Link) => (
-											<div key={Link._id} className="p-4 border rounded-lg shadow-sm hover:shadow-md transition duration-200">
-												<h3 className="font-semibold">{Link.name}</h3>
-												<p className="text-gray-600">{Link.bio}</p>
+										{Links.data.map((link) => (
+											<div
+												key={link._id}
+												className="flex items-center justify-between p-4 border rounded-lg shadow-sm hover:shadow-md transition duration-200 cursor-pointer"
+												onClick={() => handleOpenUserAccount(link.userId)} // Assuming each link has a userId field
+											>
+												<img
+													src={link.profilePicture || "/avatar.png"} // Assuming link has userImage field
+													alt={link.name}
+													className="w-12 h-12 rounded-full mr-4"
+												/>
+												<div className="flex-1">
+													<h3 className="font-semibold">{link.name}</h3>
+													<p className="text-gray-600">{link.headline}</p> {/* Assuming link has a headline field */}
+												</div>
+												<button
+													className="text-red-500"
+													onClick={(e) => {
+														e.stopPropagation(); // Prevent opening the user account
+														handleRemoveLink(link._id);
+													}}
+												>
+													Remove
+												</button>
 											</div>
 										))}
 									</div>
