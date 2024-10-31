@@ -12,20 +12,20 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-	const { data: connectionStatus, refetch: refetchConnectionStatus } = useQuery({
-		queryKey: ["connectionStatus", userData._id],
-		queryFn: () => axiosInstance.get(`/connections/status/${userData._id}`),
+	const { data: Linkstatus, refetch: refetchLinkstatus } = useQuery({
+		queryKey: ["Linkstatus", userData._id],
+		queryFn: () => axiosInstance.get(`/Links/status/${userData._id}`),
 		enabled: !isOwnProfile,
 	});
 
-	const isConnected = userData.connections.some((connection) => connection === authUser._id);
+	const isLinked = userData.Links.some((Link) => Link === authUser._id);
 
-	const { mutate: sendConnectionRequest } = useMutation({
-		mutationFn: (userId) => axiosInstance.post(`/connections/request/${userId}`),
+	const { mutate: sendLinkRequest } = useMutation({
+		mutationFn: (userId) => axiosInstance.post(`/Links/request/${userId}`),
 		onSuccess: () => {
-			toast.success("Connection request sent");
-			refetchConnectionStatus();
-			queryClient.invalidateQueries(["connectionRequests"]);
+			toast.success("Link request sent");
+			refetchLinkstatus();
+			queryClient.invalidateQueries(["LinkRequests"]);
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.message || "An error occurred");
@@ -33,11 +33,11 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 	});
 
 	const { mutate: acceptRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/accept/${requestId}`),
+		mutationFn: (requestId) => axiosInstance.put(`/Links/accept/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request accepted");
-			refetchConnectionStatus();
-			queryClient.invalidateQueries(["connectionRequests"]);
+			toast.success("Link request accepted");
+			refetchLinkstatus();
+			queryClient.invalidateQueries(["LinkRequests"]);
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.message || "An error occurred");
@@ -45,51 +45,51 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 	});
 
 	const { mutate: rejectRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/reject/${requestId}`),
+		mutationFn: (requestId) => axiosInstance.put(`/Links/reject/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request rejected");
-			refetchConnectionStatus();
-			queryClient.invalidateQueries(["connectionRequests"]);
+			toast.success("Link request rejected");
+			refetchLinkstatus();
+			queryClient.invalidateQueries(["LinkRequests"]);
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.message || "An error occurred");
 		},
 	});
 
-	const { mutate: removeConnection } = useMutation({
-		mutationFn: (userId) => axiosInstance.delete(`/connections/${userId}`),
+	const { mutate: removeLink } = useMutation({
+		mutationFn: (userId) => axiosInstance.delete(`/Links/${userId}`),
 		onSuccess: () => {
-			toast.success("Connection removed");
-			refetchConnectionStatus();
-			queryClient.invalidateQueries(["connectionRequests"]);
+			toast.success("Link removed");
+			refetchLinkstatus();
+			queryClient.invalidateQueries(["LinkRequests"]);
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.message || "An error occurred");
 		},
 	});
 
-	const getConnectionStatus = useMemo(() => {
-		if (isConnected) return "connected";
-		if (!isConnected) return "not_connected";
-		return connectionStatus?.data?.status;
-	}, [isConnected, connectionStatus]);
+	const getLinkstatus = useMemo(() => {
+		if (isLinked) return "Linked";
+		if (!isLinked) return "not_Linked";
+		return Linkstatus?.data?.status;
+	}, [isLinked, Linkstatus]);
 
-	const renderConnectionButton = () => {
+	const renderLinkButton = () => {
 		const baseClass = "text-white py-2 px-4 rounded-full transition duration-300 flex items-center justify-center";
-		switch (getConnectionStatus) {
-			case "connected":
+		switch (getLinkstatus) {
+			case "Linked":
 				return (
 					<div className='flex gap-2 justify-center'>
 						<div className={`${baseClass} bg-green-500 hover:bg-green-600`}>
 							<UserCheck size={20} className='mr-2' />
-							Connected
+							Linked
 						</div>
 						<button
 							className={`${baseClass} bg-red-500 hover:bg-red-600 text-sm`}
-							onClick={() => removeConnection(userData._id)}
+							onClick={() => removeLink(userData._id)}
 						>
 							<X size={20} className='mr-2' />
-							Remove Connection
+							Remove Link
 						</button>
 					</div>
 				);
@@ -106,13 +106,13 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 				return (
 					<div className='flex gap-2 justify-center'>
 						<button
-							onClick={() => acceptRequest(connectionStatus.data.requestId)}
+							onClick={() => acceptRequest(Linkstatus.data.requestId)}
 							className={`${baseClass} bg-green-500 hover:bg-green-600`}
 						>
 							Accept
 						</button>
 						<button
-							onClick={() => rejectRequest(connectionStatus.data.requestId)}
+							onClick={() => rejectRequest(Linkstatus.data.requestId)}
 							className={`${baseClass} bg-red-500 hover:bg-red-600`}
 						>
 							Reject
@@ -122,11 +122,11 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 			default:
 				return (
 					<button
-						onClick={() => sendConnectionRequest(userData._id)}
+						onClick={() => sendLinkRequest(userData._id)}
 						className='bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-full transition duration-300 flex items-center justify-center'
 					>
 						<UserPlus size={20} className='mr-2' />
-						Connect
+						Link
 					</button>
 				);
 		}
@@ -249,7 +249,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 						</button>
 					)
 				) : (
-					<div className='flex justify-center'>{renderConnectionButton()}</div>
+					<div className='flex justify-center'>{renderLinkButton()}</div>
 				)}
 			</div>
 		</div>

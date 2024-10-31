@@ -7,16 +7,16 @@ import { Check, Clock, UserCheck, UserPlus, X } from "lucide-react";
 const RecommendedUser = ({ user }) => {
 	const queryClient = useQueryClient();
 
-	const { data: connectionStatus, isLoading } = useQuery({
-		queryKey: ["connectionStatus", user._id],
-		queryFn: () => axiosInstance.get(`/connections/status/${user._id}`),
+	const { data: Linkstatus, isLoading } = useQuery({
+		queryKey: ["Linkstatus", user._id],
+		queryFn: () => axiosInstance.get(`/Links/status/${user._id}`),
 	});
 
-	const { mutate: sendConnectionRequest } = useMutation({
-		mutationFn: (userId) => axiosInstance.post(`/connections/request/${userId}`),
+	const { mutate: sendLinkRequest } = useMutation({
+		mutationFn: (userId) => axiosInstance.post(`/Links/request/${userId}`),
 		onSuccess: () => {
-			toast.success("Connection request sent successfully");
-			queryClient.invalidateQueries({ queryKey: ["connectionStatus", user._id] });
+			toast.success("Link request sent successfully");
+			queryClient.invalidateQueries({ queryKey: ["Linkstatus", user._id] });
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.error || "An error occurred");
@@ -24,10 +24,10 @@ const RecommendedUser = ({ user }) => {
 	});
 
 	const { mutate: acceptRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/accept/${requestId}`),
+		mutationFn: (requestId) => axiosInstance.put(`/Links/accept/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request accepted");
-			queryClient.invalidateQueries({ queryKey: ["connectionStatus", user._id] });
+			toast.success("Link request accepted");
+			queryClient.invalidateQueries({ queryKey: ["Linkstatus", user._id] });
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.error || "An error occurred");
@@ -35,10 +35,10 @@ const RecommendedUser = ({ user }) => {
 	});
 
 	const { mutate: rejectRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/reject/${requestId}`),
+		mutationFn: (requestId) => axiosInstance.put(`/Links/reject/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request rejected");
-			queryClient.invalidateQueries({ queryKey: ["connectionStatus", user._id] });
+			toast.success("Link request rejected");
+			queryClient.invalidateQueries({ queryKey: ["Linkstatus", user._id] });
 		},
 		onError: (error) => {
 			toast.error(error.response?.data?.error || "An error occurred");
@@ -54,7 +54,7 @@ const RecommendedUser = ({ user }) => {
 			);
 		}
 
-		switch (connectionStatus?.data?.status) {
+		switch (Linkstatus?.data?.status) {
 			case "pending":
 				return (
 					<button
@@ -69,45 +69,45 @@ const RecommendedUser = ({ user }) => {
 				return (
 					<div className='flex gap-2 justify-center'>
 						<button
-							onClick={() => acceptRequest(connectionStatus.data.requestId)}
+							onClick={() => acceptRequest(Linkstatus.data.requestId)}
 							className={`rounded-full p-1 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white`}
 						>
 							<Check size={16} />
 						</button>
 						<button
-							onClick={() => rejectRequest(connectionStatus.data.requestId)}
+							onClick={() => rejectRequest(Linkstatus.data.requestId)}
 							className={`rounded-full p-1 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white`}
 						>
 							<X size={16} />
 						</button>
 					</div>
 				);
-			case "connected":
+			case "Linked":
 				return (
 					<button
 						className='px-3 py-1 rounded-full text-sm bg-green-500 text-white flex items-center'
 						disabled
 					>
 						<UserCheck size={16} className='mr-1' />
-						Connected
+						Linked
 					</button>
 				);
 			default:
 				return (
 					<button
 						className='px-3 py-1 rounded-full text-sm border border-primary text-primary hover:bg-primary hover:text-white transition-colors duration-200 flex items-center'
-						onClick={handleConnect}
+						onClick={handleLink}
 					>
 						<UserPlus size={16} className='mr-1' />
-						Connect
+						Link
 					</button>
 				);
 		}
 	};
 
-	const handleConnect = () => {
-		if (connectionStatus?.data?.status === "not_connected") {
-			sendConnectionRequest(user._id);
+	const handleLink = () => {
+		if (Linkstatus?.data?.status === "not_Linked") {
+			sendLinkRequest(user._id);
 		}
 	};
 

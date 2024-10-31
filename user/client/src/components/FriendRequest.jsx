@@ -6,22 +6,22 @@ import { Link } from "react-router-dom";
 const FriendRequest = ({ request }) => {
 	const queryClient = useQueryClient();
 
-	const { mutate: acceptConnectionRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/accept/${requestId}`),
+	const { mutate: acceptLinkRequest } = useMutation({
+		mutationFn: (requestId) => axiosInstance.put(`/Links/accept/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request accepted");
-			queryClient.invalidateQueries({ queryKey: ["connectionRequests"] });
+			toast.success("Link request accepted");
+			queryClient.invalidateQueries({ queryKey: ["LinkRequests"] });
 		},
 		onError: (error) => {
 			toast.error(error.response.data.error);
 		},
 	});
 
-	const { mutate: rejectConnectionRequest } = useMutation({
-		mutationFn: (requestId) => axiosInstance.put(`/connections/reject/${requestId}`),
+	const { mutate: rejectLinkRequest } = useMutation({
+		mutationFn: (requestId) => axiosInstance.put(`/Links/reject/${requestId}`),
 		onSuccess: () => {
-			toast.success("Connection request rejected");
-			queryClient.invalidateQueries({ queryKey: ["connectionRequests"] });
+			toast.success("Link request rejected");
+			queryClient.invalidateQueries({ queryKey: ["LinkRequests"] });
 		},
 		onError: (error) => {
 			toast.error(error.response.data.error);
@@ -50,13 +50,13 @@ const FriendRequest = ({ request }) => {
 			<div className='space-x-2'>
 				<button
 					className='bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors'
-					onClick={() => acceptConnectionRequest(request._id)}
+					onClick={() => acceptLinkRequest(request._id)}
 				>
 					Accept
 				</button>
 				<button
 					className='bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors'
-					onClick={() => rejectConnectionRequest(request._id)}
+					onClick={() => rejectLinkRequest(request._id)}
 				>
 					Reject
 				</button>

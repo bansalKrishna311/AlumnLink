@@ -13,9 +13,9 @@ const Navbar = () => {
 		enabled: !!authUser,
 	});
 
-	const { data: connectionRequests } = useQuery({
-		queryKey: ["connectionRequests"],
-		queryFn: async () => axiosInstance.get("/connections/requests"),
+	const { data: LinkRequests } = useQuery({
+		queryKey: ["LinkRequests"],
+		queryFn: async () => axiosInstance.get("/Links/requests"),
 		enabled: !!authUser,
 	});
 
@@ -27,7 +27,7 @@ const Navbar = () => {
 	});
 
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
-	const unreadConnectionRequestsCount = connectionRequests?.data?.length;
+	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
@@ -35,7 +35,7 @@ const Navbar = () => {
 				<div className='flex justify-between items-center py-3'>
 					<div className='flex items-center space-x-4'>
 						<Link to='/'>
-							<img className='h-8 rounded' src='/small-logo.png' alt='AlumnLink' />
+							<img className='h-8 rounded' src='/logo copy.png' alt='AlumnLink' />
 						</Link>
 					</div>
 					<div className='flex items-center gap-2 md:gap-6'>
@@ -48,12 +48,12 @@ const Navbar = () => {
 								<Link to='/network' className='text-neutral flex flex-col items-center relative'>
 									<Users size={20} />
 									<span className='text-xs hidden md:block'>My Network</span>
-									{unreadConnectionRequestsCount > 0 && (
+									{unreadLinkRequestsCount > 0 && (
 										<span
 											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
 										rounded-full size-3 md:size-4 flex items-center justify-center'
 										>
-											{unreadConnectionRequestsCount}
+											{unreadLinkRequestsCount}
 										</span>
 									)}
 								</Link>

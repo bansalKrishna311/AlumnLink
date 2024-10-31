@@ -5,7 +5,7 @@ import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 
 export const getFeedPosts = async (req, res) => {
 	try {
-		const posts = await Post.find({ author: { $in: [...req.user.connections, req.user._id] } })
+		const posts = await Post.find({ author: { $in: [...req.user.Links, req.user._id] } })
 			.populate("author", "name username profilePicture headline")
 			.populate("comments.user", "name profilePicture")
 			.sort({ createdAt: -1 });
@@ -17,9 +17,10 @@ export const getFeedPosts = async (req, res) => {
 	}
 };
 
+
 export const createPost = async (req, res) => {
 	try {
-		const { content, image } = req.body;
+		const { content, image, type } = req.body; // Include type here
 		let newPost;
 
 		if (image) {
@@ -28,11 +29,13 @@ export const createPost = async (req, res) => {
 				author: req.user._id,
 				content,
 				image: imgResult.secure_url,
+				type, // Include type when creating a new post
 			});
 		} else {
 			newPost = new Post({
 				author: req.user._id,
 				content,
+				type, // Include type here too
 			});
 		}
 
