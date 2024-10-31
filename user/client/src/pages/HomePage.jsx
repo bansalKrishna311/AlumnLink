@@ -1,27 +1,29 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import Sidebar from "../components/Sidebar";
 import PostCreation from "../components/PostCreation";
 import Post from "../components/Post";
 import { Users } from "lucide-react";
 import RecommendedUser from "../components/RecommendedUser";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import debounce from "lodash.debounce";
 
 const HomePage = () => {
+    const queryClient = useQueryClient();
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
     const [searchQuery, setSearchQuery] = useState("");
     const [offset, setOffset] = useState(0);
-    const [limit, setLimit] = useState(3);
+    const [initialLimit] = useState(3); // Fixed limit for each load
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedType, setSelectedType] = useState("all"); // State for the selected post type
+    const [selectedType, setSelectedType] = useState("all");
 
-    const { data: recommendedUsers, refetch } = useQuery({
-        queryKey: ["recommendedUsers", searchQuery, offset, limit],
+    const { data: recommendedUsers, refetch, isFetching } = useQuery({
+        queryKey: ["recommendedUsers", searchQuery, offset, initialLimit],
         queryFn: async () => {
             setIsLoading(true);
             const res = await axiosInstance.get("/users/suggestions", {
-                params: { search: searchQuery, offset, limit },
+                params: { search: searchQuery, offset, limit: offset + initialLimit },
             });
             setIsLoading(false);
             return res.data;
@@ -38,23 +40,30 @@ const HomePage = () => {
     });
 
     const handleShowMore = () => {
-        setLimit((prevLimit) => prevLimit + 3);
-        refetch();
+        setOffset((prevOffset) => prevOffset + initialLimit);
     };
 
-    const handleSearch = (e) => {
-        setSearchQuery(e.target.value);
+    // Debounce search to reduce API calls
+    const debouncedSearch = debounce((query) => {
         setOffset(0);
-        setLimit(3);
-        refetch();
+        setSearchQuery(query);
+    }, 300);
+
+    const handleSearch = (e) => {
+        debouncedSearch(e.target.value);
     };
 
     const handleTypeChange = (type) => {
-        setSelectedType(type); // Update selected type
+        setSelectedType(type);
     };
 
-    // Filter posts based on the selected type
     const filteredPosts = selectedType === "all" ? posts : posts?.filter(post => post.type === selectedType);
+
+    const isMoreUsersAvailable = recommendedUsers?.length >= offset + initialLimit && !isFetching;
+
+    useEffect(() => {
+        refetch();
+    }, [searchQuery, offset, initialLimit]);
 
     return (
         <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
@@ -65,9 +74,8 @@ const HomePage = () => {
             <div className='col-span-1 lg:col-span-2 order-first lg:order-none'>
                 <PostCreation user={authUser} />
 
-                {/* Post Type Filters */}
                 <div className='flex space-x-4 mb-4'>
-                    {["all","discussion", "job", "internship", "event","personal","other"].map((type) => (
+                    {["all", "discussion", "job", "internship", "event", "personal", "other"].map((type) => (
                         <div
                             key={type}
                             className={`p-2 border rounded-lg cursor-pointer hover:bg-gray-200 ${selectedType === type ? 'bg-gray-300 font-semibold' : ''}`}
@@ -78,7 +86,6 @@ const HomePage = () => {
                     ))}
                 </div>
 
-                {/* Display Filtered Posts */}
                 {filteredPosts?.map((post) => (
                     <Post key={post._id} post={post} />
                 ))}
@@ -94,20 +101,25 @@ const HomePage = () => {
                 )}
             </div>
 
-            {recommendedUsers?.length > 0 && (
-                <div className='col-span-1 lg:col-span-1 hidden lg:block'>
-                    <div className='bg-secondary rounded-lg shadow p-4'>
-                        <h2 className='font-semibold mb-4'>People you may know</h2>
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            value={searchQuery}
-                            onChange={handleSearch}
-                            className="mb-4 p-2 border rounded"
-                        />
-                        {recommendedUsers?.map((user) => (
+            <div className='col-span-1 lg:col-span-1 hidden lg:block'>
+                <div className='bg-secondary rounded-lg shadow p-4'>
+                    <h2 className='font-semibold mb-4'>People you may know</h2>
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        onChange={handleSearch}
+                        className="mb-4 p-2 border rounded w-full"
+                    />
+                    {isFetching ? (
+                        <div className="p-4 text-center text-gray-500">Loading suggestions...</div>
+                    ) : recommendedUsers?.length > 0 ? (
+                        recommendedUsers.map((user) => (
                             <RecommendedUser key={user._id} user={user} />
-                        ))}
+                        ))
+                    ) : (
+                        <div className="p-4 text-center text-gray-500">No users found</div>
+                    )}
+                    {isMoreUsersAvailable && (
                         <button 
                             onClick={handleShowMore} 
                             className='mt-2 text-blue-500' 
@@ -115,11 +127,12 @@ const HomePage = () => {
                         >
                             {isLoading ? "Loading..." : "Show More"}
                         </button>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };
 
 export default HomePage;
+    
