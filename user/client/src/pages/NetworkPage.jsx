@@ -5,13 +5,18 @@ import { UserPlus, Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import debounce from "lodash.debounce";
 import RecommendedUser from "../components/RecommendedUser";
+import FriendRequest from "../components/FriendRequest";
 import { FiArrowRight } from "react-icons/fi";
 
 const NetworkPage = () => {
 	const queryClient = useQueryClient();
 
-	// Fetch user data and Links
+	// Fetch user data, Link requests, and Links
 	const { data: user } = useQuery({ queryKey: ["authUser"] });
+	const { data: LinkRequests } = useQuery({
+		queryKey: ["LinkRequests"],
+		queryFn: () => axiosInstance.get("/Links/requests"),
+	});
 	const { data: Links } = useQuery({
 		queryKey: ["Links"],
 		queryFn: () => axiosInstance.get("/Links"),
@@ -52,11 +57,13 @@ const NetworkPage = () => {
 	};
 
 	const handleRemoveLink = async (linkId) => {
+		// Add logic to remove the link
 		await axiosInstance.delete(`/Links/${linkId}`);
-		queryClient.invalidateQueries("Links");
+		queryClient.invalidateQueries("Links"); // Refetch Links data
 	};
 
 	const handleOpenUserAccount = (userId) => {
+		// Navigate to the user's account page
 		window.location.href = `/user/${userId}`;
 	};
 
@@ -101,6 +108,29 @@ const NetworkPage = () => {
 					)}
 				</div>
 
+				{/* Link Requests */}
+				{LinkRequests?.data?.length > 0 ? (
+					<div className='mb-8'>
+						<h2 className='text-xl font-semibold mb-2'>Link Requests</h2>
+						<div className='space-y-4'>
+							{LinkRequests.data.map((request) => (
+								<FriendRequest key={request.id} request={request} />
+							))}
+						</div>
+					</div>
+				) : (
+					<div className='bg-white rounded-lg shadow p-6 text-center mb-6'>
+						<UserPlus size={48} className='mx-auto text-gray-400 mb-4' />
+						<h3 className='text-xl font-semibold mb-2'>No Link Requests</h3>
+						<p className='text-gray-600'>
+							You don&apos;t have any pending Link requests at the moment.
+						</p>
+						<p className='text-gray-600 mt-2'>
+							Explore suggested Links above to expand your network!
+						</p>
+					</div>
+				)}
+
 				{/* My Links */}
 				{Links?.data?.length > 0 && (
 					<div>
@@ -117,25 +147,25 @@ const NetworkPage = () => {
 											<div
 												key={link._id}
 												className="flex items-center justify-between p-4 border rounded-lg shadow-sm hover:shadow-md transition duration-200 cursor-pointer"
-												onClick={() => handleOpenUserAccount(link.userId)}
+												onClick={() => handleOpenUserAccount(link.userId)} // Assuming each link has a userId field
 											>
 												<img
-													src={link.profilePicture || "/avatar.png"}
+													src={link.profilePicture || "/avatar.png"} // Assuming link has userImage field
 													alt={link.name}
 													className="w-12 h-12 rounded-full mr-4"
 												/>
 												<div className="flex-1">
 													<h3 className="font-semibold">{link.name}</h3>
-													<p className="text-gray-600">{link.headline}</p>
+													<p className="text-gray-600">{link.headline}</p> {/* Assuming link has a headline field */}
 												</div>
 												<button
 													className="text-red-500"
 													onClick={(e) => {
-														e.stopPropagation();
+														e.stopPropagation(); // Prevent opening the user account
 														handleRemoveLink(link._id);
 													}}
 												>
-													 Remove
+													Remove
 												</button>
 											</div>
 										))}
