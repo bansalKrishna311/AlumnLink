@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema(
 				endYear: Number,
 			},
 		],
-		connections: [
+		Links: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "User",

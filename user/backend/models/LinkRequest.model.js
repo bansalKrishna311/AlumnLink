@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const connectionRequestSchema = new mongoose.Schema(
+const LinkRequestSchema = new mongoose.Schema(
 	{
 		sender: {
 			type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,6 @@ const connectionRequestSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-const ConnectionRequest = mongoose.model("ConnectionRequest", connectionRequestSchema);
+const LinkRequest = mongoose.model("LinkRequest", LinkRequestSchema);
 
-export default ConnectionRequest;
+export default LinkRequest;
