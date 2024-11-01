@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
-import { Loader } from "lucide-react";
+import { Loader, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import Login from "../../../public/Login.png";
 import icon from "../../../public/login-icon.webp";
@@ -11,6 +11,8 @@ import icon from "../../../public/login-icon.webp";
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const { mutate: loginMutation, isLoading } = useMutation({
@@ -26,6 +28,25 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     loginMutation({ username, password });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleForgotPassword = () => {
+    setIsForgotLoading(true);
+    axiosInstance
+      .post("/auth/forgot-password", { username })
+      .then(() => {
+        toast.success("Password reset link sent to your email.");
+      })
+      .catch((err) => {
+        toast.error(err.response.data.message || "Error sending reset link.");
+      })
+      .finally(() => {
+        setIsForgotLoading(false);
+      });
   };
 
   return (
@@ -80,15 +101,22 @@ const LoginPage = () => {
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
 
               <motion.button
@@ -105,6 +133,20 @@ const LoginPage = () => {
                 )}
               </motion.button>
             </form>
+
+            <div className="mt-4 flex justify-start pl-4">
+              <button
+                onClick={handleForgotPassword}
+                className="text-sm text-blue-600 hover:underline flex items-center"
+                disabled={isForgotLoading}
+              >
+                {isForgotLoading ? (
+                  <Loader className="w-4 h-4 animate-spin mr-1" />
+                ) : (
+                  "Forgot Password?"
+                )}
+              </button>
+            </div>
 
             <div className="mt-4 lg:mt-6 text-center">
               <p className="text-sm lg:text-md text-gray-600 border-2 border-opacity-20 p-2 lg:p-3 rounded-full border-slate-500">
