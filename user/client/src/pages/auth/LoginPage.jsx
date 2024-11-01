@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
 import { Loader, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";  // Import useNavigate
 import Login from "../../../public/Login.png";
 import icon from "../../../public/login-icon.webp";
 
@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotLoading, setIsForgotLoading] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // Initialize navigate function
 
   const { mutate: loginMutation, isLoading } = useMutation({
     mutationFn: (userData) => axiosInstance.post("/auth/login", userData),
@@ -34,19 +35,9 @@ const LoginPage = () => {
     setShowPassword(!showPassword);
   };
 
+  // Modify handleForgotPassword to navigate to ForgotPasswordPage
   const handleForgotPassword = () => {
-    setIsForgotLoading(true);
-    axiosInstance
-      .post("/auth/forgot-password", { username })
-      .then(() => {
-        toast.success("Password reset link sent to your email.");
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message || "Error sending reset link.");
-      })
-      .finally(() => {
-        setIsForgotLoading(false);
-      });
+    navigate("/forgot-password"); // Navigate to ForgotPasswordPage
   };
 
   return (
@@ -136,7 +127,7 @@ const LoginPage = () => {
 
             <div className="mt-4 flex justify-start pl-4">
               <button
-                onClick={handleForgotPassword}
+                onClick={handleForgotPassword} // Navigate to ForgotPasswordPage
                 className="text-sm text-blue-600 hover:underline flex items-center"
                 disabled={isForgotLoading}
               >
