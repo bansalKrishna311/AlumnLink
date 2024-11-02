@@ -12,7 +12,7 @@ export const sendWelcomeEmail = async (email, name, profileUrl) => {
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "Welcome to UnLinked",
+			subject: "Welcome to AlumnLink",
 			html: createWelcomeEmailTemplate(name, profileUrl),
 			category: "welcome",
 		});
