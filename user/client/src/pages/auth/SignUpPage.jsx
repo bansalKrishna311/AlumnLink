@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios.js";
 import { toast } from "react-hot-toast";
-import { Loader } from "lucide-react";
+import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import SignupImage from "../../../public/Login.png";
 import icon from "../../../public/login-icon.webp";
@@ -13,6 +13,7 @@ const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -33,6 +34,45 @@ const SignUpPage = () => {
   const handleSignUp = (e) => {
     e.preventDefault();
     signUpMutation({ name, username, email, password });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Password strength and criteria
+  const criteria = [
+    { label: "At least 6 characters", met: password.length >= 6 },
+    { label: "Contains uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "Contains lowercase letter", met: /[a-z]/.test(password) },
+    { label: "Contains a number", met: /\d/.test(password) },
+    { label: "Contains special character", met: /[^A-Za-z0-9]/.test(password) },
+  ];
+
+  const getStrength = () => {
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    return strength;
+  };
+  const strength = getStrength();
+
+  const getColor = (strength) => {
+    if (strength === 0) return "bg-[#3f0a40]";
+    if (strength === 1) return "bg-[#440065]";
+    if (strength === 2) return "bg-[#6b21a8]";
+    if (strength === 3) return "bg-[#6b21a8]";
+    return "bg-green-500";
+  };
+
+  const getStrengthText = (strength) => {
+    if (strength === 0) return "Very Weak";
+    if (strength === 1) return "Weak";
+    if (strength === 2) return "Fair";
+    if (strength === 3) return "Good";
+    return "Strong";
   };
 
   return (
@@ -109,15 +149,56 @@ const SignUpPage = () => {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password (6+ characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {/* Password Strength Meter */}
+              <div className="mt-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-gray-400">Password strength</span>
+                  <span className="text-xs text-gray-400">{getStrengthText(strength)}</span>
+                </div>
+
+                <div className="flex space-x-1">
+                  {[...Array(4)].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1 w-1/4 rounded-full transition-colors duration-300 
+                      ${index < strength ? getColor(strength) : "bg-gray-600"}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Password Criteria */}
+                <div className="mt-2 space-y-1">
+                  {criteria.map((item) => (
+                    <div key={item.label} className="flex items-center text-xs">
+                      {item.met ? (
+                        <Check className="size-4 text-[#6b21a8] mr-2" />
+                      ) : (
+                        <X className="size-4 text-[#440065] mr-2" />
+                      )}
+                      <span className={item.met ? "text-[#6b21a8]" : "text-gray-400"}>
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <motion.button

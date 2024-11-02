@@ -28,6 +28,9 @@ const FriendRequest = ({ request }) => {
 		},
 	});
 
+	// Move console log here, outside the JSX code block
+	console.log(request);
+
 	return (
 		<div className='bg-white rounded-lg shadow p-4 flex items-center justify-between transition-all hover:shadow-md'>
 			<div className='flex items-center gap-4'>
@@ -64,4 +67,5 @@ const FriendRequest = ({ request }) => {
 		</div>
 	);
 };
+
 export default FriendRequest;

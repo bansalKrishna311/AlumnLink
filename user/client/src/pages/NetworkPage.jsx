@@ -165,7 +165,6 @@ const NetworkPage = () => {
 														handleRemoveLink(link._id);
 													}}
 												>
-													
 													Remove
 												</button>
 											</div>
