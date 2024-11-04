@@ -13,7 +13,6 @@ const PasswordResetPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const { mutate: resetPassword, isLoading } = useMutation({
@@ -47,7 +46,6 @@ const PasswordResetPage = () => {
   };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   const criteria = [
     { label: "At least 6 characters", met: password.length >= 6 },
@@ -99,41 +97,23 @@ const PasswordResetPage = () => {
               Reset Password
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password (6+ characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password (6+ characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-
+              <Input
+                icon={showPassword ? EyeOff : Eye}
+                type={showPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                onIconClick={togglePasswordVisibility}
+              />
+              <Input
+                icon={showPassword ? EyeOff : Eye}
+                type={showPassword ? "text" : "password"}
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
               <div className="mt-2">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs text-gray-400">Password strength</span>
