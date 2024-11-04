@@ -60,11 +60,11 @@ const SignUpPage = () => {
   const strength = getStrength();
 
   const getColor = (strength) => {
-    if (strength === 0) return "bg-[#3f0a40]";
-    if (strength === 1) return "bg-[#440065]";
-    if (strength === 2) return "bg-[#6b21a8]";
-    if (strength === 3) return "bg-[#6b21a8]";
-    return "bg-green-500";
+  if (strength === 0) return "bg-[#4c3300]"; // Darker shade
+if (strength === 1) return "bg-[#805500]"; // Slightly lighter shade
+if (strength === 2) return "bg-[#b37500]"; // Mid-tone shade
+if (strength === 3) return "bg-[#dda700]"; // Base color you provided
+return "bg-[#ffcc33]"; // Lightest shade, for maximum strength
   };
 
   const getStrengthText = (strength) => {
@@ -122,7 +122,7 @@ const SignUpPage = () => {
                   placeholder="Full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
                   required
                 />
               </div>
@@ -133,7 +133,7 @@ const SignUpPage = () => {
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
                   required
                 />
               </div>
@@ -144,7 +144,7 @@ const SignUpPage = () => {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
                   required
                 />
               </div>
@@ -155,7 +155,7 @@ const SignUpPage = () => {
                   placeholder="Password (6+ characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
                   required
                 />
                 <button
@@ -189,11 +189,11 @@ const SignUpPage = () => {
                   {criteria.map((item) => (
                     <div key={item.label} className="flex items-center text-xs">
                       {item.met ? (
-                        <Check className="size-4 text-[#6b21a8] mr-2" />
+                        <Check className="size-4 text-[#FBD200] mr-2" />
                       ) : (
-                        <X className="size-4 text-[#440065] mr-2" />
+                        <X className="size-4 text-[#FBD200] mr-2" />
                       )}
-                      <span className={item.met ? "text-[#6b21a8]" : "text-gray-400"}>
+                      <span className={item.met ? "text-[#D69E00]" : "text-gray-400"}>
                         {item.label}
                       </span>
                     </div>
