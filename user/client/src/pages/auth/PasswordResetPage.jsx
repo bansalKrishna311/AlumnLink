@@ -1,76 +1,192 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { toast } from "react-hot-toast";
+import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
+import Input from "./components/Input";
+import ResetImage from "../../../public/Login.png";
 
 const PasswordResetPage = () => {
-    const { token } = useParams(); // Get token from URL
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Basic validation
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters");
-            return;
-        }
-        if (password !== confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
+  const { mutate: resetPassword, isLoading } = useMutation({
+    mutationFn: async (data) => {
+      const response = await axios.post(
+        `http://localhost:5000/api/v1/auth/reset-password/${token}`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setTimeout(() => navigate("/login"), 3000);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    },
+  });
 
-        try {
-            // Call the backend API
-            const response = await axios.post(
-                `http://localhost:5000/api/v1/auth/reset-password/${token}`,
-                { password }
-            );
-            setMessage(response.data.message);
-            setError("");
-            
-            // Redirect to login after a successful password reset
-            setTimeout(() => navigate("/login"), 3000);
-        } catch (error) {
-            setError(error.response?.data?.message || "An error occurred");
-        }
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    resetPassword({ password });
+  };
 
-    return (
-        <div style={{ maxWidth: "400px", margin: "auto", padding: "20px", textAlign: "center" }}>
-            <h2>Reset Password</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: "15px" }}>
-                    <input
-                        type="password"
-                        placeholder="New Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ width: "100%", padding: "10px", borderRadius: "5px" }}
-                    />
-                </div>
-                <div style={{ marginBottom: "15px" }}>
-                    <input
-                        type="password"
-                        placeholder="Confirm New Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        style={{ width: "100%", padding: "10px", borderRadius: "5px" }}
-                    />
-                </div>
-                <button type="submit" style={{ width: "100%", padding: "10px", borderRadius: "5px", background: "#007bff", color: "#fff" }}>
-                    Reset Password
-                </button>
-            </form>
-            {message && <p style={{ color: "green", marginTop: "15px" }}>{message}</p>}
-            {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+
+  const criteria = [
+    { label: "At least 6 characters", met: password.length >= 6 },
+    { label: "Contains uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "Contains lowercase letter", met: /[a-z]/.test(password) },
+    { label: "Contains a number", met: /\d/.test(password) },
+    { label: "Contains special character", met: /[^A-Za-z0-9]/.test(password) },
+  ];
+
+  const getStrength = () => {
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    return strength;
+  };
+
+  const strength = getStrength();
+
+  const getColor = (strength) => {
+    const colors = ["bg-[#4c3300]", "bg-[#805500]", "bg-[#b37500]", "bg-[#dda700]", "bg-[#ffcc33]"];
+    return colors[strength];
+  };
+
+  const getStrengthText = (strength) => ["Very Weak", "Weak", "Fair", "Good", "Strong"][strength];
+
+  return (
+    <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[60vw] m-auto lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
+      <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden">
+        {/* Left Side - Image Section */}
+        <div className="w-full lg:w-1/2 h-[200px] lg:h-full hidden lg:block">
+          <img
+            src={ResetImage}
+            alt="Reset Visual"
+            className="w-full h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
+          />
         </div>
-    );
+
+        {/* Right Side - Reset Password Form */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full lg:w-1/2 h-full flex items-center justify-center p-6 lg:p-8 bg-opacity-50 backdrop-filter backdrop-blur-xl"
+        >
+          <div className="w-full">
+            <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-[#6b21a8] to-[#440065] text-transparent bg-clip-text">
+              Reset Password
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (6+ characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (6+ characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+
+              <div className="mt-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-gray-400">Password strength</span>
+                  <span className="text-xs text-gray-400">{getStrengthText(strength)}</span>
+                </div>
+                <div className="flex space-x-1">
+                  {[...Array(4)].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1 w-1/4 rounded-full transition-colors duration-300 ${
+                        index < strength ? getColor(strength) : "bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 space-y-1">
+                  {criteria.map((item) => (
+                    <div key={item.label} className="flex items-center text-xs">
+                      {item.met ? (
+                        <Check className="size-4 text-[#FBD200] mr-2" />
+                      ) : (
+                        <X className="size-4 text-[#FBD200] mr-2" />
+                      )}
+                      <span className={item.met ? "text-[#D69E00]" : "text-gray-400"}>
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-3 bg-[#DFDFDF] text-slate-600 font-bold rounded-full focus:outline-none transition duration-200"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader className="w-5 h-5 animate-spin mx-auto" /> : "Set New Password"}
+              </motion.button>
+            </form>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Remembered your password?{" "}
+                <Link to="/login" className="text-blue-600 hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
 };
 
 export default PasswordResetPage;
