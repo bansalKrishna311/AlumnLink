@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
-import { Loader, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";  // Import useNavigate
+import { Loader, Eye, EyeOff, User, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Login from "../../../public/Login.png";
 import icon from "../../../public/login-icon.webp";
+import Input from "../auth/components/Input"; // Adjust the import path as needed
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -14,7 +15,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotLoading, setIsForgotLoading] = useState(false);
   const queryClient = useQueryClient();
-  const navigate = useNavigate(); // Initialize navigate function
+  const navigate = useNavigate();
 
   const { mutate: loginMutation, isLoading } = useMutation({
     mutationFn: (userData) => axiosInstance.post("/auth/login", userData),
@@ -35,15 +36,13 @@ const LoginPage = () => {
     setShowPassword(!showPassword);
   };
 
-  // Modify handleForgotPassword to navigate to ForgotPasswordPage
   const handleForgotPassword = () => {
-    navigate("/forgot-password"); // Navigate to ForgotPasswordPage
+    navigate("/forgot-password");
   };
 
   return (
     <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[60vw] m-auto lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
       <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden">
-        {/* Left Side - Image Section */}
         <div className="w-full lg:w-1/2 h-[200px] lg:h-full hidden lg:block">
           <img
             src={Login}
@@ -52,7 +51,6 @@ const LoginPage = () => {
           />
         </div>
 
-        {/* Right Side - Login Form */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -81,34 +79,30 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
-                  required
-                />
-              </div>
+              <Input
+                icon={User}
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
 
-              <div className="mb-6 relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+              <Input
+                icon={Lock}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-10 bottom-10 flex items-center text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" color="#CF9400" /> : <Eye className="w-5 h-5" color="#CF9400" />}
+              </button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -127,7 +121,7 @@ const LoginPage = () => {
 
             <div className="mt-4 flex justify-start pl-4">
               <button
-                onClick={handleForgotPassword} // Navigate to ForgotPasswordPage
+                onClick={handleForgotPassword}
                 className="text-sm text-blue-600 hover:underline flex items-center"
                 disabled={isForgotLoading}
               >

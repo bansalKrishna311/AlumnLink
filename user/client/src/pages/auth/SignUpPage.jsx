@@ -232,3 +232,4 @@ return "bg-[#ffcc33]"; // Lightest shade, for maximum strength
 };
 
 export default SignUpPage;
+
