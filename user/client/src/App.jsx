@@ -12,6 +12,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import NetworkPage from "./pages/NetworkPage";
 import PostPage from "./pages/PostPage";
 import ProfilePage from "./pages/ProfilePage";
+import PasswordResetPage from "./pages/auth/PasswordResetPage";
 
 function App() {
 	const { data: authUser, isLoading } = useQuery({
@@ -38,6 +39,7 @@ function App() {
 				<Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to={"/"} />} />
 				<Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
 				<Route path='/forgot-password' element={!authUser ? <ForgotPasswordPage /> : <Navigate to={"/"} />} /> {/* Added ForgotPasswordPage */}
+				<Route path="/reset-password/:token" element={<PasswordResetPage />} />
 				<Route path='/notifications' element={authUser ? <NotificationsPage /> : <Navigate to={"/login"} />} />
 				<Route path='/network' element={authUser ? <NetworkPage /> : <Navigate to={"/login"} />} />
 				<Route path='/post/:postId' element={authUser ? <PostPage /> : <Navigate to={"/login"} />} />

@@ -5,7 +5,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   
   // Check if the current path is login or signup
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup" ||  location.pathname === "/forgot-password";
 
   return (
     <div className='min-h-screen bg-base-100'>

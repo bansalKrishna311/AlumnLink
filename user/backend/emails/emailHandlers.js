@@ -59,3 +59,16 @@ export const sendLinkAcceptedEmail = async (senderEmail, senderName, recipientNa
 		});
 	} catch (error) {}
 };
+export const sendResetPasswordEmail = async (email, name, resetUrl) => {
+	try {
+		await mailtrapClient.send({
+			from: sender,
+			to: [{ email }],
+			subject: "Reset Your Password",
+			html: `<p>Hi ${name},</p><p>Please click the link below to reset your password:</p><a href="${resetUrl}">Reset Password</a>`,
+		});
+	} catch (error) {
+		console.error("Error sending reset password email:", error);
+		throw error;
+	}
+};
