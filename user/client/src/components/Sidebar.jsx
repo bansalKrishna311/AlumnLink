@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-// import { Home, UserPlus, Bell } from "lucide-react";
 import PostCreation from "./PostCreation"; // Import PostCreation component
 
 // Import your images
@@ -34,7 +33,9 @@ export default function Sidebar({ user }) {
   };
 
   return (
-    <div className="bg-secondary rounded-lg shadow-lg">
+    <div className="bg-secondary rounded-lg shadow-lg sticky top-16 z-20">
+      {" "}
+      {/* Adjust top value to prevent overlap with navbar */}
       <div className="p-4 text-center">
         <div
           className="h-16 rounded-t-lg bg-cover bg-center"
@@ -53,8 +54,6 @@ export default function Sidebar({ user }) {
         <p className="text-info">{user.headline}</p>
         <p className="text-info text-xs">{user.Links.length} Links</p>
       </div>
-      
-
       {/* New Section for Categories with Images */}
       <div className="border-t border-base-100 p-4">
         <h3 className="text-lg font-semibold mb-2">Post </h3>
@@ -83,8 +82,6 @@ export default function Sidebar({ user }) {
           ))}
         </ul>
       </div>
-
-      
       {isModalOpen && (
         <PostCreation
           user={user}
