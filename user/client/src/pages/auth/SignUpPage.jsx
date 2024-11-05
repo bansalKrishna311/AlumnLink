@@ -212,6 +212,7 @@
                     <Loader className="w-5 h-5 lg:w-6 lg:h-6 animate-spin mx-auto" />
                   ) : (
                     "Agree & Join"
+                    
                   )}
                 </motion.button>
               </form>
