@@ -3,7 +3,8 @@ import { useState } from "react";
 import Input from "./components/Input";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-import Login from "../../../public/Login.png";
+import Login from "../../../public/login/3.png";
+
 import icon from "../../../public/login-icon.webp";
 import axios from "axios";
 

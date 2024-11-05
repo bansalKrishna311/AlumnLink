@@ -5,7 +5,7 @@
   import { toast } from "react-hot-toast";
   import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
   import { Link } from "react-router-dom";
-  import SignupImage from "../../../public/Login.png";
+  import SignupImage from "../../../public/login/4.png";
   import icon from "../../../public/login-icon.webp";
 
   const SignUpPage = () => {
