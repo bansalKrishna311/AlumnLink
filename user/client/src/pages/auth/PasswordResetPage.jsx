@@ -6,7 +6,9 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
 import Input from "./components/Input";
-import ResetImage from "../../../public/Login.png";
+
+import ResetImage from "../../../public/login/1.png";
+
 
 const PasswordResetPage = () => {
   const { token } = useParams();
