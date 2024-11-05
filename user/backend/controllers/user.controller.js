@@ -1,26 +1,6 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 
-// export const getSuggestedLinks = async (req, res) => {
-// 	try {
-// 		const currentUser = await User.findById(req.user._id).select("Links");
-
-// 		// find users who are not already Linked, and also do not recommend our own profile!! right?
-// 		const suggestedUser = await User.find({
-// 			_id: {
-// 				$ne: req.user._id,
-// 				$nin: currentUser.Links,
-// 			},
-// 		})
-// 			.select("name username profilePicture headline")
-// 			.limit(3);
-
-// 		res.json(suggestedUser);
-// 	} catch (error) {
-// 		console.error("Error in getSuggestedLinks controller:", error);
-// 		res.status(500).json({ message: "Server error" });
-// 	}
-// };
 
 
 export const getSuggestedLinks = async (req, res) => {
@@ -92,7 +72,7 @@ export const updateProfile = async (req, res) => {
 			if (req.body[field]) {
 				updatedData[field] = req.body[field];
 			}
-		}
+		} 
 
 		if (req.body.profilePicture) {
 			const result = await cloudinary.uploader.upload(req.body.profilePicture);
