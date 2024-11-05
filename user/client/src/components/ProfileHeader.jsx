@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-
-import { Camera, Clock, MapPin, UserCheck, UserPlus, X } from "lucide-react";
+import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3 } from "lucide-react"; // Import Edit3
 
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 	const [isEditing, setIsEditing] = useState(false);
@@ -120,6 +119,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 					</div>
 				);
 			default:
+				// Show the "Add Link" button for other users
 				return (
 					<button
 						onClick={() => sendLinkRequest(userData._id)}
@@ -167,6 +167,17 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 							accept='image/*'
 						/>
 					</label>
+				)}
+
+				{/* Edit Icon with white background box */}
+				{isOwnProfile && !isEditing && (
+					<div className='absolute top-2 right-2 bg-white p-2 rounded-full shadow'>
+						<Edit3
+							size={24}
+							className='cursor-pointer text-gray-500 hover:text-gray-700'
+							onClick={() => setIsEditing(true)}
+						/>
+					</div>
 				)}
 			</div>
 
@@ -230,29 +241,26 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 					</div>
 				</div>
 
-				{isOwnProfile ? (
-					isEditing ? (
-						<button
-							className='w-full bg-primary text-white py-2 px-4 rounded-full hover:bg-primary-dark
-							 transition duration-300'
-							onClick={handleSave}
-						>
-							Save Profile
-						</button>
-					) : (
-						<button
-							onClick={() => setIsEditing(true)}
-							className='w-full bg-primary text-white py-2 px-4 rounded-full hover:bg-primary-dark
-							 transition duration-300'
-						>
-							Edit Profile
-						</button>
-					)
-				) : (
-					<div className='flex justify-center'>{renderLinkButton()}</div>
+				{/* Show the link count */}
+				<div className='flex justify-center gap-10 align-middle'>
+					<div className='text-gray-700 font-bold'>{userData.Links.length} Links</div>
+
+				{/* Render the link button for other profiles */}
+				{!isOwnProfile && renderLinkButton()}
+
+				{/* Save Button when editing */}
+				{isEditing && (
+					<button
+					className='bg-blue-500 text-white px-4 py-2 rounded-full'
+					onClick={handleSave}
+					>
+						Save
+					</button>
 				)}
+				</div>
 			</div>
 		</div>
 	);
 };
+
 export default ProfileHeader;
