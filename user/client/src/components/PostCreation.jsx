@@ -189,25 +189,6 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             />
           </>
         );
-      case "personal":
-        return (
-          <input
-            type="text"
-            placeholder="Personal Thoughts"
-            className="w-full p-2 rounded-lg mb-2 border border-gray-300"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        );
-      case "other":
-        return (
-          <textarea
-            placeholder="Other Details"
-            className="w-full p-3 rounded-lg mb-2 border border-gray-300"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        );
       default:
         return null;
     }
