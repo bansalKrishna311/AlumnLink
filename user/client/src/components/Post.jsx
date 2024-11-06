@@ -142,7 +142,31 @@ const Post = ({ post }) => {
           />
         )}
 
-        <div className="flex justify-between text-gray-500">
+        {/* Conditional rendering based on post type */}
+        {post.type === "internship" && post.internshipDetails && (
+          <div className="text-sm text-gray-600 mt-2">
+            <p><strong>Company:</strong> {post.internshipDetails.companyName}</p>
+            <p><strong>Duration:</strong> {post.internshipDetails.internshipDuration}</p>
+          </div>
+        )}
+        
+        {post.type === "job" && post.jobDetails && (
+          <div className="text-sm text-gray-600 mt-2">
+            <p><strong>Company:</strong> {post.jobDetails.companyName}</p>
+            <p><strong>Title:</strong> {post.jobDetails.jobTitle}</p>
+            <p><strong>Location:</strong> {post.jobDetails.jobLocation}</p>
+          </div>
+        )}
+
+        {post.type === "event" && post.eventDetails && (
+          <div className="text-sm text-gray-600 mt-2">
+            <p><strong>Event:</strong> {post.eventDetails.eventName}</p>
+            <p><strong>Date:</strong> {new Date(post.eventDetails.eventDate).toLocaleDateString()}</p>
+            <p><strong>Location:</strong> {post.eventDetails.eventLocation}</p>
+          </div>
+        )}
+
+        <div className="flex justify-between text-gray-500 mt-4">
           <PostAction
             icon={
               <ThumbsUp

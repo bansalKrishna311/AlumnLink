@@ -9,7 +9,16 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [type, setType] = useState(selectedPostType || "discussion");
-
+  
+  // State variables for additional fields
+  const [companyName, setCompanyName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobLocation, setJobLocation] = useState("");
+  const [internshipDuration, setInternshipDuration] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  
   const queryClient = useQueryClient();
 
   const { mutate: createPostMutation, isPending } = useMutation({
@@ -39,6 +48,27 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     try {
       const postData = { content, type };
       if (image) postData.image = await readFileAsDataURL(image);
+
+      // Add additional fields based on type
+      if (type === "job") {
+        postData.jobDetails = {
+          companyName,
+          jobTitle,
+          jobLocation,
+        };
+      } else if (type === "internship") {
+        postData.internshipDetails = {
+          companyName,
+          internshipDuration,
+        };
+      } else if (type === "event") {
+        postData.eventDetails = {
+          eventName,
+          eventDate,
+          eventLocation,
+        };
+      }
+
       createPostMutation(postData);
     } catch (error) {
       console.error("Error in handlePostCreation:", error);
@@ -50,6 +80,16 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     setImage(null);
     setImagePreview(null);
     setType("discussion");
+    
+    // Reset additional fields
+    setCompanyName("");
+    setJobTitle("");
+    setJobLocation("");
+    setInternshipDuration("");
+    setEventName("");
+    setEventDate("");
+    setEventLocation("");
+    
     closeModal();
   };
 
@@ -70,6 +110,102 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  };
+
+  const renderAdditionalInputs = () => {
+    switch (type) {
+      case "job":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Company Name"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Job Title"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Job Location"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={jobLocation}
+              onChange={(e) => setJobLocation(e.target.value)}
+            />
+          </>
+        );
+      case "internship":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Company Name"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Internship Duration"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={internshipDuration}
+              onChange={(e) => setInternshipDuration(e.target.value)}
+            />
+          </>
+        );
+      case "event":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Event Name"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+            />
+            <input
+              type="datetime-local"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Event Location"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={eventLocation}
+              onChange={(e) => setEventLocation(e.target.value)}
+            />
+          </>
+        );
+      case "personal":
+        return (
+          <input
+            type="text"
+            placeholder="Personal Thoughts"
+            className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+        );
+      case "other":
+        return (
+          <textarea
+            placeholder="Other Details"
+            className="w-full p-3 rounded-lg mb-2 border border-gray-300"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -125,45 +261,20 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 </button>
               </div>
             )}
-
-            <div className="flex justify-between items-center mt-4">
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center text-blue-500 hover:text-blue-600 cursor-pointer transition duration-200">
-                  <Image size={20} className="mr-2" />
-                  <span>Photo</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="bg-blue-50 border border-gray-300 rounded-lg p-2 text-gray-700 transition duration-200 focus:outline-none focus:border-blue-500"
-                >
-                  <option value="discussion">Discussion</option>
-                  <option value="job">Job</option>
-                  <option value="internship">Internship</option>
-                  <option value="event">Event</option>
-                  <option value="personal">Personal</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <button
-                className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition duration-200"
-                onClick={handlePostCreation}
-                disabled={isPending}
-              >
-                {isPending ? (
-                  <Loader size={16} className="animate-spin mr-2" />
-                ) : (
-                  "Share"
-                )}
-              </button>
-            </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mb-4"
+            />
+            {renderAdditionalInputs()}
+            <button
+              onClick={handlePostCreation}
+              disabled={isPending}
+              className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200"
+            >
+              {isPending ? <Loader className="animate-spin" /> : "Post"}
+            </button>
           </div>
         </div>
       )}
