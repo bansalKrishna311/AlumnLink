@@ -93,6 +93,11 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     closeModal();
   };
 
+
+  const handleFileButtonClick = () => {
+    document.getElementById("fileInput").click();
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
@@ -213,7 +218,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       {selectedPostType && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div
-            className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8"
+            className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]" // added max-height and overflow-y for scrolling
             style={{
               backgroundImage: "url('../../public/background.png')",
               backgroundSize: "cover",
@@ -222,9 +227,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
           >
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-700 font-bold text-xl"
+              className="absolute top-2 right-1 text-gray-700 font-bold text-xl"
             >
-              <X size={24} />
+              <X size={28} color="red"/>
             </button>
             <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 text-white py-2 px-4 rounded-lg">
               Create a Post
@@ -261,17 +266,25 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 </button>
               </div>
             )}
-            <input
+             <input
+              id="fileInput"
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="mb-4"
+              className="hidden" // Hide the actual input
             />
+            <button
+              onClick={handleFileButtonClick}
+              className="flex items-center space-x-2 mb-4 p-2 rounded-lg "
+            >
+              <Image size={20} color="red" />
+              <span>Upload Photo</span>
+            </button>
             {renderAdditionalInputs()}
             <button
               onClick={handlePostCreation}
               disabled={isPending}
-              className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 text-white font-semibold py-2 rounded-lg transition duration-300"
             >
               {isPending ? <Loader className="animate-spin" /> : "Post"}
             </button>
