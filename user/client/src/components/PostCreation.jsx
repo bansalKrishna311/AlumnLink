@@ -189,25 +189,6 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             />
           </>
         );
-      case "personal":
-        return (
-          <input
-            type="text"
-            placeholder="Personal Thoughts"
-            className="w-full p-2 rounded-lg mb-2 border border-gray-300"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        );
-      case "other":
-        return (
-          <textarea
-            placeholder="Other Details"
-            className="w-full p-3 rounded-lg mb-2 border border-gray-300"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        );
       default:
         return null;
     }
@@ -229,7 +210,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               onClick={closeModal}
               className="absolute top-2 right-1 text-gray-700 font-bold text-xl"
             >
-              <X size={28} color="red"/>
+              <X size={28} color="red" />
             </button>
             <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 text-white py-2 px-4 rounded-lg">
               Create a Post
@@ -266,7 +247,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 </button>
               </div>
             )}
-             <input
+            <input
               id="fileInput"
               type="file"
               accept="image/*"
@@ -284,7 +265,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             <button
               onClick={handlePostCreation}
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 text-white font-semibold py-2 rounded-lg transition duration-300"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 text-white font-semibold py-2 rounded-lg transition duration-300 flex justify-center items-center"
             >
               {isPending ? <Loader className="animate-spin" /> : "Post"}
             </button>
