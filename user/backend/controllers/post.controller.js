@@ -3,170 +3,186 @@ import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 
+// Fetch posts for the user's feed
 export const getFeedPosts = async (req, res) => {
-	try {
-		const posts = await Post.find({ author: { $in: [...req.user.Links, req.user._id] } })
-			.populate("author", "name username profilePicture headline")
-			.populate("comments.user", "name profilePicture")
-			.sort({ createdAt: -1 });
+    try {
+        const userIds = [...req.user.Links, req.user._id]; // Include user's connections and themselves
+        const posts = await Post.find({ author: { $in: userIds } })
+            .populate("author", "name username profilePicture headline")
+            .populate("comments.user", "name profilePicture")
+            .sort({ createdAt: -1 });
 
-		res.status(200).json(posts);
-	} catch (error) {
-		console.error("Error in getFeedPosts controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error in getFeedPosts controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
+// Create a new post
 
 export const createPost = async (req, res) => {
-	try {
-		const { content, image, type } = req.body; // Include type here
-		let newPost;
+    try {
+        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
+        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
 
-		if (image) {
-			const imgResult = await cloudinary.uploader.upload(image);
-			newPost = new Post({
-				author: req.user._id,
-				content,
-				image: imgResult.secure_url,
-				type, // Include type when creating a new post
-			});
-		} else {
-			newPost = new Post({
-				author: req.user._id,
-				content,
-				type, // Include type here too
-			});
-		}
+        let newPostData = {
+            author: req.user._id,
+            content,
+            type,
+        };
 
-		await newPost.save();
+        // Include details based on post type
+        if (type === "job" && jobDetails) {
+            newPostData.jobDetails = jobDetails; // Add jobDetails to post data
+        } else if (type === "internship" && internshipDetails) {
+            newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
+        } else if (type === "event" && eventDetails) {
+            newPostData.eventDetails = eventDetails; // Add eventDetails to post data
+        }
 
-		res.status(201).json(newPost);
-	} catch (error) {
-		console.error("Error in createPost controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+        // Upload image to Cloudinary if provided
+        if (image) {
+            const imgResult = await cloudinary.uploader.upload(image);
+            newPostData.image = imgResult.secure_url; // Add image URL to post data
+        }
+
+        // Create a new post instance with the correct structure
+        const newPost = new Post(newPostData);
+        await newPost.save();
+
+        console.log("Post created successfully:", newPost); // Log successful creation
+        res.status(201).json(newPost);
+    } catch (error) {
+        console.error("Error in createPost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
+
+// Delete a post
 export const deletePost = async (req, res) => {
-	try {
-		const postId = req.params.id;
-		const userId = req.user._id;
+    try {
+        const postId = req.params.id;
+        const userId = req.user._id;
 
-		const post = await Post.findById(postId);
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
 
-		if (!post) {
-			return res.status(404).json({ message: "Post not found" });
-		}
+        // Check if the current user is the author of the post
+        if (post.author.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to delete this post" });
+        }
 
-		// check if the current user is the author of the post
-		if (post.author.toString() !== userId.toString()) {
-			return res.status(403).json({ message: "You are not authorized to delete this post" });
-		}
+        // Delete the image from Cloudinary if it exists
+        if (post.image) {
+            const publicId = post.image.split("/").pop().split(".")[0];
+            await cloudinary.uploader.destroy(publicId);
+        }
 
-		// delete the image from cloudinary as well!
-		if (post.image) {
-			await cloudinary.uploader.destroy(post.image.split("/").pop().split(".")[0]);
-		}
-
-		await Post.findByIdAndDelete(postId);
-
-		res.status(200).json({ message: "Post deleted successfully" });
-	} catch (error) {
-		console.log("Error in delete post controller", error.message);
-		res.status(500).json({ message: "Server error" });
-	}
+        await Post.findByIdAndDelete(postId);
+        res.status(200).json({ message: "Post deleted successfully" });
+    } catch (error) {
+        console.error("Error in deletePost controller:", error.message);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
+// Get a post by ID
 export const getPostById = async (req, res) => {
-	try {
-		const postId = req.params.id;
-		const post = await Post.findById(postId)
-			.populate("author", "name username profilePicture headline")
-			.populate("comments.user", "name profilePicture username headline");
+    try {
+        const postId = req.params.id;
+        const post = await Post.findById(postId)
+            .populate("author", "name username profilePicture headline")
+            .populate("comments.user", "name profilePicture username headline");
 
-		res.status(200).json(post);
-	} catch (error) {
-		console.error("Error in getPostById controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error in getPostById controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
+// Create a comment on a post
 export const createComment = async (req, res) => {
-	try {
-		const postId = req.params.id;
-		const { content } = req.body;
+    try {
+        const postId = req.params.id;
+        const { content } = req.body;
 
-		const post = await Post.findByIdAndUpdate(
-			postId,
-			{
-				$push: { comments: { user: req.user._id, content } },
-			},
-			{ new: true }
-		).populate("author", "name email username headline profilePicture");
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            { $push: { comments: { user: req.user._id, content } } },
+            { new: true }
+        ).populate("author", "name email username headline profilePicture");
 
-		// create a notification if the comment owner is not the post owner
-		if (post.author._id.toString() !== req.user._id.toString()) {
-			const newNotification = new Notification({
-				recipient: post.author,
-				type: "comment",
-				relatedUser: req.user._id,
-				relatedPost: postId,
-			});
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
 
-			await newNotification.save();
+        // Create a notification if the comment owner is not the post owner
+        if (post.author._id.toString() !== req.user._id.toString()) {
+            const newNotification = new Notification({
+                recipient: post.author,
+                type: "comment",
+                relatedUser: req.user._id,
+                relatedPost: postId,
+            });
 
-			try {
-				const postUrl = process.env.CLIENT_URL + "/post/" + postId;
-				await sendCommentNotificationEmail(
-					post.author.email,
-					post.author.name,
-					req.user.name,
-					postUrl,
-					content
-				);
-			} catch (error) {
-				console.log("Error in sending comment notification email:", error);
-			}
-		}
+            await newNotification.save();
 
-		res.status(200).json(post);
-	} catch (error) {
-		console.error("Error in createComment controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+            // Send notification email
+            const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+            await sendCommentNotificationEmail(post.author.email, post.author.name, req.user.name, postUrl, content);
+        }
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error in createComment controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
+// Like or unlike a post
 export const likePost = async (req, res) => {
-	try {
-		const postId = req.params.id;
-		const post = await Post.findById(postId);
-		const userId = req.user._id;
+    try {
+        const postId = req.params.id;
+        const userId = req.user._id;
 
-		if (post.likes.includes(userId)) {
-			// unlike the post
-			post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
-		} else {
-			// like the post
-			post.likes.push(userId);
-			// create a notification if the post owner is not the user who liked
-			if (post.author.toString() !== userId.toString()) {
-				const newNotification = new Notification({
-					recipient: post.author,
-					type: "like",
-					relatedUser: userId,
-					relatedPost: postId,
-				});
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
 
-				await newNotification.save();
-			}
-		}
+        if (post.likes.includes(userId)) {
+            // Unlike the post
+            post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
+        } else {
+            // Like the post
+            post.likes.push(userId);
+            
+            // Create a notification if the post owner is not the user who liked
+            if (post.author.toString() !== userId.toString()) {
+                const newNotification = new Notification({
+                    recipient: post.author,
+                    type: "like",
+                    relatedUser: userId,
+                    relatedPost: postId,
+                });
 
-		await post.save();
+                await newNotification.save();
+            }
+        }
 
-		res.status(200).json(post);
-	} catch (error) {
-		console.error("Error in likePost controller:", error);
-		res.status(500).json({ message: "Server error" });
-	}
+        await post.save();
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error in likePost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
