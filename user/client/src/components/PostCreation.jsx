@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { Image, Loader, X } from "lucide-react";
+import { Image, Loader } from "lucide-react";
 
 const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [type, setType] = useState(selectedPostType || "discussion");
-  
+
   // State variables for additional fields
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -18,7 +18,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
-  
+
   const queryClient = useQueryClient();
 
   const { mutate: createPostMutation, isPending } = useMutation({
@@ -43,6 +43,23 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       setType(selectedPostType);
     }
   }, [selectedPostType]);
+
+  // Close modal when clicking outside the modal
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        closeModal();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [closeModal]);
 
   const handlePostCreation = async () => {
     try {
@@ -80,7 +97,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     setImage(null);
     setImagePreview(null);
     setType("discussion");
-    
+
     // Reset additional fields
     setCompanyName("");
     setJobTitle("");
@@ -89,10 +106,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     setEventName("");
     setEventDate("");
     setEventLocation("");
-    
+
     closeModal();
   };
-
 
   const handleFileButtonClick = () => {
     document.getElementById("fileInput").click();
@@ -199,6 +215,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       {selectedPostType && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div
+            ref={modalRef}
             className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]" // added max-height and overflow-y for scrolling
             style={{
               backgroundImage: "url('../../public/background.png')",
@@ -206,15 +223,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               backgroundPosition: "center",
             }}
           >
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-1 text-gray-700 font-bold text-xl"
-            >
-              <X size={28} color="red" />
-            </button>
-            <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 text-white py-2 px-4 rounded-lg">
+            <div className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 text-white py-2 px-4 rounded-lg">
               Create a Post
-            </h2>
+            </div>
             <div className="flex items-start space-x-3 mb-4">
               <img
                 src={user.profilePicture || "/avatar.png"}
@@ -236,15 +247,6 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                   alt="Selected"
                   className="w-full h-auto rounded-lg"
                 />
-                <button
-                  onClick={() => {
-                    setImage(null);
-                    setImagePreview(null);
-                  }}
-                  className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md text-gray-500 hover:text-gray-700"
-                >
-                  <X size={16} />
-                </button>
               </div>
             )}
             <input
@@ -256,7 +258,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             />
             <button
               onClick={handleFileButtonClick}
-              className="flex items-center space-x-2 mb-4 p-2 rounded-lg "
+              className="flex items-center space-x-2 mb-4 p-2 rounded-lg"
             >
               <Image size={20} color="red" />
               <span>Upload Photo</span>
