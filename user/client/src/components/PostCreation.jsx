@@ -205,8 +205,58 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             />
           </>
         );
+      case "personal":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Personal Details"
+              className="w-full p-2 rounded-lg mb-2 border border-gray-300"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+          </>
+        );
       default:
         return null;
+    }
+  };
+
+  const getButtonGradient = () => {
+    switch (type) {
+      case "discussion":
+        return "bg-gradient-to-r from-orange-400 to-yellow-400";
+      case "job":
+        return "bg-gradient-to-r from-indigo-400 to-purple-400";
+      case "internship":
+        return "bg-gradient-to-r from-green-600 to-green-300";
+      case "event":
+        return "bg-gradient-to-r from-blue-400 to-blue-200";
+      case "personal":
+        return "bg-gradient-to-r from-pink-500 to-pink-300";
+      case "other":
+        return "bg-gradient-to-r from-blue-500 to-blue-300";
+      default:
+        return "";
+    }
+  };
+
+  const getInputBackground = () => {
+    switch (type) {
+      case "discussion":
+        return "bg-yellow-100 opacity-80";
+      case "job":
+        return "bg-purple-100 opacity-80";
+      case "internship":
+        return "bg-green-100 opacity-80";
+      case "event":
+        return "bg-blue-100 opacity-80";
+      case "personal":
+        return "bg-pink-100 opacity-80";
+      case "other":
+        return "bg-blue-200 opacity-80";
+      default:
+        return "opacity-80";
     }
   };
 
@@ -216,14 +266,16 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div
             ref={modalRef}
-            className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]" // added max-height and overflow-y for scrolling
+            className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]"
             style={{
-              backgroundImage: "url('../../public/background.png')",
+              backgroundImage: "url('../../public/background.png')", // Path to your background image in the public folder
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           >
-            <div className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 text-white py-2 px-4 rounded-lg">
+            <div
+              className={`text-xl font-semibold mb-4 text-white py-2 px-4 rounded-lg ${getButtonGradient()}`}
+            >
               Create a Post
             </div>
             <div className="flex items-start space-x-3 mb-4">
@@ -234,7 +286,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               />
               <textarea
                 placeholder="What's on your mind?"
-                className="w-full p-3 rounded-lg bg-purple-50 focus:bg-purple-100 focus:outline-none resize-none min-h-[100px] transition duration-200"
+                className={`w-full p-3 rounded-lg bg-opacity-80 focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
@@ -254,20 +306,22 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="hidden" // Hide the actual input
+              className="hidden"
             />
             <button
               onClick={handleFileButtonClick}
-              className="flex items-center space-x-2 mb-4 p-2 rounded-lg"
+              className="flex items-center space-x-2 mb-4 p-2 rounded-lg "
             >
               <Image size={20} color="red" />
               <span>Upload Photo</span>
             </button>
+
             {renderAdditionalInputs()}
+
             <button
               onClick={handlePostCreation}
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 text-white font-semibold py-2 rounded-lg transition duration-300 flex justify-center items-center"
+              className={`w-full py-2 rounded-lg transition duration-300 flex justify-center items-center ${getButtonGradient()}`}
             >
               {isPending ? <Loader className="animate-spin" /> : "Post"}
             </button>
