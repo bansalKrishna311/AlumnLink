@@ -100,6 +100,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
             <div>
               <ul className="mb-6 flex flex-col gap-1.5">
+                {/* Institutes Dropdown */}
                 <SidebarLinkGroup activeCondition={pathname.includes('institutes')}>
                   {(handleClick, open) => (
                     <>
@@ -113,7 +114,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        Add a new admin
+                        Institutes
                         <svg
                           className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
                             open && 'rotate-180'
@@ -143,7 +144,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Add New admin
+                             Institute Analysis
                             </NavLink>
                           </li>
                           <li>
@@ -154,7 +155,135 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Institutes List
+                              Manage Institutes
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </SidebarLinkGroup>
+
+                {/* Admins Dropdown */}
+                <SidebarLinkGroup activeCondition={pathname.includes('admins')}>
+                  {(handleClick, open) => (
+                    <>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
+                          pathname.includes('admins') && 'bg-slate-700'
+                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        Admins
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                            open && 'rotate-180'
+                          }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                          />
+                        </svg>
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden ${!open && 'hidden'}`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/create-admin"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Add Admin
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to="/admins"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Manage Admins
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </SidebarLinkGroup>
+
+                {/* School Dropdown */}
+                <SidebarLinkGroup activeCondition={pathname.includes('School')}>
+                  {(handleClick, open) => (
+                    <>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
+                          pathname.includes('School') && 'bg-slate-700'
+                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        School
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                            open && 'rotate-180'
+                          }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                          />
+                        </svg>
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden ${!open && 'hidden'}`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/create-student"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Add Student
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to="/School"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Manage School
                             </NavLink>
                           </li>
                         </ul>
@@ -164,55 +293,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 </SidebarLinkGroup>
                 <li>
                   <NavLink
-                    to="/rest"
+                    to="/create-admin"
                     className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
                       pathname === '/rest' && 'bg-slate-700'
                     }`}
                   >
-                    Rest
+                    Add a new admin
                   </NavLink>
                 </li>
+
+                {/* More links can go here */}
               </ul>
             </div>
           </nav>
         </div>
-
-        <div className="absolute bottom-0 left-0 w-full px-4 py-4">
-          <button
-            onClick={() => logout()}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-red-600 text-white text-lg font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <LogOut size={20} />
-            <span>Sign Out</span>
-          </button>
-        </div>
       </aside>
-
-      {/* Navbar when Sidebar is closed and only for small screens */}
-      {!sidebarOpen && (
-        <div className="fixed top-0 left-0 right-0 z-40 bg-slate-800 text-white flex items-center justify-between p-4 lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)} // Toggle sidebar on click
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              ></path>
-            </svg>
-          </button>
-          <img src={Logo} alt="Logo" className="h-10 w-auto mx-auto" />
-        </div>
-      )}
     </div>
   );
 };
