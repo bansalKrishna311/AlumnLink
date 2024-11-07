@@ -37,13 +37,15 @@ function App() {
                 return adminRoutes;
             case "superadmin":
                 return superAdminRoutes;
+                case "user":
+                return userRoutes;
             default:
                 return userRoutes;
         }
     };
 
     return (
-        <Layout>
+        <>
             <Routes>
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
@@ -60,7 +62,7 @@ function App() {
                 )}
             </Routes>
             <Toaster />
-        </Layout>
+        </>
     );
 }
 
