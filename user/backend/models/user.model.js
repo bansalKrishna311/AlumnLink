@@ -60,6 +60,14 @@ const userSchema = new mongoose.Schema(
 			enum: ["admin", "superadmin", "user"],
 			default: "user",
 		},
+		adminType: {
+			type: String,
+			enum: ["institute", "corporate", "school"],
+			required: function () {
+			  return this.role === "admin";  // Only required for admins
+			},
+			default: "institute",  // Default type if admin role is selected
+		  },
 	},
 
 	{ timestamps: true }

@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 export const signup = async (req, res) => {
 	try {
-	  const { name, username, email, password, role } = req.body; // Include role from request body
+	  const { name, username, email, password, role, adminType } = req.body;
   
 	  if (!name || !username || !email || !password) {
 		return res.status(400).json({ message: "All fields are required" });
@@ -24,12 +24,23 @@ export const signup = async (req, res) => {
 	  const salt = await bcrypt.genSalt(10);
 	  const hashedPassword = await bcrypt.hash(password, salt);
   
-	  // Assign role directly from the request body, with a fallback to "user"
-	  const user = new User({ name, email, password: hashedPassword, username, role: role || "user" });
+	  // For "admin" role, adminType is required
+	  if (role === "admin" && !adminType) {
+		return res.status(400).json({ message: "Admin type is required" });
+	  }
+  
+	  const user = new User({
+		name,
+		email,
+		password: hashedPassword,
+		username,
+		role: role || "user",
+		adminType: role === "admin" ? adminType : undefined,  // Set adminType only if the role is admin
+	  });
+  
 	  await user.save();
   
 	  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
-  
 	  const session = new Session({ userId: user._id, token });
 	  await session.save();
   
@@ -43,7 +54,6 @@ export const signup = async (req, res) => {
 	  res.status(201).json({ message: "User registered successfully" });
   
 	  const profileUrl = process.env.CLIENT_URL + "/profile/" + user.username;
-  
 	  try {
 		await sendWelcomeEmail(user.email, user.name, profileUrl);
 	  } catch (emailError) {
@@ -54,6 +64,7 @@ export const signup = async (req, res) => {
 	  res.status(500).json({ message: "Internal server error" });
 	}
   };
+  
   
 
 export const login = async (req, res) => {
