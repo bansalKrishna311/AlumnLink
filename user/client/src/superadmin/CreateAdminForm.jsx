@@ -10,6 +10,7 @@ const CreateAdminForm = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [adminType, setAdminType] = useState("institute"); // Default type
   const queryClient = useQueryClient();
 
   const { mutate: createAdmin, isLoading } = useMutation({
@@ -21,6 +22,7 @@ const CreateAdminForm = () => {
       setUsername("");
       setEmail("");
       setPassword("");
+      setAdminType("institute"); // Reset to default type
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -29,11 +31,11 @@ const CreateAdminForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createAdmin({ name, username, email, password, role: "admin" });
+    createAdmin({ name, username, email, password, role: "admin", adminType });
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50"> {/* Added flex properties for centering */}
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-md w-full">
         <h2 className="text-2xl font-semibold mb-4">Create Admin</h2>
         <form onSubmit={handleSubmit} className="w-full">
@@ -69,6 +71,15 @@ const CreateAdminForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <select
+            value={adminType}
+            onChange={(e) => setAdminType(e.target.value)}
+            className="w-full mt-4 p-2 border border-gray-300 rounded-lg"
+          >
+            <option value="institute">Institute</option>
+            <option value="corporate">Corporate</option>
+            <option value="school">School</option>
+          </select>
 
           <button
             type="submit"
@@ -82,6 +93,9 @@ const CreateAdminForm = () => {
     </div>
   );
 };
+
+
+
 
 
 export default CreateAdminForm;
