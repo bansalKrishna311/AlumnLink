@@ -1,3 +1,4 @@
+import DefaultLayout from "../components/layout/DefaultLayout";
 import Layout from "../components/layout/Layout";
 import CreateAdminForm from "../superadmin/CreateAdminForm";
 import SuperAdminPage from "../superadmin/SuperAdminPage";
@@ -8,10 +9,10 @@ const superAdminRoutes = [
     { 
         path: "/", 
         element: (
-            <Layout>
+            <DefaultLayout>
                 <PageTitle title="Create an admin | AlumnLink" />
                 <SuperAdminPage />
-            </Layout>
+            </DefaultLayout>
         )
     },
     { 
