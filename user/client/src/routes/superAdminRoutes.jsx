@@ -5,4 +5,5 @@ const superAdminRoutes = [
     // Add additional super-admin-specific routes here if needed
 ];
 
+
 export default superAdminRoutes;
