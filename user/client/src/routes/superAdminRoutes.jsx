@@ -18,10 +18,12 @@ const superAdminRoutes = [
     { 
         path: "/create-admin", 
         element: (
-            <Layout>
+            <DefaultLayout>
                 <PageTitle title="Create an admin | AlumnLink" />
+             
                 <CreateAdminForm />
-            </Layout>
+               
+            </DefaultLayout>
         )
     },
 

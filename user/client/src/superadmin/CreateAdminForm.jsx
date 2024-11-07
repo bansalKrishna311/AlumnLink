@@ -33,52 +33,55 @@ const CreateAdminForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-md mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">Create Admin</h2>
-      <form onSubmit={handleSubmit} className="w-full">
-        <Input
-          icon={User}
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <Input
-          icon={User}
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <Input
-          icon={Mail}
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          icon={Lock}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+    <div className="flex items-center justify-center min-h-screen bg-gray-50"> {/* Added flex properties for centering */}
+      <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-md w-full">
+        <h2 className="text-2xl font-semibold mb-4">Create Admin</h2>
+        <form onSubmit={handleSubmit} className="w-full">
+          <Input
+            icon={User}
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <Input
+            icon={User}
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <Input
+            icon={Mail}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            icon={Lock}
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-        >
-          {isLoading ? "Creating..." : "Create Admin"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+          >
+            {isLoading ? "Creating..." : "Create Admin"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
+
 
 export default CreateAdminForm;
