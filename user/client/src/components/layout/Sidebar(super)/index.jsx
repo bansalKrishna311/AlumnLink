@@ -149,7 +149,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           </li>
                           <li>
                             <NavLink
-                              to="/institutes"
+                              to="/Institute-List"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
@@ -178,7 +178,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        Admins
+                        Corporates
                         <svg
                           className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
                             open && 'rotate-180'
@@ -202,24 +202,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                           <li>
                             <NavLink
-                              to="/create-admin"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Add Admin
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
                               to="/admins"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
                               }
                             >
-                              Manage Admins
+                              Corporate analysiss
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to="/corporate-List"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Manage Corporates
                             </NavLink>
                           </li>
                         </ul>
@@ -272,18 +272,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Add Student
+                              Schools Analysis
                             </NavLink>
                           </li>
                           <li>
                             <NavLink
-                              to="/School"
+                              to="/School-List"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
                               }
                             >
-                              Manage School
+                              Manage Schools
                             </NavLink>
                           </li>
                         </ul>
@@ -307,7 +307,43 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             </div>
           </nav>
         </div>
+        
+        <div className="absolute bottom-0 left-0 w-full px-4 py-4">
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-red-600 text-white text-lg font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <LogOut size={20} />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </aside>
+
+      {/* Navbar when Sidebar is closed and only for small screens */}
+      {!sidebarOpen && (
+        <div className="fixed top-0 left-0 right-0 z-40 bg-slate-800 text-white flex items-center justify-between p-4 lg:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)} // Toggle sidebar on click
+            className="text-gray-400 hover:text-gray-500"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          </button>
+          <img src={Logo} alt="Logo" className="h-10 w-auto mx-auto" />
+        </div>
+      )}
     </div>
   );
 };
