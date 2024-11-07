@@ -2,30 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { axiosInstance } from "../../lib/axios"; 
 import { Loader } from 'lucide-react';
 
-const InstituteList = () => {
-  const [institutes, setInstitutes] = useState([]);
+const CorporateList = () => {
+  const [corporates, setCorporates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchInstitutes = async () => {
+    const fetchCorporates = async () => {
       setIsLoading(true);
       try {
-        const response = await axiosInstance.get('/admin/institutes');
-        setInstitutes(response.data);
+        const response = await axiosInstance.get('/admin/corporates'); // Adjust endpoint if necessary
+        setCorporates(response.data);
       } catch (error) {
-        console.error('Error fetching institutes:', error);
+        console.error('Error fetching corporates:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchInstitutes();
+    fetchCorporates();
   }, []);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center">
         <Loader size={24} className="animate-spin" />
-        <span className="ml-2">Loading institutes...</span>
+        <span className="ml-2">Loading corporates...</span>
       </div>
     );
   }
@@ -37,29 +37,27 @@ const InstituteList = () => {
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className="min-w-[220px] py-4 px-4 font-medium text-black xl:pl-11">
-                Institute Name
+                Corporate Name
               </th>
               <th className="min-w-[150px] py-4 px-4 font-medium text-black">
                 Joining Date
               </th>
-             
               <th className="py-4 px-4 font-medium text-black">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {institutes.map((institute, index) => (
+            {corporates.map((corporate, index) => (
               <tr key={index}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 xl:pl-11">
-                  <h5 className="font-medium text-black">{institute.name}</h5>
+                  <h5 className="font-medium text-black">{corporate.name}</h5>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4">
                   <p className="text-black">
-                    {new Date(institute.createdAt).toLocaleDateString()} {/* Use createdAt for join date */}
+                    {new Date(corporate.createdAt).toLocaleDateString()} {/* Display join date */}
                   </p>
                 </td>
-             
                 <td className="border-b border-[#eee] py-5 px-4">
                   <div className="flex items-center space-x-3.5">
                     <button className="hover:text-primary">
@@ -112,4 +110,4 @@ const InstituteList = () => {
   );
 };
 
-export default InstituteList;
+export default CorporateList;
