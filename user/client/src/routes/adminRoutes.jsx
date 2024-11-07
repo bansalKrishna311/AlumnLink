@@ -1,9 +1,18 @@
 
 import AdminPage from "../admin/AdminPage";
+import Layout from "../components/layout/Layout";
+import PageTitle from "../utils/PageTitle";
 
 const adminRoutes = [
-    { path: "/", element: <AdminPage /> },
-    // Add additional admin-specific routes here if needed
+    { 
+        path: "/", 
+        element: (
+            <Layout>
+                <PageTitle title="Admin Home | AlumnLink" />
+                <AdminPage />
+            </Layout>
+        )
+    },
 ];
 
 export default adminRoutes;

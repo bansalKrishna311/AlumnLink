@@ -1,17 +1,21 @@
-import HomePage from "../pages/HomePage";
-import NotificationsPage from "../pages/NotificationsPage";
-import NetworkPage from "../pages/NetworkPage";
-import PostPage from "../pages/PostPage";
-import ProfilePage from "../pages/ProfilePage";
-import PageTitle from "../utils/PageTitle";
-import { Layout } from "lucide-react";
+
+
+
+import React from 'react'
+import Layout from '../components/layout/Layout';
+import PageTitle from '../utils/PageTitle';
+import HomePage from '../pages/HomePage';
+import NotificationsPage from '../pages/NotificationsPage';
+import NetworkPage from '../pages/NetworkPage';
+import PostPage from '../pages/PostPage';
+import ProfilePage from '../pages/ProfilePage';
 
 const userRoutes = [
     { 
         path: "/", 
         element: (
             <Layout>
-                <PageTitle title="Home | Dr.Kawatra" />
+                <PageTitle title="Home | AlumnLink" />
                 <HomePage />
             </Layout>
         )
@@ -20,7 +24,7 @@ const userRoutes = [
         path: "/notifications", 
         element: (
             <Layout>
-                <PageTitle title="Notifications | Dr.Kawatra" />
+                <PageTitle title="Notifications | AlumnLink" />
                 <NotificationsPage />
             </Layout>
         )
@@ -29,7 +33,7 @@ const userRoutes = [
         path: "/network", 
         element: (
             <Layout>
-                <PageTitle title="Network | Dr.Kawatra" />
+                <PageTitle title="Network | AlumnLink" />
                 <NetworkPage />
             </Layout>
         )
@@ -38,7 +42,7 @@ const userRoutes = [
         path: "/post/:postId", 
         element: (
             <Layout>
-                <PageTitle title="Post | Dr.Kawatra" />
+                <PageTitle title="Post | AlumnLink" />
                 <PostPage />
             </Layout>
         )
@@ -47,11 +51,12 @@ const userRoutes = [
         path: "/profile/:username", 
         element: (
             <Layout>
-                <PageTitle title="Profile | Dr.Kawatra" />
+                <PageTitle title="Profile | AlumnLink" />
                 <ProfilePage />
             </Layout>
         )
     },
 ];
 
-export default userRoutes;
+
+export default userRoutes
