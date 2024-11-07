@@ -7,7 +7,6 @@ import PasswordResetPage from "./pages/auth/PasswordResetPage";
 import toast, { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./lib/axios";
-
 // Import role-based routes
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
@@ -43,7 +42,7 @@ function App() {
     };
 
     return (
-        <Layout>
+        <>
             <Routes>
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
@@ -60,7 +59,7 @@ function App() {
                 )}
             </Routes>
             <Toaster />
-        </Layout>
+        </>
     );
 }
 
