@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
 			},
 			default: "institute",  // Default type if admin role is selected
 		  },
+		  isApproved: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	{ timestamps: true }
