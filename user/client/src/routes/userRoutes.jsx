@@ -13,6 +13,7 @@ import ProfilePage from '../pages/ProfilePage';
 const userRoutes = [
     { 
         path: "/", 
+        
         element: (
             <Layout>
                 <PageTitle title="Home | AlumnLink" />
