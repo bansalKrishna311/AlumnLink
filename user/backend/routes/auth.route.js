@@ -10,6 +10,9 @@ router.post("/login", login);
 router.post("/logout", logout);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
+
+
+// kerg
 router.get("/me", protectRoute, getCurrentUser);
 
 export default router;
