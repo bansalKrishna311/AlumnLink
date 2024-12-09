@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { axiosInstance } from "../lib/axios"; // Update the path as necessary
+import { Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +22,35 @@ import {
 import * as Dialog from "@radix-ui/react-dialog";
 
 const JoinNetwork = () => {
+  const [institutes, setInstitutes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch institutes
+  useEffect(() => {
+    const fetchInstitutes = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axiosInstance.get("/admin/institutes");
+        setInstitutes(response.data);
+      } catch (error) {
+        console.error("Error fetching institutes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInstitutes();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center">
+        <Loader size={24} className="animate-spin" />
+        <span className="ml-2">Loading institutes...</span>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Dialog.Root>
@@ -53,9 +84,11 @@ const JoinNetwork = () => {
                           <SelectValue placeholder="Select a network" />
                         </SelectTrigger>
                         <SelectContent position="popper">
-                          <SelectItem value="network1">Network 1</SelectItem>
-                          <SelectItem value="network2">Network 2</SelectItem>
-                          <SelectItem value="network3">Network 3</SelectItem>
+                          {institutes.map((institute, index) => (
+                            <SelectItem key={index} value={institute.name}>
+                              {institute.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -81,7 +114,6 @@ const JoinNetwork = () => {
                 </form>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline">Cancel</Button>
                 <Button>Submit</Button>
               </CardFooter>
             </Card>
