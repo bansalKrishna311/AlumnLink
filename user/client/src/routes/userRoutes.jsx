@@ -5,10 +5,13 @@ import React from 'react'
 import Layout from '../components/layout/Layout';
 import PageTitle from '../utils/PageTitle';
 import HomePage from '../pages/HomePage';
+
+
 import NotificationsPage from '../pages/NotificationsPage';
 import NetworkPage from '../pages/NetworkPage';
 import PostPage from '../pages/PostPage';
 import ProfilePage from '../pages/ProfilePage';
+import JoinNetwork from '../pages/joinNetwork';
 
 const userRoutes = [
     { 
@@ -16,10 +19,20 @@ const userRoutes = [
         element: (
             <Layout>
                 <PageTitle title="Home | AlumnLink" />
-                <HomePage />
+                <JoinNetwork/>
             </Layout>
         )
     },
+
+    // { 
+    //     path: "/", 
+    //     element: (
+    //         <Layout>
+    //             <PageTitle title="Home | AlumnLink" />
+    //             <HomePage />
+    //         </Layout>
+    //     )
+    // },
     { 
         path: "/notifications", 
         element: (
