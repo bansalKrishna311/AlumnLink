@@ -16,6 +16,7 @@ import JoinNetwork from '../pages/joinNetwork';
 const userRoutes = [
     { 
         path: "/", 
+        
         element: (
             <Layout>
                 <PageTitle title="Home | AlumnLink" />
