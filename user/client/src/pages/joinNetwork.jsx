@@ -34,7 +34,6 @@ const JoinNetwork = () => {
   const [formData, setFormData] = useState({
     network: "",
     name: "",
-    universityRollNo: "",
     rollNumber: "",
     batch: "",
     courseName: "", // Added Course Name field
@@ -98,8 +97,6 @@ const JoinNetwork = () => {
     const newErrors = {};
     if (!formData.network) newErrors.network = "Please select a network.";
     if (!formData.name) newErrors.name = "Name is required.";
-    if (!formData.universityRollNo || !/^\d+$/.test(formData.universityRollNo))
-      newErrors.universityRollNo = "University Roll No. must be a number.";
     if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
       // Alphanumeric validation for roll number
       newErrors.rollNumber =
@@ -211,26 +208,6 @@ const JoinNetwork = () => {
                       />
                       {errors.name && (
                         <p className="text-red-500 text-sm">{errors.name}</p>
-                      )}
-                    </div>
-
-                    {/* University Roll No. */}
-                    <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="universityRollNo">
-                        University Roll No.
-                      </Label>
-                      <Input
-                        id="universityRollNo"
-                        name="universityRollNo"
-                        placeholder="Enter University Roll No."
-                        value={formData.universityRollNo}
-                        onChange={handleInputChange}
-                        type="number"
-                      />
-                      {errors.universityRollNo && (
-                        <p className="text-red-500 text-sm">
-                          {errors.universityRollNo}
-                        </p>
                       )}
                     </div>
 
