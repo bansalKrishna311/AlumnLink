@@ -56,9 +56,18 @@ const JoinNetwork = () => {
         setCorporates(corporateRes.data);
         // Combine all networks into one list
         setAllNetworks([
-          ...instituteRes.data.map((item) => ({ type: "Institute", name: item.name })),
-          ...schoolRes.data.map((item) => ({ type: "School", name: item.name })),
-          ...corporateRes.data.map((item) => ({ type: "Corporate", name: item.name })),
+          ...instituteRes.data.map((item) => ({
+            type: "Institute",
+            name: item.name,
+          })),
+          ...schoolRes.data.map((item) => ({
+            type: "School",
+            name: item.name,
+          })),
+          ...corporateRes.data.map((item) => ({
+            type: "Corporate",
+            name: item.name,
+          })),
         ]);
       } catch (error) {
         console.error("Error fetching networks:", error);
@@ -91,8 +100,10 @@ const JoinNetwork = () => {
     if (!formData.name) newErrors.name = "Name is required.";
     if (!formData.universityRollNo || !/^\d+$/.test(formData.universityRollNo))
       newErrors.universityRollNo = "University Roll No. must be a number.";
-    if (!formData.rollNumber || !/^\d+$/.test(formData.rollNumber))
-      newErrors.rollNumber = "Roll Number must be a number.";
+    if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
+      // Alphanumeric validation for roll number
+      newErrors.rollNumber =
+        "Roll Number must contain only letters and numbers.";
     if (!formData.batch || !/^\d+$/.test(formData.batch))
       newErrors.batch = "Batch must be a number.";
     if (!formData.courseName) newErrors.courseName = "Course Name is required."; // Added validation for Course Name
@@ -130,10 +141,10 @@ const JoinNetwork = () => {
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />
-          <Dialog.Content
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full"
-          >
-            <Dialog.Title className="text-lg font-bold">Join Network</Dialog.Title>
+          <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+            <Dialog.Title className="text-lg font-bold">
+              Join Network
+            </Dialog.Title>
             <Dialog.Description className="text-gray-500 mt-2 mb-4">
               Select your preferred network and enter your details.
             </Dialog.Description>
@@ -205,7 +216,9 @@ const JoinNetwork = () => {
 
                     {/* University Roll No. */}
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="universityRollNo">University Roll No.</Label>
+                      <Label htmlFor="universityRollNo">
+                        University Roll No.
+                      </Label>
                       <Input
                         id="universityRollNo"
                         name="universityRollNo"
@@ -223,16 +236,21 @@ const JoinNetwork = () => {
 
                     {/* Roll Number */}
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="rollNumber">Collge Admission Number</Label>
+                      <Label htmlFor="rollNumber">
+                        College Admission Number
+                      </Label>
                       <Input
                         id="rollNumber"
                         name="rollNumber"
                         placeholder="Enter your roll number"
                         value={formData.rollNumber}
                         onChange={handleInputChange}
+                        type="text" // Allows both letters and numbers
                       />
                       {errors.rollNumber && (
-                        <p className="text-red-500 text-sm">{errors.rollNumber}</p>
+                        <p className="text-red-500 text-sm">
+                          {errors.rollNumber}
+                        </p>
                       )}
                     </div>
 
@@ -245,7 +263,7 @@ const JoinNetwork = () => {
                         placeholder="Enter your batch"
                         value={formData.batch}
                         onChange={handleInputChange}
-                         type="number"
+                        type="number"
                       />
                       {errors.batch && (
                         <p className="text-red-500 text-sm">{errors.batch}</p>
@@ -263,21 +281,21 @@ const JoinNetwork = () => {
                         onChange={handleInputChange}
                       />
                       {errors.courseName && (
-                        <p className="text-red-500 text-sm">{errors.courseName}</p>
+                        <p className="text-red-500 text-sm">
+                          {errors.courseName}
+                        </p>
                       )}
                     </div>
                   </div>
                   <CardFooter className="flex justify-between mt-4">
                     <Button type="submit">Submit</Button>
+                    <Button variant="outline" onClick={() => setFormData({})}>
+                      Reset
+                    </Button>
                   </CardFooter>
                 </form>
               </CardContent>
             </Card>
-            <Dialog.Close asChild>
-              <Button variant="ghost" className="absolute top-2 right-2">
-                Close
-              </Button>
-            </Dialog.Close>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
