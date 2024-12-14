@@ -110,16 +110,21 @@ const JoinNetwork = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (validateForm()) {
-      toast.success("Form submitted successfully!");
-      // Proceed with form submission (e.g., API call)
-      console.log("Form Data:", formData);
+      try {
+        const response = await axiosInstance.post("/network-requests", formData);
+        toast.success(response.data.message || "Request submitted successfully!");
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to submit request");
+      }
     } else {
-      toast.error("Please fill the details.");
+      toast.error("Please fill in all required fields");
     }
   };
+  
 
   if (isLoading) {
     return (
