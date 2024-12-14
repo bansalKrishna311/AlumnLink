@@ -30,12 +30,12 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "Dashboard",
+          url: "/",
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Manage Users",
+          url: "/manageuser",
         },
       ],
     },
@@ -46,8 +46,8 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Contribution Guide",
-          url: "#",
+          title: "Add Event",
+          url: "/addevent",
         },
       ],
     },
@@ -72,15 +72,6 @@ export function AppSidebar({
             defaultOpen
             className="group/collapsible">
             <SidebarGroup>
-              <SidebarGroupLabel
-                asChild
-                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                <CollapsibleTrigger>
-                  {item.title}{""}
-                  <ChevronRight
-                    className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
