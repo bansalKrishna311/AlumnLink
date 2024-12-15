@@ -5,6 +5,7 @@ import ManageUsers from "@/admin/ManageUsers";
 import AddEvent from "@/admin/AddEvent";
 import Layout from "../components/layout/Layout";
 import PageTitle from "../utils/PageTitle";
+import ManageAlumni from "@/admin/manage-alumni";
 
 const adminRoutes = [
     { 
@@ -26,11 +27,20 @@ const adminRoutes = [
         )
     },
     { 
-        path: "/manageuser", 
+        path: "/userrequests", 
         element: (
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
                 <ManageUsers />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/manage-alumni", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Manage User | AlumnLink" />
+                <ManageAlumni />
             </AdminLayout>
         )
     },

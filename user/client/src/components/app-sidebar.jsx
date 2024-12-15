@@ -32,8 +32,12 @@ const data = {
           url: "/",
         },
         {
-          title: "Manage Users",
-          url: "/manageuser",
+          title: "Manage User requests",
+          url: "/userrequests",
+        },
+        {
+          title: "Manage Alumni",
+          url: "/manage-alumni",
         },
       ],
     },
