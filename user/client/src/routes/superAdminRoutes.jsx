@@ -16,6 +16,7 @@ const superAdminRoutes = [
             <DefaultLayout>
                 <PageTitle title="Create an admin | AlumnLink" />
                 <SuperAdminPage />
+                
             </DefaultLayout>
         )
     },

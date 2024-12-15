@@ -34,7 +34,6 @@ const JoinNetwork = () => {
   const [formData, setFormData] = useState({
     network: "",
     name: "",
-    universityRollNo: "",
     rollNumber: "",
     batch: "",
     courseName: "", // Added Course Name field
@@ -98,8 +97,6 @@ const JoinNetwork = () => {
     const newErrors = {};
     if (!formData.network) newErrors.network = "Please select a network.";
     if (!formData.name) newErrors.name = "Name is required.";
-    if (!formData.universityRollNo || !/^\d+$/.test(formData.universityRollNo))
-      newErrors.universityRollNo = "University Roll No. must be a number.";
     if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
       // Alphanumeric validation for roll number
       newErrors.rollNumber =
@@ -113,16 +110,21 @@ const JoinNetwork = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (validateForm()) {
-      toast.success("Form submitted successfully!");
-      // Proceed with form submission (e.g., API call)
-      console.log("Form Data:", formData);
+      try {
+        const response = await axiosInstance.post("/network-requests", formData);
+        toast.success(response.data.message || "Request submitted successfully!");
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to submit request");
+      }
     } else {
-      toast.error("Please fill the details.");
+      toast.error("Please fill in all required fields");
     }
   };
+  
 
   if (isLoading) {
     return (
@@ -211,26 +213,6 @@ const JoinNetwork = () => {
                       />
                       {errors.name && (
                         <p className="text-red-500 text-sm">{errors.name}</p>
-                      )}
-                    </div>
-
-                    {/* University Roll No. */}
-                    <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="universityRollNo">
-                        University Roll No.
-                      </Label>
-                      <Input
-                        id="universityRollNo"
-                        name="universityRollNo"
-                        placeholder="Enter University Roll No."
-                        value={formData.universityRollNo}
-                        onChange={handleInputChange}
-                        type="number"
-                      />
-                      {errors.universityRollNo && (
-                        <p className="text-red-500 text-sm">
-                          {errors.universityRollNo}
-                        </p>
                       )}
                     </div>
 
