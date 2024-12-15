@@ -6,6 +6,7 @@ import AddEvent from "@/admin/AddEvent";
 import Layout from "../components/layout/Layout";
 import PageTitle from "../utils/PageTitle";
 import ManageAlumni from "@/admin/manage-alumni";
+import PostCreationPage from "@/admin/PostCreationPage";
 
 const adminRoutes = [
     { 
@@ -32,6 +33,15 @@ const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
                 <ManageUsers />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/post-creation", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Manage User | AlumnLink" />
+                <PostCreationPage />
             </AdminLayout>
         )
     },
