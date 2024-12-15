@@ -1,44 +1,36 @@
-import React from "react";
-import { FaCheck, FaTimes } from "react-icons/fa"; // Import icons from react-icons
+import React, { useState, useEffect } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import { axiosInstance } from "@/lib/axios"; // Import the axios instance
 
 const ManageUsers = () => {
-  const requests = [
-    {
-      network: "LinkedIn",
-      name: "John Doe",
-      admissionNo: "A12345",
-      batch: "2020-2024",
-      courseName: "B.Tech Computer Science",
-    },
-    {
-      network: "GitHub",
-      name: "Jane Smith",
-      admissionNo: "B56789",
-      batch: "2019-2023",
-      courseName: "MCA",
-    },
-    {
-      network: "Twitter",
-      name: "Alice Johnson",
-      admissionNo: "C98765",
-      batch: "2021-2025",
-      courseName: "BBA",
-    },
-    {
-      network: "Twitter",
-      name: "Alice Johnson",
-      admissionNo: "C98765",
-      batch: "2021-2025",
-      courseName: "BBA",
-    },
-    {
-      network: "Twitter",
-      name: "Alice Johnson",
-      admissionNo: "C98765",
-      batch: "2021-2025",
-      courseName: "BBA",
-    },
-  ];
+  const [requests, setRequests] = useState([]);
+
+  useEffect(() => {
+    // Fetch the network requests from the backend
+    const fetchRequests = async () => {
+      try {
+        const response = await axiosInstance.get("/network-requests");
+        setRequests(response.data);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await axiosInstance.patch(`/network-requests/${id}`, { status });
+      setRequests((prevRequests) =>
+        prevRequests.map((request) =>
+          request._id === id ? { ...request, status } : request
+        )
+      );
+    } catch (error) {
+      console.error("Error updating request status:", error);
+    }
+  };
 
   return (
     <div className="p-6 w-[85vw]">
@@ -55,13 +47,10 @@ const ManageUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {requests.map((request, index) => (
-              <tr
-                key={index}
-                className="border-t bg-white"
-              >
+            {requests.map((request) => (
+              <tr key={request._id} className="border-t bg-white">
                 <td className="px-6 py-4">{request.name}</td>
-                <td className="px-6 py-4">{request.admissionNo}</td>
+                <td className="px-6 py-4">{request.rollNumber}</td>
                 <td className="px-6 py-4">{request.batch}</td>
                 <td className="px-6 py-4">{request.courseName}</td>
                 <td className="px-6 py-4 flex space-x-2">
@@ -69,6 +58,7 @@ const ManageUsers = () => {
                   <button
                     className="w-10 h-10 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded"
                     aria-label="Accept"
+                    onClick={() => handleStatusUpdate(request._id, "Approved")}
                   >
                     <FaCheck />
                   </button>
@@ -76,6 +66,7 @@ const ManageUsers = () => {
                   <button
                     className="w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded"
                     aria-label="Reject"
+                    onClick={() => handleStatusUpdate(request._id, "Rejected")}
                   >
                     <FaTimes />
                   </button>
