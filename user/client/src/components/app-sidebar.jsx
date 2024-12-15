@@ -1,70 +1,66 @@
-import * as React from "react"
-import { ChevronRight } from "lucide-react"
-
-import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
+import * as React from "react";
+import { ChevronRight } from "lucide-react";
+import { SearchForm } from "@/components/search-form";
+import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-// This is sample data.
+// Sample data
 const data = {
-  versions: [ "2.0.0-beta1"],
+  versions: ["2.0.0-beta1"],
   navMain: [
     {
       title: "Getting Started",
       url: "#",
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "Dashboard",
+          url: "/",
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Manage Users",
+          url: "/manageuser",
         },
       ],
     },
- 
- 
     {
       title: "Community",
       url: "#",
       items: [
         {
-          title: "Contribution Guide",
-          url: "#",
+          title: "Add Event",
+          url: "/addevent",
         },
       ],
     },
   ],
-}
+};
 
 export function AppSidebar({
   ...props
 }) {
   return (
-    (<Sidebar {...props}>
+    <Sidebar {...props} className="flex flex-col lg:flex-row">
       <SidebarHeader>
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
         <SearchForm />
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        {/* We create a collapsible SidebarGroup for each parent. */}
+        {/* Responsive collapsing SidebarGroup for each parent */}
         {data.navMain.map((item) => (
           <Collapsible
             key={item.title}
@@ -72,15 +68,6 @@ export function AppSidebar({
             defaultOpen
             className="group/collapsible">
             <SidebarGroup>
-              <SidebarGroupLabel
-                asChild
-                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                <CollapsibleTrigger>
-                  {item.title}{""}
-                  <ChevronRight
-                    className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -99,6 +86,6 @@ export function AppSidebar({
         ))}
       </SidebarContent>
       <SidebarRail />
-    </Sidebar>)
+    </Sidebar>
   );
 }
