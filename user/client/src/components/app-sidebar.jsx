@@ -50,6 +50,15 @@ const data = {
           url: "/addevent",
         },
       ],
+    }, {
+      title: "Community",
+      url: "#",
+      items: [
+        {
+          title: "make a post",
+          url: "/post-creation",
+        },
+      ],
     },
   ],
 };
