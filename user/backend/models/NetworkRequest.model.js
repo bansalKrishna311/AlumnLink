@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const networkRequestSchema = new mongoose.Schema(
   {
     network: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // Changed to ObjectId
+      ref: "User", // Assuming a Network collection exists
       required: [true, "Network is required"],
     },
     name: {

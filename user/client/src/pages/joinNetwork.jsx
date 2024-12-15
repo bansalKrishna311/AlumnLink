@@ -56,14 +56,17 @@ const JoinNetwork = () => {
         // Combine all networks into one list
         setAllNetworks([
           ...instituteRes.data.map((item) => ({
+            id: item._id,
             type: "Institute",
             name: item.name,
           })),
           ...schoolRes.data.map((item) => ({
+            id: item._id,
             type: "School",
             name: item.name,
           })),
           ...corporateRes.data.map((item) => ({
+            id: item._id,
             type: "Corporate",
             name: item.name,
           })),
@@ -164,38 +167,36 @@ const JoinNetwork = () => {
                     <div className="flex flex-col space-y-1.5">
                       <Label htmlFor="network">Network</Label>
                       <Select
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            network: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger id="network">
-                          <SelectValue placeholder="Select a network" />
-                        </SelectTrigger>
-                        <SelectContent position="popper">
-                          {/* Search Input inside Dropdown */}
-                          <div className="p-2">
-                            <Input
-                              placeholder="Search network..."
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="mb-2"
-                            />
-                          </div>
-                          {/* Filtered Options */}
-                          {filteredNetworks.length > 0 ? (
-                            filteredNetworks.map((network, index) => (
-                              <SelectItem key={index} value={network.name}>
-                                {network.name} ({network.type})
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem disabled>No results found</SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
+  onValueChange={(value) =>
+    setFormData((prev) => ({
+      ...prev,
+      network: value, // This will now store the selected ID
+    }))
+  }
+>
+  <SelectTrigger id="network">
+    <SelectValue placeholder="Select a network" />
+  </SelectTrigger>
+  <SelectContent position="popper">
+    <div className="p-2">
+      <Input
+        placeholder="Search network..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="mb-2"
+      />
+    </div>
+    {filteredNetworks.length > 0 ? (
+      filteredNetworks.map((network) => (
+        <SelectItem key={network.id} value={network.id}>
+          {network.name} ({network.type})
+        </SelectItem>
+      ))
+    ) : (
+      <SelectItem disabled>No results found</SelectItem>
+    )}
+  </SelectContent>
+</Select>
                       {errors.network && (
                         <p className="text-red-500 text-sm">{errors.network}</p>
                       )}

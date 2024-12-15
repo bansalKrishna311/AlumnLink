@@ -3,17 +3,14 @@ import {
   createNetworkRequest,
   getAllNetworkRequests,
   updateNetworkRequestStatus,
+  deleteNetworkRequest,
 } from "../controllers/networkRequest.controller.js";
 
 const router = express.Router();
 
-// Create a new network request
 router.post("/", createNetworkRequest);
-
-// Fetch all network requests
 router.get("/", getAllNetworkRequests);
-
-// Update the status of a network request
-router.put("/:id/status", updateNetworkRequestStatus);
+router.patch("/:id", updateNetworkRequestStatus); // Update status
+router.delete("/:id", deleteNetworkRequest);
 
 export default router;
