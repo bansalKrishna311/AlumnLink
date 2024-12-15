@@ -36,15 +36,18 @@ export const getAllNetworkRequests = async (req, res) => {
 };
 
 // Approve or reject a network request
+// Approve or reject a network request
 export const updateNetworkRequestStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
+    // Validate the status
     if (!["Pending", "Approved", "Rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
+    // Update the status of the request
     const updatedRequest = await NetworkRequest.findByIdAndUpdate(
       id,
       { status },
@@ -60,6 +63,7 @@ export const updateNetworkRequestStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to update request status", error });
   }
 };
+
 
 // Delete a network request
 export const deleteNetworkRequest = async (req, res) => {
