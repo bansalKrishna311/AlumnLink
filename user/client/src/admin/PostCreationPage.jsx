@@ -1,52 +1,66 @@
-import { useState } from "react";
-import PostCreation from "../components/PostCreation";  // Adjust the import path according to your project structure
+import React, { useState } from "react";
+import PostCreation from "@/components/PostCreation";
 
-const PostPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(true);  // To control modal visibility
-  const [selectedPostType, setSelectedPostType] = useState("discussion");  // Default post type (can be dynamic)
+const CreatePostPage = () => {
+  const [showModal, setShowModal] = useState(false);
 
+  // Sample user object, replace with actual user data from your context or API
   const user = {
-    profilePicture: "/avatar.png",  // Sample user data, replace with actual data
     name: "John Doe",
+    profilePicture: "/path-to-profile-picture.jpg",
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);  // Close modal
+  const handleOpenModal = (postType) => {
+    setShowModal(true);
+    setSelectedPostType(postType);
   };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const [selectedPostType, setSelectedPostType] = useState("discussion");
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Conditionally render PostCreation component */}
-      {isModalOpen && (
+    <div className="container">
+      <h1 className="text-2xl font-semibold">Create a Post</h1>
+      <div className="space-x-4 mt-4">
+        <button
+          onClick={() => handleOpenModal("discussion")}
+          className="px-4 py-2 bg-indigo-500 text-white rounded"
+        >
+          Discussion
+        </button>
+        <button
+          onClick={() => handleOpenModal("job")}
+          className="px-4 py-2 bg-green-500 text-white rounded"
+        >
+          Job
+        </button>
+        <button
+          onClick={() => handleOpenModal("internship")}
+          className="px-4 py-2 bg-yellow-500 text-white rounded"
+        >
+          Internship
+        </button>
+        <button
+          onClick={() => handleOpenModal("event")}
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Event
+        </button>
+      </div>
+
+      {/* Render PostCreation component as a modal */}
+      {showModal && (
         <PostCreation
           user={user}
           selectedPostType={selectedPostType}
-          closeModal={closeModal}
+          closeModal={handleCloseModal}
         />
       )}
-
-      {/* Example button to open modal with a specific post type */}
-      <button
-        onClick={() => {
-          setSelectedPostType("job"); // Set selected post type dynamically
-          setIsModalOpen(true);  // Open the modal
-        }}
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4"
-      >
-        Create Job Post
-      </button>
-
-      <button
-        onClick={() => {
-          setSelectedPostType("event");  // Example: change post type to event
-          setIsModalOpen(true);
-        }}
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mt-4"
-      >
-        Create Event Post
-      </button>
     </div>
   );
 };
 
-export default PostPage;
+export default CreatePostPage;
