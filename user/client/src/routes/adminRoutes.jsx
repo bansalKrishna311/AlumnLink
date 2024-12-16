@@ -7,6 +7,7 @@ import Layout from "../components/layout/Layout";
 import PageTitle from "../utils/PageTitle";
 import ManageAlumni from "@/admin/manage-alumni";
 import PostCreationPage from "@/admin/PostCreationPage";
+import AdminPosts from "@/admin/AdminPosts";
 
 const adminRoutes = [
     { 
@@ -60,6 +61,15 @@ const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Add Event | AlumnLink" />
                 <AddEvent />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/adminposts", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Admin Posts | AlumnLink" />
+                <AdminPosts />
             </AdminLayout>
         )
     },

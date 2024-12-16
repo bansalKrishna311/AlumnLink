@@ -58,6 +58,10 @@ const data = {
           title: "make a post",
           url: "/post-creation",
         },
+        {
+          title: "Admin Posts",
+          url: "/adminposts",
+        },
       ],
     },
   ],
