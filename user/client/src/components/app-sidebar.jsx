@@ -24,8 +24,7 @@ const data = {
   versions: ["2.0.0-beta1"],
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
+     
       items: [
         {
           title: "Dashboard",
@@ -39,24 +38,13 @@ const data = {
           title: "Manage Alumni",
           url: "/manage-alumni",
         },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
-        {
-          title: "Add Event",
-          url: "/addevent",
-        },
-      ],
-    }, {
-      title: "Community",
-      url: "#",
-      items: [
         {
           title: "make a post",
           url: "/post-creation",
+        },
+        {
+          title: "Admin Posts",
+          url: "/adminposts",
         },
       ],
     },
