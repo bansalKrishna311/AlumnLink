@@ -21,7 +21,7 @@ import {
 
 // Sample data
 const data = {
-  versions: ["2.0.0-beta1"],
+  versions: ["Admin"],
   navMain: [
     {
      
@@ -58,7 +58,7 @@ export function AppSidebar({
     <Sidebar {...props} className="flex flex-col lg:flex-row">
       <SidebarHeader>
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
-        <SearchForm />
+        {/* <SearchForm /> */}
       </SidebarHeader>
       <SidebarContent className="gap-0">
         {/* Responsive collapsing SidebarGroup for each parent */}

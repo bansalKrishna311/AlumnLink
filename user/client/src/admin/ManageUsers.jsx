@@ -71,7 +71,7 @@ const ManageUsers = () => {
     );
 
   return (
-    <div className="p-6 w-[85vw]">
+    <div className="p-6 w-[80vw]">
       <h1 className="text-2xl font-bold mb-4">Manage User Requests</h1>
 
       {/* Error Message */}
