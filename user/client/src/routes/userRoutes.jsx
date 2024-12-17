@@ -26,15 +26,15 @@ const userRoutes = [
         )
     },
 
-    // { 
-    //     path: "/", 
-    //     element: (
-    //         <Layout>
-    //             <PageTitle title="Home | AlumnLink" />
-    //             <HomePage />
-    //         </Layout>
-    //     )
-    // },
+    { 
+        path: "/home", 
+        element: (
+            <Layout>
+                <PageTitle title="Home | AlumnLink" />
+                <HomePage />
+            </Layout>
+        )
+    },
     { 
         path: "/notifications", 
         element: (

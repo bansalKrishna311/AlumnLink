@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import * as Dialog from "@radix-ui/react-dialog";
 import { toast } from "react-hot-toast";
+import { FiArrowRight } from "react-icons/fi";
 
 const JoinNetwork = () => {
   const [institutes, setInstitutes] = useState([]);
@@ -142,8 +143,16 @@ const JoinNetwork = () => {
     <div>
       <Dialog.Root>
         <Dialog.Trigger asChild>
-          <Button variant="outline">Join a network</Button>
+          <button className="justify-center group btn rounded-full max-w-lg transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold flex items-center px-8 py-3 relative shadow-md">
+            <span className="group-hover:translate-x-40 text-center transition duration-500">
+              Join a network
+            </span>
+            <div className="-translate-x-40 group-hover:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20">
+              <FiArrowRight className="ml-2 h-5 w-5" />
+            </div>
+          </button>
         </Dialog.Trigger>
+
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />
           <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
@@ -167,36 +176,36 @@ const JoinNetwork = () => {
                     <div className="flex flex-col space-y-1.5">
                       <Label htmlFor="network">Network</Label>
                       <Select
-  onValueChange={(value) =>
-    setFormData((prev) => ({
-      ...prev,
-      network: value, // This will now store the selected ID
-    }))
-  }
->
-  <SelectTrigger id="network">
-    <SelectValue placeholder="Select a network" />
-  </SelectTrigger>
-  <SelectContent position="popper">
-    <div className="p-2">
-      <Input
-        placeholder="Search network..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="mb-2"
-      />
-    </div>
-    {filteredNetworks.length > 0 ? (
-      filteredNetworks.map((network) => (
-        <SelectItem key={network.id} value={network.id}>
-          {network.name} ({network.type})
-        </SelectItem>
-      ))
-    ) : (
-      <SelectItem disabled>No results found</SelectItem>
-    )}
-  </SelectContent>
-</Select>
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            network: value, // This will now store the selected ID
+                          }))
+                        }
+                      >
+                        <SelectTrigger id="network">
+                          <SelectValue placeholder="Select a network" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          <div className="p-2">
+                            <Input
+                              placeholder="Search network..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="mb-2"
+                            />
+                          </div>
+                          {filteredNetworks.length > 0 ? (
+                            filteredNetworks.map((network) => (
+                              <SelectItem key={network.id} value={network.id}>
+                                {network.name} ({network.type})
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem disabled>No results found</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                       {errors.network && (
                         <p className="text-red-500 text-sm">{errors.network}</p>
                       )}

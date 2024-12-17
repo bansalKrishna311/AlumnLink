@@ -62,7 +62,7 @@ const ContactForm = () => {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <form
-        className="p-8 rounded-lg bg-white border border-gray-300 shadow-lg w-full max-w-6xl"
+        className="p-8 rounded-lg bg-black border border-gray-300 shadow-lg w-full max-w-6xl"
         method='post'
         action='https://script.google.com/macros/s/AKfycbw54DoF1_yIZSHWNuhiw-u_CDJ62-lBhYxgEWlrhpkOpd1rnRxQUxsZR-28qk8SlY_6/exec'
         onSubmit={handleSubmit}
