@@ -24,26 +24,27 @@ const data = {
   versions: ["2.0.0-beta1"],
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
+     
       items: [
         {
           title: "Dashboard",
           url: "/",
         },
         {
-          title: "Manage Users",
-          url: "/manageuser",
+          title: "Manage User requests",
+          url: "/userrequests",
         },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
         {
-          title: "Add Event",
-          url: "/addevent",
+          title: "Manage Alumni",
+          url: "/manage-alumni",
+        },
+        {
+          title: "make a post",
+          url: "/post-creation",
+        },
+        {
+          title: "Admin Posts",
+          url: "/adminposts",
         },
       ],
     },
