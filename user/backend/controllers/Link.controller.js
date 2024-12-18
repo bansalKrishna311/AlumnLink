@@ -210,3 +210,45 @@ export const getLinkstatus = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
+
+
+
+// Get all pending link requests
+export const getPendingRequests = async (req, res) => {
+    try {
+      const pendingRequests = await LinkRequest.find({ status: "pending" })
+        .populate("sender", "name email")
+        .populate("recipient", "name email");
+      res.status(200).json(pendingRequests);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching pending requests", error });
+    }
+  };
+  
+  // Accept or reject a link request
+  export const updateRequestStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+  
+    if (!["accepted", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+  
+    try {
+      const updatedRequest = await LinkRequest.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+      );
+  
+      if (!updatedRequest) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+  
+      res.status(200).json({ message: `Request ${status} successfully`, updatedRequest });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating request status", error });
+    }
+  };
