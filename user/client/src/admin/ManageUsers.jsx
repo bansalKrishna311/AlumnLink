@@ -74,9 +74,9 @@ const ManageUsers = () => {
             request.name.toLowerCase().includes(searchTerm) || request.rollNumber.toLowerCase().includes(searchTerm)
         );
 
-    return (
-        <div className="p-6 w-[85vw]">
-            <h1 className="text-2xl font-bold mb-4">Manage User Requests</h1>
+  return (
+    <div className="p-6 w-[85vw]">
+      <h1 className="text-2xl font-bold mb-4">Manage User Requests</h1>
 
             {/* Error Message */}
             {error && <div className="text-red-500 mb-4">{error}</div>}
