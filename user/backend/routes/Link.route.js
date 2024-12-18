@@ -12,14 +12,25 @@ import {
 
 const router = express.Router();
 
+// Route to send a Link request with additional fields (like name, rollNumber, etc.)
 router.post("/request/:userId", protectRoute, sendLinkRequest);
+
+// Route to accept a Link request
 router.put("/accept/:requestId", protectRoute, acceptLinkRequest);
+
+// Route to reject a Link request
 router.put("/reject/:requestId", protectRoute, rejectLinkRequest);
-// Get all Link requests for the current user
-router.get("/requests", protectRoute, getLinkRequests);
-// Get all Links for a user
+
+// Route to fetch all pending Link requests for the current user
+router.get("/requests", getLinkRequests);
+
+// Route to fetch all accepted Links for the current user
 router.get("/", protectRoute, getUserLinks);
+
+// Route to remove an existing Link
 router.delete("/:userId", protectRoute, removeLink);
+
+// Route to fetch the current Link status with a specific user
 router.get("/status/:userId", protectRoute, getLinkstatus);
 
 export default router;
