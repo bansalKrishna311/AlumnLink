@@ -4,10 +4,12 @@ import {
 	acceptLinkRequest,
 	getLinkRequests,
 	getLinkstatus,
+	getPendingRequests,
 	getUserLinks,
 	rejectLinkRequest,
 	removeLink,
 	sendLinkRequest,
+	updateRequestStatus,
 } from "../controllers/Link.controller.js";
 
 const router = express.Router();
@@ -32,5 +34,15 @@ router.delete("/:userId", protectRoute, removeLink);
 
 // Route to fetch the current Link status with a specific user
 router.get("/status/:userId", protectRoute, getLinkstatus);
+
+
+
+
+// Route to get all pending requests
+router.get("/pending", getPendingRequests);
+
+// Route to update request status
+router.patch("/:id/status", updateRequestStatus);
+
 
 export default router;
