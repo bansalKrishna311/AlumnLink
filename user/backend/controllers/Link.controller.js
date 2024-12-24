@@ -211,10 +211,6 @@ export const getLinkstatus = async (req, res) => {
     }
 };
 
-
-
-
-
 // Get all pending link requests
 export const getPendingRequests = async (req, res) => {
     try {
@@ -252,3 +248,64 @@ export const getPendingRequests = async (req, res) => {
       res.status(500).json({ message: "Error updating request status", error });
     }
   };
+
+  // Get all accepted link requests
+export const getAcceptedRequests = async (req, res) => {
+    try {
+      const acceptedRequests = await LinkRequest.find({ status: "accepted" })
+        .populate("sender", "name email")
+        .populate("recipient", "name email");
+      res.status(200).json(acceptedRequests);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching accepted requests", error });
+    }
+  };
+  
+  export const getRejectedRequests = async (req, res) => {
+    try {
+      const rejectedRequests = await LinkRequest.find({ status: "rejected" })
+        .populate("sender", "name email")
+        .populate("recipient", "name email");
+      res.status(200).json(rejectedRequests);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching rejected requests", error });
+    }
+  };
+
+// Delete Request Handler
+export const deleteRequest = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const deletedRequest = await LinkRequest.findByIdAndDelete(id);
+  
+      if (!deletedRequest) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+  
+      res.status(200).json({ message: "Request deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      res.status(500).json({ message: "Failed to delete request", error: error.message });
+    }
+  };
+
+
+
+  export const deleteLinkRequest = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const deletedRequest = await LinkRequest.findByIdAndDelete(id);
+      if (!deletedRequest) {
+        return res.status(404).json({ message: "Request not found." });
+      }
+      res.status(200).json({ message: "Request deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      res.status(500).json({ message: "Error deleting request." });
+    }
+  };
+  
+  
+  

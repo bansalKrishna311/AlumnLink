@@ -2,14 +2,18 @@ import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import {
 	acceptLinkRequest,
+	getAcceptedRequests,
 	getLinkRequests,
 	getLinkstatus,
 	getPendingRequests,
+	getRejectedRequests,
 	getUserLinks,
 	rejectLinkRequest,
 	removeLink,
 	sendLinkRequest,
 	updateRequestStatus,
+	deleteRequest,
+	deleteLinkRequest
 } from "../controllers/Link.controller.js";
 
 const router = express.Router();
@@ -44,5 +48,14 @@ router.get("/pending", getPendingRequests);
 // Route to update request status
 router.patch("/:id/status", updateRequestStatus);
 
+
+// Route to fetch all accepted requests
+router.get("/accepted", getAcceptedRequests);
+
+router.get("/rejected", getRejectedRequests);
+
+router.delete("/:id", deleteRequest);
+
+router.delete("/:id", deleteLinkRequest);
 
 export default router;

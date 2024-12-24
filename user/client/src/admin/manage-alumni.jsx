@@ -1,110 +1,94 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaTimes } from "react-icons/fa";
-import { axiosInstance } from "@/lib/axios"; // Import the axios instance
-import toast from "react-hot-toast"; // Importing react-hot-toast
+import { FaTimes } from "react-icons/fa";
+import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
 
-const ManageAlumni = () => {
-  const [approvedUsers, setApprovedUsers] = useState([]); // State for approved users only
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+const ApprovedUsers = () => {
+  const [approvedUsers, setApprovedUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const response = await axiosInstance.get("/network-requests");
-        // Filter only approved users
-        setApprovedUsers(response.data.filter((request) => request.status === "Approved"));
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-        setError("Error fetching requests.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRequests();
+    fetchApprovedUsers();
   }, []);
 
-  const handleSearchChange = (e) => setSearchTerm(e.target.value.toLowerCase());
-
-  const filteredApprovedUsers = approvedUsers
-    .filter((user) =>
-      user.name.toLowerCase().includes(searchTerm) || user.rollNumber.toLowerCase().includes(searchTerm)
-    );
-
-  const handleReject = async (id) => {
+  const fetchApprovedUsers = async () => {
+    setLoading(true);
     try {
-      await axiosInstance.patch(`/network-requests/${id}`, { status: "Rejected" });
-      setApprovedUsers((prevUsers) =>
-        prevUsers.filter((user) => user._id !== id)
-      );
+      const response = await axiosInstance.get("/links/accepted");
+      setApprovedUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching approved users:", error);
+      setError("Error fetching approved users.");
+      toast.error("Failed to fetch approved users.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectUser = async (id) => {
+    try {
+      await axiosInstance.patch(`/links/${id}/status`, { status: "rejected" });
+      setApprovedUsers((prev) => prev.filter((user) => user._id !== id));
       toast.success("User rejected successfully!");
     } catch (error) {
       console.error("Error rejecting user:", error);
-      toast.error("Error rejecting user.");
+      toast.error("Failed to reject user.");
     }
   };
 
   return (
     <div className="p-6 w-[80vw]">
-      <h1 className="text-2xl font-bold mb-4">Manage Approved Alumni</h1>
+      <h1 className="text-2xl font-bold mb-4">Approved Users</h1>
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <>
-          <div className="mb-4 flex space-x-4">
-            <div className="flex items-center border border-gray-300 rounded">
-              <FaSearch className="ml-2" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="px-2 py-1"
-                onChange={handleSearchChange}
-              />
-            </div>
-          </div>
-
-          <h2 className="text-xl font-semibold mb-4">Approved Users</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-lg shadow-md">
-              <thead>
-                <tr className="bg-gray-800 text-white text-left">
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Admission No.</th>
-                  <th className="px-6 py-3 font-medium">Batch</th>
-                  <th className="px-6 py-3 font-medium">Course Name</th>
-                  <th className="px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredApprovedUsers.map((user) => (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-200 rounded-lg shadow-md">
+            <thead>
+              <tr className="bg-gray-800 text-white text-left">
+                <th className="px-6 py-3 font-medium">Name</th>
+                <th className="px-6 py-3 font-medium">Roll Number</th>
+                <th className="px-6 py-3 font-medium">Batch</th>
+                <th className="px-6 py-3 font-medium">Course</th>
+                <th className="px-6 py-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approvedUsers.length > 0 ? (
+                approvedUsers.map((user) => (
                   <tr key={user._id} className="border-t bg-white">
                     <td className="px-6 py-4">{user.name}</td>
                     <td className="px-6 py-4">{user.rollNumber}</td>
                     <td className="px-6 py-4">{user.batch}</td>
                     <td className="px-6 py-4">{user.courseName}</td>
-                    <td className="px-6 py-4 flex space-x-2">
+                    <td className="px-6 py-4">
                       <button
                         className="w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded"
                         aria-label="Reject"
-                        onClick={() => handleReject(user._id)}
+                        onClick={() => handleRejectUser(user._id)}
                       >
                         <FaTimes />
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4">
+                    No approved users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
 };
 
-export default ManageAlumni;
+export default ApprovedUsers;
