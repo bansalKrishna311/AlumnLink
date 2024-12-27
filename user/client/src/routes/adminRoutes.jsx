@@ -7,6 +7,7 @@ import ManageAlumni from "@/admin/manage-alumni";
 import PostCreationPage from "@/admin/PostCreationPage";
 import AdminPosts from "@/admin/AdminPosts";
 import LinkRequestsTable from "@/admin/ManageUsers";
+import UserLinks from "@/admin/manage-alumni";
 
 const adminRoutes = [
     { 
@@ -50,7 +51,7 @@ const adminRoutes = [
         element: (
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
-                <ManageAlumni />
+                <UserLinks />
             </AdminLayout>
         )
     },
