@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '@/lib/axios';
 import { UserCircle2, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
-const UserLinks = () => {
+const RejectedRequests = () => {
   const [links, setLinks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ const UserLinks = () => {
 
   const fetchUserLinks = async () => {
     try {
-      const response = await axiosInstance.get('/links');
+      const response = await axiosInstance.get('/links/rejected');
       setLinks(response.data);
       setIsLoading(false);
     } catch (err) {
@@ -118,7 +118,7 @@ const UserLinks = () => {
       {links.length === 0 && (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <UserCircle2 className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No connections yet</h3>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No Link Requests Rejected</h3>
           <p className="mt-2 text-gray-500">Start connecting with other users to build your network.</p>
         </div>
       )}
@@ -126,4 +126,4 @@ const UserLinks = () => {
   );
 };
 
-export default UserLinks;
+export default RejectedRequests;

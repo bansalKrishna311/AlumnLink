@@ -2,9 +2,10 @@ import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import {
 	acceptLinkRequest,
-	getLinkRequests,
+
 	getLinkstatus,
 	getPendingRequests,
+	getRejectedLinks,
 	getUserLinks,
 	rejectLinkRequest,
 	removeLink,
@@ -24,10 +25,14 @@ router.put("/accept/:requestId", protectRoute, acceptLinkRequest);
 router.put("/reject/:requestId", protectRoute, rejectLinkRequest);
 
 // Route to fetch all pending Link requests for the current user
-// router.get("/requests", getLinkRequests);
+router.get("/link-requests", protectRoute, getPendingRequests );
+
 
 // Route to fetch all accepted Links for the current user
 router.get("/", protectRoute, getUserLinks);
+
+router.get("/rejected", protectRoute, getRejectedLinks);
+
 
 // Route to remove an existing Link
 router.delete("/:userId", protectRoute, removeLink);
@@ -36,7 +41,6 @@ router.delete("/:userId", protectRoute, removeLink);
 router.get("/status/:userId", protectRoute, getLinkstatus);
 
 
-router.get("/link-requests", protectRoute, getPendingRequests );
 router.patch("/link-requests/:id", updateLinkRequestStatus);
 
 export default router;
