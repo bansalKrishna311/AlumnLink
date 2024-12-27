@@ -240,7 +240,7 @@ export const getPendingRequests = async (req, res) => {
     }
 };
 export const getUserLinks = async (req, res) => {
-    try {
+    try { 
         const userId = req.user._id;
 
         const user = await User.findById(userId).populate(
