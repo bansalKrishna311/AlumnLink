@@ -12,10 +12,7 @@ const LinkRequestSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-    },
+ 
     rollNumber: {
       type: String,
       required: [true, "Roll Number is required"],

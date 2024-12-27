@@ -29,10 +29,9 @@ const JoinNetwork = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form states
+  // Form states without the name field
   const [formData, setFormData] = useState({
     network: "",
-    name: "",
     rollNumber: "",
     batch: "",
     courseName: "", // Added Course Name field
@@ -93,7 +92,6 @@ const JoinNetwork = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.network) newErrors.network = "Please select a network.";
-    if (!formData.name) newErrors.name = "Name is required.";
     if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
       newErrors.rollNumber = "Roll Number must contain only letters and numbers.";
     if (!formData.batch || !/^\d+$/.test(formData.batch))
@@ -106,23 +104,22 @@ const JoinNetwork = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (validateForm()) {
       try {
         const recipientUserId = formData.network; // Assuming 'network' holds recipientUserId
         if (!recipientUserId) {
           return alert('Recipient user ID is missing.');
         }
-  
+
         const response = await axiosInstance.post(
-          `/links/request/${recipientUserId}`, 
+          `/links/request/${recipientUserId}`,
           formData
         );
-  
+
         console.log("Request sent successfully:", response.data);
         setFormData({
           network: "",
-          name: "",
           rollNumber: "",
           batch: "",
           courseName: "",
@@ -132,7 +129,6 @@ const JoinNetwork = () => {
       }
     }
   };
-  
 
   if (isLoading) {
     return (
@@ -199,19 +195,6 @@ const JoinNetwork = () => {
                         </SelectContent>
                       </Select>
                       {errors.network && <p className="text-red-500 text-sm">{errors.network}</p>}
-                    </div>
-
-                    {/* Name */}
-                    <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="Enter your name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                      />
-                      {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                     </div>
 
                     {/* Roll Number */}
