@@ -31,20 +31,9 @@ const JoinNetworkCalling = () => {
       </p>
 
       <div className="relative mt-6">
-        {isJoinButtonVisible && (
-          <button
-            className="px-6 py-3 bg-blue-400 text-white rounded-lg"
-            onClick={openForm}
-          >
-            Join Network
-          </button>
-        )}
-
-        {isFormVisible && (
-          <div className="mt-6 p-4 bg-white rounded-lg w-80 mx-auto shadow-md">
+        
             <JoinNetwork />
-          </div>
-        )}
+         
       </div>
     </div>
   );
