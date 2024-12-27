@@ -271,7 +271,45 @@ export const getUserLinks = async (req, res) => {
     }
 };
 
+export const getRejectedLinks = async (req, res) => {
+    try {
+        const userId = req.user._id;
 
+        // Find all link requests where the user is either the sender or recipient and the status is 'pending'
+        const linkRequests = await LinkRequest.find({
+            $or: [
+                { sender: userId },
+                { recipient: userId }
+            ],
+            status: 'rejected' // Only fetch link requests with status 'pending'
+        })
+        .populate('sender', 'name username profilePicture headline')
+        .populate('recipient', 'name username profilePicture headline')
+        .sort({ createdAt: -1 }); // Sort by newest first
+
+        // Transform the data to include connection type (sent/received)
+        const transformedLinks = linkRequests.map(request => ({
+            _id: request._id,
+            connection: request.sender._id.equals(userId) ? 'sent' : 'received',
+            user: request.sender._id.equals(userId) ? request.recipient : request.sender,
+            rollNumber: request.rollNumber,
+            batch: request.batch,
+            courseName: request.courseName,
+            status: request.status,
+            createdAt: request.createdAt,
+            updatedAt: request.updatedAt
+        }));
+
+        res.json(transformedLinks);
+    } catch (error) {
+        console.error("Error in getUserLinks controller:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to fetch user links",
+            error: error.message 
+        });
+    }
+};
 
 export const removeLink = async (req, res) => {
     try {

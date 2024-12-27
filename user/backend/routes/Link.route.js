@@ -5,6 +5,7 @@ import {
 
 	getLinkstatus,
 	getPendingRequests,
+	getRejectedLinks,
 	getUserLinks,
 	rejectLinkRequest,
 	removeLink,
@@ -29,6 +30,9 @@ router.get("/link-requests", protectRoute, getPendingRequests );
 
 // Route to fetch all accepted Links for the current user
 router.get("/", protectRoute, getUserLinks);
+
+router.get("/rejected", protectRoute, getRejectedLinks);
+
 
 // Route to remove an existing Link
 router.delete("/:userId", protectRoute, removeLink);

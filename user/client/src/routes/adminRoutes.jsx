@@ -1,13 +1,12 @@
 
 import AdminLayout from "@/components/layout/admin/adminLayout";
 import Dashboard from "../admin/Dashboard";
-import ManageUsers from "@/admin/ManageUsers";
 import PageTitle from "../utils/PageTitle";
-import ManageAlumni from "@/admin/manage-alumni";
 import PostCreationPage from "@/admin/PostCreationPage";
 import AdminPosts from "@/admin/AdminPosts";
 import LinkRequestsTable from "@/admin/ManageUsers";
 import UserLinks from "@/admin/manage-alumni";
+import RejectedRequests from "@/admin/rejectedRequests";
 
 const adminRoutes = [
     { 
@@ -52,6 +51,15 @@ const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
                 <UserLinks />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/manage-requests", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Manage User | AlumnLink" />
+                <RejectedRequests />
             </AdminLayout>
         )
     },
