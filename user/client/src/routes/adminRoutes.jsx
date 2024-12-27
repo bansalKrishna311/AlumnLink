@@ -55,7 +55,7 @@ const adminRoutes = [
         )
     },
     { 
-        path: "/manage-requests", 
+        path: "/rejected-requests", 
         element: (
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />

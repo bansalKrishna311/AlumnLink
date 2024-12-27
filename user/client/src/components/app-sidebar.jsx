@@ -39,6 +39,10 @@ const data = {
           url: "/manage-alumni",
         },
         {
+          title: "Rejected requests",
+          url: "/rejected-requests",
+        },
+        {
           title: "make a post",
           url: "/post-creation",
         },
