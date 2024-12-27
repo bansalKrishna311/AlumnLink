@@ -2,6 +2,7 @@ import { sendLinkAcceptedEmail } from "../emails/emailHandlers.js";
 import LinkRequest from "../models/LinkRequest.model.js";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
 
 export const sendLinkRequest = async (req, res) => {
     try {
@@ -36,7 +37,6 @@ export const sendLinkRequest = async (req, res) => {
         const newRequest = new LinkRequest({
             sender: senderId,
             recipient: recipientUserId,
-            name: req.body.name,
             rollNumber: req.body.rollNumber,
             batch: req.body.batch,
             courseName: req.body.courseName,
@@ -130,14 +130,39 @@ export const rejectLinkRequest = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+export const updateLinkRequestStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!["accepted", "rejected"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
+        }
+
+        const request = await LinkRequest.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+
+        if (!request) {
+            return res.status(404).json({ message: "Request not found" });
+        }
+
+        res.json({ message: "Request status updated", request });
+    } catch (error) {
+        console.error("Error updating link request status:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
 export const getLinkRequests = async (req, res) => {
     try {
         const userId = req.user._id;
-
         const requests = await LinkRequest.find({ recipient: userId, status: "pending" })
-            .populate("sender", "name username profilePicture headline email");
-
+            .populate("sender", "name username profilePicture headline email") // Populate sender details
+            .select("name rollNumber batch courseName status createdAt"); // Include specific fields
+            console.log(`Incoming request: ${req.method} ${req.url}`);
         res.json(requests);
     } catch (error) {
         console.error("Error in getLinkRequests controller:", error);
@@ -145,7 +170,75 @@ export const getLinkRequests = async (req, res) => {
     }
 };
 
+export const getPendingRequests = async (req, res) => {
+    try {
+        const recipientId = req.user?._id;
 
+        if (!recipientId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Set up pagination
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        // Query with pagination including all relevant fields
+        const pendingRequests = await LinkRequest.find({
+            status: 'pending',
+            recipient: new mongoose.Types.ObjectId(recipientId)
+        })
+            .select('sender recipient rollNumber batch courseName status createdAt updatedAt')
+            .populate('sender', 'name email') // Assuming User model has these fields
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        // Get total count for pagination
+        const totalCount = await LinkRequest.countDocuments({
+            status: 'pending',
+            recipient: new mongoose.Types.ObjectId(recipientId)
+        });
+
+        // Transform the data to include additional computed fields if needed
+        const formattedRequests = pendingRequests.map(request => ({
+            ...request,
+            batchYear: request.batch, // For clarity in frontend
+            academicDetails: {
+                rollNumber: request.rollNumber,
+                courseName: request.courseName,
+                batch: request.batch
+            }
+        }));
+
+        res.status(200).json({
+            success: true,
+            data: formattedRequests,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalRequests: totalCount,
+                hasNextPage: skip + pendingRequests.length < totalCount,
+                hasPreviousPage: page > 1
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in getPendingRequests:', {
+            userId: req?.user?._id,
+            error: error.message
+        });
+
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching pending requests'
+        });
+    }
+};
 export const getUserLinks = async (req, res) => {
     try {
         const userId = req.user._id;

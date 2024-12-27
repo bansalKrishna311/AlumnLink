@@ -9,7 +9,7 @@ import {
 	rejectLinkRequest,
 	removeLink,
 	sendLinkRequest,
-	updateRequestStatus,
+	updateLinkRequestStatus,
 } from "../controllers/Link.controller.js";
 
 const router = express.Router();
@@ -24,7 +24,7 @@ router.put("/accept/:requestId", protectRoute, acceptLinkRequest);
 router.put("/reject/:requestId", protectRoute, rejectLinkRequest);
 
 // Route to fetch all pending Link requests for the current user
-router.get("/requests", getLinkRequests);
+// router.get("/requests", getLinkRequests);
 
 // Route to fetch all accepted Links for the current user
 router.get("/", protectRoute, getUserLinks);
@@ -36,13 +36,7 @@ router.delete("/:userId", protectRoute, removeLink);
 router.get("/status/:userId", protectRoute, getLinkstatus);
 
 
-
-
-// Route to get all pending requests
-router.get("/pending", getPendingRequests);
-
-// Route to update request status
-router.patch("/:id/status", updateRequestStatus);
-
+router.get("/link-requests", protectRoute, getPendingRequests );
+router.patch("/link-requests/:id", updateLinkRequestStatus);
 
 export default router;

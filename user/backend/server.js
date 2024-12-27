@@ -11,7 +11,7 @@ import notificationRoutes from "./routes/notification.route.js";
 import LinkRoutes from "./routes/Link.route.js";
 import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
-import networkRequestRoutes from "./routes/networkRequest.routes.js";
+// import networkRequestRoutes from "./routes/networkRequest.routes.js";
 
 import connectDB from "./lib/db.js"; // Correct the import
 
@@ -43,7 +43,7 @@ app.use("/api/v1/posts", verifySession, postRoutes);
 app.use("/api/v1/notifications", verifySession, notificationRoutes);
 app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
-app.use("/api/v1/network-requests", networkRequestRoutes);
+// app.use("/api/v1/network-requests", networkRequestRoutes);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "/frontend/dist")));
