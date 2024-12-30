@@ -42,39 +42,42 @@ const LinkRequestsTable = () => {
         fetchRequests();
     }, []);
 
-    const handleStatusChange = async (requestId, newStatus) => {
-        // Set loading state for specific button
-        setActionLoading(prev => ({ ...prev, [requestId]: true }));
-        
+    const handleStatusChange = async (requestId, action) => {
+        setActionLoading((prev) => ({ ...prev, [requestId]: true }));
+    
         try {
-            const response = await axiosInstance.patch(
-                `/links/link-requests/${requestId}`, 
-                { status: newStatus }
-            );
-            
+            // Determine the appropriate endpoint based on the action
+            const endpoint = action === "accepted" ? `/links/accept/${requestId}` : `/links/reject/${requestId}`;
+    
+            // Make the API request
+            const response = await axiosInstance.put(endpoint);
+    
             if (response.data.success) {
                 // Update local state immediately
-                setRequests(prevRequests => 
-                    prevRequests.filter(request => request._id !== requestId)
+                setRequests((prevRequests) =>
+                    prevRequests.filter((request) => request._id !== requestId)
                 );
-
-                // Update total count in pagination
-                setPagination(prev => ({
+    
+                // Update pagination count
+                setPagination((prev) => ({
                     ...prev,
-                    totalRequests: Math.max(0, prev.totalRequests - 1)
+                    totalRequests: Math.max(0, prev.totalRequests - 1),
                 }));
-
-                // Fetch new page if current page becomes empty
+    
+                // Fetch new page if necessary
                 if (requests.length === 1 && pagination.currentPage > 1) {
                     fetchRequests(pagination.currentPage - 1);
                 }
+            } else {
+                console.error(`Failed to ${action} the request.`);
             }
         } catch (error) {
-            console.error(`Error updating status for request ${requestId}:`, error);
+            console.error(`Error ${action}ing request ${requestId}:`, error);
         } finally {
-            setActionLoading(prev => ({ ...prev, [requestId]: false }));
+            setActionLoading((prev) => ({ ...prev, [requestId]: false }));
         }
     };
+    
 
     const handlePageChange = (newPage) => {
         fetchRequests(newPage);
@@ -136,32 +139,32 @@ const LinkRequestsTable = () => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-x-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="bg-green-50 text-green-600 hover:bg-green-100 min-w-[80px]"
-                                                    onClick={() => handleStatusChange(request._id, "accepted")}
-                                                    disabled={actionLoading[request._id]}
-                                                >
-                                                    {actionLoading[request._id] ? (
-                                                        <Loader className="w-4 h-4 animate-spin" />
-                                                    ) : (
-                                                        'Accept'
-                                                    )}
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="bg-red-50 text-red-600 hover:bg-red-100 min-w-[80px]"
-                                                    onClick={() => handleStatusChange(request._id, "rejected")}
-                                                    disabled={actionLoading[request._id]}
-                                                >
-                                                    {actionLoading[request._id] ? (
-                                                        <Loader className="w-4 h-4 animate-spin" />
-                                                    ) : (
-                                                        'Reject'
-                                                    )}
-                                                </Button>
+                                            <Button
+    size="sm"
+    variant="outline"
+    className="bg-green-50 text-green-600 hover:bg-green-100 min-w-[80px]"
+    onClick={() => handleStatusChange(request._id, "accepted")}
+    disabled={actionLoading[request._id]}
+>
+    {actionLoading[request._id] ? (
+        <Loader className="w-4 h-4 animate-spin" />
+    ) : (
+        "Accept"
+    )}
+</Button>
+<Button
+    size="sm"
+    variant="outline"
+    className="bg-red-50 text-red-600 hover:bg-red-100 min-w-[80px]"
+    onClick={() => handleStatusChange(request._id, "rejected")}
+    disabled={actionLoading[request._id]}
+>
+    {actionLoading[request._id] ? (
+        <Loader className="w-4 h-4 animate-spin" />
+    ) : (
+        "Reject"
+    )}
+</Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
