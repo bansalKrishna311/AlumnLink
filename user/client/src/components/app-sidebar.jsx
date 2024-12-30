@@ -31,7 +31,7 @@ const data = {
           url: "/",
         },
         {
-          title: "Manage User requests",
+          title: "Manage User Requests",
           url: "/userrequests",
         },
         {
@@ -39,16 +39,20 @@ const data = {
           url: "/manage-alumni",
         },
         {
-          title: "Rejected requests",
+          title: "Rejected Requests",
           url: "/rejected-requests",
         },
         {
-          title: "make a post",
+          title: "Make Post",
           url: "/post-creation",
         },
         {
           title: "Admin Posts",
           url: "/adminposts",
+        },
+        {
+          title: "Post Request",
+          url: "/postrequest",
         },
       ],
     },

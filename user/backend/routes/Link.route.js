@@ -10,7 +10,6 @@ import {
 	rejectLinkRequest,
 	removeLink,
 	sendLinkRequest,
-	updateLinkRequestStatus,
 } from "../controllers/Link.controller.js";
 
 const router = express.Router();
@@ -41,6 +40,6 @@ router.delete("/:userId", protectRoute, removeLink);
 router.get("/status/:userId", protectRoute, getLinkstatus);
 
 
-router.patch("/link-requests/:id", updateLinkRequestStatus);
+// router.patch("/link-requests/:id", updateLinkRequestStatus);
 
 export default router;

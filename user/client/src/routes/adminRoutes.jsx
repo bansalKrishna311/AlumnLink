@@ -7,6 +7,7 @@ import AdminPosts from "@/admin/AdminPosts";
 import LinkRequestsTable from "@/admin/ManageUsers";
 import UserLinks from "@/admin/manage-alumni";
 import RejectedRequests from "@/admin/rejectedRequests";
+import PostRequest from "@/admin/PostRequest";
 
 const adminRoutes = [
     { 
@@ -69,6 +70,15 @@ const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Admin Posts | AlumnLink" />
                 <AdminPosts />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/postrequest", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Admin Request | AlumnLink" />
+                <PostRequest />
             </AdminLayout>
         )
     },
