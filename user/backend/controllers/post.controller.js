@@ -1,13 +1,19 @@
+// POST.CONTROLLER.JS
+
 import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 
 // Fetch posts for the user's feed
+// Modify getFeedPosts to only show approved posts
 export const getFeedPosts = async (req, res) => {
     try {
-        const userIds = [...req.user.Links, req.user._id]; // Include user's connections and themselves
-        const posts = await Post.find({ author: { $in: userIds } })
+        const userIds = [...req.user.Links, req.user._id];
+        const posts = await Post.find({ 
+            author: { $in: userIds },
+            status: "approved" // Only show approved posts
+        })
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture")
             .sort({ createdAt: -1 });
@@ -186,3 +192,72 @@ export const likePost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
+
+export const getPendingPosts = async (req, res) => {
+    try {
+        // Check if user is authorized (admin or super admin)
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'super admin') {
+            return res.status(403).json({ message: "Not authorized to view pending posts" });
+        }
+
+        const posts = await Post.find({ status: "pending" })
+            .populate("author", "name username profilePicture headline")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error in getPendingPosts controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+export const reviewPost = async (req, res) => {
+    try {
+        const { status, feedback } = req.body;
+        const postId = req.params.id;
+
+        // Check if user is authorized (admin or super admin)
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'super admin') {
+            return res.status(403).json({ message: "Not authorized to review posts" });
+        }
+
+        // Update post status
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            {
+                status,
+                adminId: req.user._id,
+                adminFeedback: feedback,
+                reviewedAt: new Date()
+            },
+            { new: true }
+        ).populate("author", "name email");
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Create notification for post author
+        const newNotification = new Notification({
+            recipient: post.author._id,
+            type: "post_review",
+            relatedUser: req.user._id,
+            relatedPost: postId,
+            content: `Your post has been ${status}${feedback ? `: ${feedback}` : ''}`
+        });
+
+        await newNotification.save();
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error in reviewPost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
