@@ -4,6 +4,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
+import mongoose from "mongoose";
 
 // Fetch posts for the user's feed
 // Modify getFeedPosts to only show approved posts
@@ -201,17 +202,23 @@ export const likePost = async (req, res) => {
 
 
 
+
 export const getPendingPosts = async (req, res) => {
     try {
-        // Check if user is authorized (admin or super admin)
-        const { role } = req.user;
-        if (role !== 'admin' && role !== 'super admin') {
-            return res.status(403).json({ message: "Not authorized to view pending posts" });
-        }
+        const userId = req.user.id; // Extract the logged-in user's ID
+        const objectId = new mongoose.Types.ObjectId(userId);
 
-        const posts = await Post.find({ status: "pending" })
+        // Query to find posts with status "pending" where the user is in the links array
+        const posts = await Post.find({
+            status: "pending",
+            links: { $elemMatch: { $eq: objectId } }
+        })
             .populate("author", "name username profilePicture headline")
             .sort({ createdAt: -1 });
+
+        if (posts.length === 0) {
+            return res.status(404).json({ message: "No pending posts available for this user." });
+        }
 
         res.status(200).json(posts);
     } catch (error) {
@@ -219,6 +226,7 @@ export const getPendingPosts = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 
 export const reviewPost = async (req, res) => {
