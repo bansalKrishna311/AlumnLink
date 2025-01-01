@@ -29,8 +29,9 @@ export const getFeedPosts = async (req, res) => {
 
 export const createPost = async (req, res) => {
     try {
-        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
-        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
+        const { content, image, type, jobDetails, internshipDetails, eventDetails, links } = req.body; // Destructure the new field
+
+        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails, links });
 
         let newPostData = {
             author: req.user._id,
@@ -45,6 +46,11 @@ export const createPost = async (req, res) => {
             newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
         } else if (type === "event" && eventDetails) {
             newPostData.eventDetails = eventDetails; // Add eventDetails to post data
+        }
+
+        // Include links if provided
+        if (Array.isArray(links) && links.length > 0) {
+            newPostData.links = links; // Add links to post data
         }
 
         // Upload image to Cloudinary if provided
