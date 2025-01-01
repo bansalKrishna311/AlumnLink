@@ -10,6 +10,7 @@ import {
     getPendingPosts,
     reviewPost,
     createAdminPost,
+    updatePostStatus,
 } from "../controllers/post.controller.js";
 
 const router = express.Router();
@@ -25,5 +26,7 @@ router.post("/:id/like", protectRoute, likePost);
 // New admin routes
 router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
+
+router.patch('/admin/:postId/status', updatePostStatus);
 
 export default router;

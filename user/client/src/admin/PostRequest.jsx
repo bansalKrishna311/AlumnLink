@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
-import toast from "react-hot-toast";
-import { Loader, Check, X, MessageSquare, Calendar, Briefcase } from "lucide-react";
+import { Loader, MessageSquare, Calendar, Briefcase } from "lucide-react";
 
 const PostRequests = () => {
   const [selectedType, setSelectedType] = useState("all");
-  const queryClient = useQueryClient();
 
   // Fetch pending posts
   const { data: pendingPosts, isLoading } = useQuery({
@@ -17,24 +15,20 @@ const PostRequests = () => {
     }
   });
 
-  // Handle post review mutation
-  const { mutate: reviewPost, isPending: isReviewing } = useMutation({
-    mutationFn: async ({ postId, status, feedback }) => {
-      const res = await axiosInstance.post(`/posts/admin/${postId}/review`, {
-        status,
-        feedback
-      });
+  const updatePostStatus = useMutation({
+    mutationFn: async ({ postId, status }) => {
+      const res = await axiosInstance.patch(`/posts/admin/${postId}/status`, { status });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pendingPosts"] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Post review completed successfully");
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || "Failed to review post");
+      queryClient.invalidateQueries(["pendingPosts"]);
     }
   });
+
+  const handleStatusUpdate = (postId, status) => {
+    updatePostStatus.mutate({ postId, status });
+  };
+
 
   const getPostTypeIcon = (type) => {
     switch (type) {
@@ -66,11 +60,6 @@ const PostRequests = () => {
     }
   };
 
-  const handleReview = (postId, status) => {
-    const feedback = document.getElementById(`feedback-${postId}`).value;
-    reviewPost({ postId, status, feedback });
-  };
-
   const filteredPosts = pendingPosts?.filter(post => 
     selectedType === "all" || post.type === selectedType
   ) || [];
@@ -86,7 +75,7 @@ const PostRequests = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Post Approval Requests</h1>
+        <h1 className="text-2xl font-bold mb-4">Post Requests</h1>
         
         {/* Type filter */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
@@ -116,7 +105,7 @@ const PostRequests = () => {
 
       {filteredPosts.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-lg shadow">
-          <p className="text-gray-500">No pending posts to review</p>
+          <p className="text-gray-500">No pending posts to display</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -174,36 +163,30 @@ const PostRequests = () => {
                   <p><strong>Location:</strong> {post.eventDetails.eventLocation}</p>
                 </div>
               )}
-
-              <textarea
-                id={`feedback-${post._id}`}
-                placeholder="Add feedback (optional)"
-                className="w-full p-3 rounded-lg border border-gray-300 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="2"
-              />
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => handleReview(post._id, "rejected")}
-                  disabled={isReviewing}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Reject</span>
-                </button>
-                <button
-                  onClick={() => handleReview(post._id, "approved")}
-                  disabled={isReviewing}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Approve</span>
-                </button>
-              </div>
+              <div className="flex gap-4 mt-4">
+        <button
+          onClick={() => handleStatusUpdate(post._id, "approved")}
+          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          disabled={updatePostStatus.isLoading}
+        >
+          Approve
+        </button>
+        <button
+          onClick={() => handleStatusUpdate(post._id, "rejected")}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          disabled={updatePostStatus.isLoading}
+        >
+          Reject
+        </button>
+      </div>
             </div>
           ))}
+          
         </div>
       )}
+
+
+
     </div>
   );
 };

@@ -227,52 +227,54 @@ export const getPendingPosts = async (req, res) => {
     }
 };
 
-
+export const updatePostStatus = async (req, res) => {
+    try {
+      const { postId } = req.params;
+      const { status } = req.body;
+  
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+  
+      const post = await Post.findByIdAndUpdate(
+        postId,
+        { status, reviewedAt: new Date() },
+        { new: true }
+      );
+  
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+  
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
 export const reviewPost = async (req, res) => {
+    const { postId } = req.params;
+    const { status, feedback } = req.body;
+  
     try {
-        const { status, feedback } = req.body;
-        const postId = req.params.id;
-
-        // Check if user is authorized (admin or super admin)
-        const { role } = req.user;
-        if (role !== 'admin' && role !== 'super admin') {
-            return res.status(403).json({ message: "Not authorized to review posts" });
-        }
-
-        // Update post status
-        const post = await Post.findByIdAndUpdate(
-            postId,
-            {
-                status,
-                adminId: req.user._id,
-                adminFeedback: feedback,
-                reviewedAt: new Date()
-            },
-            { new: true }
-        ).populate("author", "name email");
-
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-
-        // Create notification for post author
-        const newNotification = new Notification({
-            recipient: post.author._id,
-            type: "post_review",
-            relatedUser: req.user._id,
-            relatedPost: postId,
-            content: `Your post has been ${status}${feedback ? `: ${feedback}` : ''}`
-        });
-
-        await newNotification.save();
-
-        res.status(200).json(post);
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+  
+      // Update the status and feedback
+      post.status = status;
+      if (feedback) {
+        post.feedback = feedback;
+      }
+      await post.save();
+  
+      res.status(200).json({ message: "Post status updated successfully" });
     } catch (error) {
-        console.error("Error in reviewPost controller:", error);
-        res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Failed to update post status", error });
     }
-};
+  };
+  
 export const createAdminPost = async (req, res) => {
     try {
         const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
