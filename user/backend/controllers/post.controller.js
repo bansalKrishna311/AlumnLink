@@ -259,5 +259,41 @@ export const reviewPost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+export const createAdminPost = async (req, res) => {
+    try {
+        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
+        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
 
+        let newPostData = {
+            author: req.user._id,
+            content,
+            type,
+        };
+
+        // Include details based on post type
+        if (type === "job" && jobDetails) {
+            newPostData.jobDetails = jobDetails; // Add jobDetails to post data
+        } else if (type === "internship" && internshipDetails) {
+            newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
+        } else if (type === "event" && eventDetails) {
+            newPostData.eventDetails = eventDetails; // Add eventDetails to post data
+        }
+
+        // Upload image to Cloudinary if provided
+        if (image) {
+            const imgResult = await cloudinary.uploader.upload(image);
+            newPostData.image = imgResult.secure_url; // Add image URL to post data
+        }
+
+        // Create a new post instance with the correct structure
+        const newPost = new Post(newPostData);
+        await newPost.save();
+
+        console.log("Post created successfully:", newPost); // Log successful creation
+        res.status(201).json(newPost);
+    } catch (error) {
+        console.error("Error in createPost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
