@@ -1,13 +1,19 @@
+// POST.CONTROLLER.JS
+
 import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 
 // Fetch posts for the user's feed
+// Modify getFeedPosts to only show approved posts
 export const getFeedPosts = async (req, res) => {
     try {
-        const userIds = [...req.user.Links, req.user._id]; // Include user's connections and themselves
-        const posts = await Post.find({ author: { $in: userIds } })
+        const userIds = [...req.user.Links, req.user._id];
+        const posts = await Post.find({ 
+            author: { $in: userIds },
+            status: "approved" // Only show approved posts
+        })
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture")
             .sort({ createdAt: -1 });
@@ -186,3 +192,108 @@ export const likePost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
+
+export const getPendingPosts = async (req, res) => {
+    try {
+        // Check if user is authorized (admin or super admin)
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'super admin') {
+            return res.status(403).json({ message: "Not authorized to view pending posts" });
+        }
+
+        const posts = await Post.find({ status: "pending" })
+            .populate("author", "name username profilePicture headline")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error in getPendingPosts controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+export const reviewPost = async (req, res) => {
+    try {
+        const { status, feedback } = req.body;
+        const postId = req.params.id;
+
+        // Check if user is authorized (admin or super admin)
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'super admin') {
+            return res.status(403).json({ message: "Not authorized to review posts" });
+        }
+
+        // Update post status
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            {
+                status,
+                adminId: req.user._id,
+                adminFeedback: feedback,
+                reviewedAt: new Date()
+            },
+            { new: true }
+        ).populate("author", "name email");
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Create notification for post author
+        const newNotification = new Notification({
+            recipient: post.author._id,
+            type: "post_review",
+            relatedUser: req.user._id,
+            relatedPost: postId,
+            content: `Your post has been ${status}${feedback ? `: ${feedback}` : ''}`
+        });
+
+        await newNotification.save();
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error in reviewPost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+export const createAdminPost = async (req, res) => {
+    try {
+        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
+        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
+
+        let newPostData = {
+            author: req.user._id,
+            content,
+            type,
+        };
+
+        // Include details based on post type
+        if (type === "job" && jobDetails) {
+            newPostData.jobDetails = jobDetails; // Add jobDetails to post data
+        } else if (type === "internship" && internshipDetails) {
+            newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
+        } else if (type === "event" && eventDetails) {
+            newPostData.eventDetails = eventDetails; // Add eventDetails to post data
+        }
+
+        // Upload image to Cloudinary if provided
+        if (image) {
+            const imgResult = await cloudinary.uploader.upload(image);
+            newPostData.image = imgResult.secure_url; // Add image URL to post data
+        }
+
+        // Create a new post instance with the correct structure
+        const newPost = new Post(newPostData);
+        await newPost.save();
+
+        console.log("Post created successfully:", newPost); // Log successful creation
+        res.status(201).json(newPost);
+    } catch (error) {
+        console.error("Error in createPost controller:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+

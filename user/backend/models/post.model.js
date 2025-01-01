@@ -1,5 +1,4 @@
 // post.model.js
-
 import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema(
@@ -20,20 +19,35 @@ const postSchema = new mongoose.Schema(
             enum: ["discussion", "job", "internship", "event", "personal", "other"],
             required: true,
         },
+        status: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending"
+        },
+        adminId: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "User" 
+        },
+        adminFeedback: { 
+            type: String 
+        },
+        reviewedAt: { 
+            type: Date 
+        },
         jobDetails: {
             companyName: { type: String },
             jobTitle: { type: String },
             jobLocation: { type: String },
-        }, // For job posts
+        },
         internshipDetails: {
             companyName: { type: String },
             internshipDuration: { type: String },
-        }, // For internship posts
+        },
         eventDetails: {
             eventName: { type: String },
             eventDate: { type: Date },
             eventLocation: { type: String },
-        }, // For event posts
+        },
     },
     { timestamps: true }
 );

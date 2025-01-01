@@ -28,15 +28,28 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       resetForm();
-      toast.success("Post created successfully");
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      // Update success message to reflect pending status
+      toast.success(
+        data.status === "pending" 
+          ? "Post submitted for review. You'll be notified once it's approved." 
+          : "Post created successfully"
+      );
+      // Only invalidate queries if the post is immediately visible (for admins)
+      if (data.status === "approved") {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+      }
+      // Add query invalidation for pending posts if user is admin
+      if (user.isAdmin) {
+        queryClient.invalidateQueries({ queryKey: ["pendingPosts"] });
+      }
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Failed to create post");
     },
   });
+
 
   useEffect(() => {
     if (selectedPostType) {
@@ -259,7 +272,13 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
         return "opacity-80";
     }
   };
-
+  const getStatusBadge = () => {
+    return (
+      <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded-lg text-sm text-yellow-700">
+        Note: Your post will be reviewed by an admin before being published.
+      </div>
+    );
+  };
   return (
     <>
       {selectedPostType && (
@@ -268,7 +287,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             ref={modalRef}
             className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]"
             style={{
-              backgroundImage: "url('../../public/background.png')", // Path to your background image in the public folder
+              backgroundImage: "url('../../public/background.png')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -278,6 +297,10 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             >
               Create a Post
             </div>
+
+            {/* Add status badge for non-admin users */}
+            {!user.isAdmin && getStatusBadge()}
+
             <div className="flex items-start space-x-3 mb-4">
               <img
                 src={user.profilePicture || "/avatar.png"}
@@ -301,6 +324,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 />
               </div>
             )}
+
             <input
               id="fileInput"
               type="file"
@@ -308,9 +332,10 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               onChange={handleImageChange}
               className="hidden"
             />
+
             <button
               onClick={handleFileButtonClick}
-              className="flex items-center space-x-2 mb-4 p-2 rounded-lg "
+              className="flex items-center space-x-2 mb-4 p-2 rounded-lg"
             >
               <Image size={20} color="red" />
               <span>Upload Photo</span>
@@ -323,7 +348,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               disabled={isPending}
               className={`w-full py-2 rounded-lg transition duration-300 flex justify-center items-center ${getButtonGradient()}`}
             >
-              {isPending ? <Loader className="animate-spin" /> : "Post"}
+              {isPending ? <Loader className="animate-spin" /> : "Submit Post"}
             </button>
           </div>
         </div>

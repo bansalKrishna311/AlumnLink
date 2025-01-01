@@ -46,3 +46,16 @@ export const verifySession = async (req, res, next) => {
 		res.status(401).json({ message: "Unauthorized" });
 	}
 };
+export const isAdmin = async (req, res, next) => {
+    try {
+        const { role } = req.user;
+
+        if (!role || (role !== 'admin' && role !== 'super admin')) {
+            return res.status(403).json({ message: "Access denied. Admin rights required." });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: "An error occurred while verifying admin rights.", error: error.message });
+    }
+};
