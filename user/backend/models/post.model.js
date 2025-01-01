@@ -7,13 +7,12 @@ const postSchema = new mongoose.Schema(
         content: { type: String },
         image: { type: String },
         likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-        comments: [
-            {
-                content: { type: String },
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-                createdAt: { type: Date, default: Date.now },
-            },
-        ],
+        comments: [{
+            content: { type: String },
+            user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            createdAt: { type: Date, default: Date.now },
+        }],
+        links: [{ type: mongoose.Schema.Types.ObjectId, ref: "LinkRequest" }],
         type: {
             type: String,
             enum: ["discussion", "job", "internship", "event", "personal", "other"],
@@ -24,16 +23,9 @@ const postSchema = new mongoose.Schema(
             enum: ["pending", "approved", "rejected"],
             default: "pending"
         },
-        adminId: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: "User" 
-        },
-        adminFeedback: { 
-            type: String 
-        },
-        reviewedAt: { 
-            type: Date 
-        },
+        adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        adminFeedback: { type: String },
+        reviewedAt: { type: Date },
         jobDetails: {
             companyName: { type: String },
             jobTitle: { type: String },
@@ -51,6 +43,7 @@ const postSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
 
 const Post = mongoose.model("Post", postSchema);
 

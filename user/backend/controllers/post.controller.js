@@ -4,6 +4,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
+import mongoose from "mongoose";
 
 // Fetch posts for the user's feed
 // Modify getFeedPosts to only show approved posts
@@ -29,8 +30,9 @@ export const getFeedPosts = async (req, res) => {
 
 export const createPost = async (req, res) => {
     try {
-        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
-        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
+        const { content, image, type, jobDetails, internshipDetails, eventDetails, links } = req.body; // Destructure the new field
+
+        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails, links });
 
         let newPostData = {
             author: req.user._id,
@@ -45,6 +47,11 @@ export const createPost = async (req, res) => {
             newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
         } else if (type === "event" && eventDetails) {
             newPostData.eventDetails = eventDetails; // Add eventDetails to post data
+        }
+
+        // Include links if provided
+        if (Array.isArray(links) && links.length > 0) {
+            newPostData.links = links; // Add links to post data
         }
 
         // Upload image to Cloudinary if provided
@@ -195,17 +202,23 @@ export const likePost = async (req, res) => {
 
 
 
+
 export const getPendingPosts = async (req, res) => {
     try {
-        // Check if user is authorized (admin or super admin)
-        const { role } = req.user;
-        if (role !== 'admin' && role !== 'super admin') {
-            return res.status(403).json({ message: "Not authorized to view pending posts" });
-        }
+        const userId = req.user.id; // Extract the logged-in user's ID
+        const objectId = new mongoose.Types.ObjectId(userId);
 
-        const posts = await Post.find({ status: "pending" })
+        // Query to find posts with status "pending" where the user is in the links array
+        const posts = await Post.find({
+            status: "pending",
+            links: { $elemMatch: { $eq: objectId } }
+        })
             .populate("author", "name username profilePicture headline")
             .sort({ createdAt: -1 });
+
+        if (posts.length === 0) {
+            return res.status(404).json({ message: "No pending posts available for this user." });
+        }
 
         res.status(200).json(posts);
     } catch (error) {
@@ -214,51 +227,54 @@ export const getPendingPosts = async (req, res) => {
     }
 };
 
+export const updatePostStatus = async (req, res) => {
+    try {
+      const { postId } = req.params;
+      const { status } = req.body;
+  
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+  
+      const post = await Post.findByIdAndUpdate(
+        postId,
+        { status, reviewedAt: new Date() },
+        { new: true }
+      );
+  
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+  
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
 export const reviewPost = async (req, res) => {
+    const { postId } = req.params;
+    const { status, feedback } = req.body;
+  
     try {
-        const { status, feedback } = req.body;
-        const postId = req.params.id;
-
-        // Check if user is authorized (admin or super admin)
-        const { role } = req.user;
-        if (role !== 'admin' && role !== 'super admin') {
-            return res.status(403).json({ message: "Not authorized to review posts" });
-        }
-
-        // Update post status
-        const post = await Post.findByIdAndUpdate(
-            postId,
-            {
-                status,
-                adminId: req.user._id,
-                adminFeedback: feedback,
-                reviewedAt: new Date()
-            },
-            { new: true }
-        ).populate("author", "name email");
-
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-
-        // Create notification for post author
-        const newNotification = new Notification({
-            recipient: post.author._id,
-            type: "post_review",
-            relatedUser: req.user._id,
-            relatedPost: postId,
-            content: `Your post has been ${status}${feedback ? `: ${feedback}` : ''}`
-        });
-
-        await newNotification.save();
-
-        res.status(200).json(post);
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+  
+      // Update the status and feedback
+      post.status = status;
+      if (feedback) {
+        post.feedback = feedback;
+      }
+      await post.save();
+  
+      res.status(200).json({ message: "Post status updated successfully" });
     } catch (error) {
-        console.error("Error in reviewPost controller:", error);
-        res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Failed to update post status", error });
     }
-};
+  };
+  
 export const createAdminPost = async (req, res) => {
     try {
         const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
