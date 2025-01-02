@@ -1,6 +1,6 @@
 import * as React from "react";
-import { ChevronRight } from "lucide-react";
-import { SearchForm } from "@/components/search-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Collapsible,
@@ -18,64 +18,54 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { axiosInstance } from "@/lib/axios";
 
-// Sample data
 const data = {
   versions: ["Admin"],
   navMain: [
     {
-     
       items: [
-        {
-          title: "Dashboard",
-          url: "/",
-        },
-        {
-          title: "Manage User Requests",
-          url: "/userrequests",
-        },
-        {
-          title: "Manage Alumni",
-          url: "/manage-alumni",
-        },
-        {
-          title: "Rejected Requests",
-          url: "/rejected-requests",
-        },
-        {
-          title: "Make Post",
-          url: "/post-creation",
-        },
-        {
-          title: "Admin Posts",
-          url: "/adminposts",
-        },
-        {
-          title: "Post Request",
-          url: "/postrequest",
-        },
+        { title: "Dashboard", url: "/" },
+        { title: "Manage User Requests", url: "/userrequests" },
+        { title: "Manage Alumni", url: "/manage-alumni" },
+        { title: "Rejected Requests", url: "/rejected-requests" },
+        { title: "Make Post", url: "/post-creation" },
+        { title: "Admin Posts", url: "/adminposts" },
+        { title: "Post Request", url: "/postrequest" },
       ],
     },
   ],
 };
 
-export function AppSidebar({
-  ...props
-}) {
+export function AppSidebar({ ...props }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Logout mutation
+  const { mutate: logout } = useMutation({
+    mutationFn: () => axiosInstance.post("/auth/logout"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] }); // Clear auth data
+      navigate("/login", { replace: true }); // Navigate to login page
+    },
+    onError: (error) => {
+      console.error("Logout failed:", error.response?.data?.message || error.message);
+    },
+  });
+
   return (
     <Sidebar {...props} className="flex flex-col lg:flex-row">
       <SidebarHeader>
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
-        {/* <SearchForm /> */}
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        {/* Responsive collapsing SidebarGroup for each parent */}
         {data.navMain.map((item) => (
           <Collapsible
             key={item.title}
             title={item.title}
             defaultOpen
-            className="group/collapsible">
+            className="group/collapsible"
+          >
             <SidebarGroup>
               <CollapsibleContent>
                 <SidebarGroupContent>
@@ -94,6 +84,14 @@ export function AppSidebar({
           </Collapsible>
         ))}
       </SidebarContent>
+      <div className="p-4">
+        <button
+          className="w-full px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+          onClick={() => logout()}
+        >
+          Logout
+        </button>
+      </div>
       <SidebarRail />
     </Sidebar>
   );

@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "react-hot-toast";
+import { FiArrowRight } from "react-icons/fi";
 
 const JoinNetwork = () => {
   const [institutes, setInstitutes] = useState([]);
@@ -29,15 +31,17 @@ const JoinNetwork = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form states without the name field
+  // Form states
   const [formData, setFormData] = useState({
     network: "",
+    name: "",
     rollNumber: "",
     batch: "",
     courseName: "", // Added Course Name field
   });
   const [errors, setErrors] = useState({});
 
+  // Fetch all network data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -83,52 +87,48 @@ const JoinNetwork = () => {
     network.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+    // Remove error message as the user types
     setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
   };
 
+  // Validate form fields
   const validateForm = () => {
     const newErrors = {};
     if (!formData.network) newErrors.network = "Please select a network.";
+    if (!formData.name) newErrors.name = "Name is required.";
     if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
-      newErrors.rollNumber = "Roll Number must contain only letters and numbers.";
+      // Alphanumeric validation for roll number
+      newErrors.rollNumber =
+        "Roll Number must contain only letters and numbers.";
     if (!formData.batch || !/^\d+$/.test(formData.batch))
       newErrors.batch = "Batch must be a number.";
-    if (!formData.courseName) newErrors.courseName = "Course Name is required.";
+    if (!formData.courseName) newErrors.courseName = "Course Name is required."; // Added validation for Course Name
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (validateForm()) {
       try {
-        const recipientUserId = formData.network; // Assuming 'network' holds recipientUserId
-        if (!recipientUserId) {
-          return alert('Recipient user ID is missing.');
-        }
-
-        const response = await axiosInstance.post(
-          `/links/request/${recipientUserId}`,
-          formData
-        );
-
-        console.log("Request sent successfully:", response.data);
-        setFormData({
-          network: "",
-          rollNumber: "",
-          batch: "",
-          courseName: "",
-        });
+        const response = await axiosInstance.post("/network-requests", formData);
+        toast.success(response.data.message || "Request submitted successfully!");
       } catch (error) {
-        console.error("Error sending request:", error.response?.data || error);
+        toast.error(error.response?.data?.message || "Failed to submit request");
       }
+    } else {
+      toast.error("Please fill in all required fields");
     }
   };
+  
 
   if (isLoading) {
     return (
@@ -143,19 +143,31 @@ const JoinNetwork = () => {
     <div>
       <Dialog.Root>
         <Dialog.Trigger asChild>
-          <Button variant="outline">Join a network</Button>
+          <button className="justify-center group btn rounded-full max-w-lg transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold flex items-center px-8 py-3 relative shadow-md">
+            <span className="group-hover:translate-x-40 text-center transition duration-500">
+              Join a network
+            </span>
+            <div className="-translate-x-40 group-hover:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20">
+              <FiArrowRight className="ml-2 h-5 w-5" />
+            </div>
+          </button>
         </Dialog.Trigger>
+
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />
           <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <Dialog.Title className="text-lg font-bold">Join Network</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">
+              Join Network
+            </Dialog.Title>
             <Dialog.Description className="text-gray-500 mt-2 mb-4">
               Select your preferred network and enter your details.
             </Dialog.Description>
             <Card className="w-full">
               <CardHeader>
                 <CardTitle>Enter Details</CardTitle>
-                <CardDescription>Fill in the required information to join a network.</CardDescription>
+                <CardDescription>
+                  Fill in the required information to join a network.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit}>
@@ -167,7 +179,7 @@ const JoinNetwork = () => {
                         onValueChange={(value) =>
                           setFormData((prev) => ({
                             ...prev,
-                            network: value,
+                            network: value, // This will now store the selected ID
                           }))
                         }
                       >
@@ -194,20 +206,44 @@ const JoinNetwork = () => {
                           )}
                         </SelectContent>
                       </Select>
-                      {errors.network && <p className="text-red-500 text-sm">{errors.network}</p>}
+                      {errors.network && (
+                        <p className="text-red-500 text-sm">{errors.network}</p>
+                      )}
+                    </div>
+
+                    {/* Name */}
+                    <div className="flex flex-col space-y-1.5">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Enter your name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                      />
+                      {errors.name && (
+                        <p className="text-red-500 text-sm">{errors.name}</p>
+                      )}
                     </div>
 
                     {/* Roll Number */}
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="rollNumber">College Admission Number</Label>
+                      <Label htmlFor="rollNumber">
+                        College Admission Number
+                      </Label>
                       <Input
                         id="rollNumber"
                         name="rollNumber"
                         placeholder="Enter your roll number"
                         value={formData.rollNumber}
                         onChange={handleInputChange}
+                        type="text" // Allows both letters and numbers
                       />
-                      {errors.rollNumber && <p className="text-red-500 text-sm">{errors.rollNumber}</p>}
+                      {errors.rollNumber && (
+                        <p className="text-red-500 text-sm">
+                          {errors.rollNumber}
+                        </p>
+                      )}
                     </div>
 
                     {/* Batch */}
@@ -221,7 +257,9 @@ const JoinNetwork = () => {
                         onChange={handleInputChange}
                         type="number"
                       />
-                      {errors.batch && <p className="text-red-500 text-sm">{errors.batch}</p>}
+                      {errors.batch && (
+                        <p className="text-red-500 text-sm">{errors.batch}</p>
+                      )}
                     </div>
 
                     {/* Course Name */}
@@ -234,7 +272,11 @@ const JoinNetwork = () => {
                         value={formData.courseName}
                         onChange={handleInputChange}
                       />
-                      {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
+                      {errors.courseName && (
+                        <p className="text-red-500 text-sm">
+                          {errors.courseName}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <CardFooter className="flex justify-between mt-4">
