@@ -36,7 +36,7 @@ const MyLinksButton = ({ links, onRemoveLink, onOpenUserAccount }) => {
 									<button
 										className="text-red-500"
 										onClick={(e) => {
-											e.stopPropagation(); // Prevent opening the user account
+											e.stopPropagation(); 
 											onRemoveLink(link._id);
 										}}
 									>

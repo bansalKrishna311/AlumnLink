@@ -142,16 +142,22 @@ const JoinNetwork = () => {
   return (
     <div>
       <Dialog.Root>
-        <Dialog.Trigger asChild>
-          <button className="justify-center group btn rounded-full max-w-lg transition-transform duration-300 ease-in-out hover:bg-secondary hover:text-white bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold flex items-center px-8 py-3 relative shadow-md">
-            <span className="group-hover:translate-x-40 text-center transition duration-500">
-              Join a network
-            </span>
-            <div className="-translate-x-40 group-hover:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20">
-              <FiArrowRight className="ml-2 h-5 w-5" />
-            </div>
-          </button>
-        </Dialog.Trigger>
+      <Dialog.Trigger asChild>
+      <button className="group relative flex w-full max-w-lg items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg">
+        {/* Main text that slides out */}
+        <span className="transform transition-all duration-500 group-hover:translate-x-96">
+          Join a network
+        </span>
+        
+        {/* Arrow icon that slides in */}
+        <span className="absolute inset-0 flex transform items-center justify-center opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+          <FiArrowRight className="h-5 w-5" />
+        </span>
+        
+        {/* Hover effect overlay */}
+        <span className="absolute inset-0 transform bg-black opacity-0 transition-all duration-300 group-hover:opacity-10" />
+      </button>
+    </Dialog.Trigger>
 
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />

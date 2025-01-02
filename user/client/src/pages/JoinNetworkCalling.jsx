@@ -3,7 +3,7 @@ import JoinNetwork from "./joinNetwork";
 import JNImageSlider from "./JNImageSlider";
 import MyLinksButton from "@/components/MyLinksButton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "@/lib/axios";
+import {axiosInstance} from "@/lib/axios";
 
 const JoinNetworkCalling = () => {
   const queryClient = useQueryClient();
