@@ -15,6 +15,11 @@ import {
 
 const router = express.Router();
 
+
+
+import multer from 'multer';    
+const upload = multer({ dest: 'uploads/' });
+
 router.get("/", protectRoute, getFeedPosts);
 router.post("/create", protectRoute, createPost);
 router.post("/createAdminPost", protectRoute, createAdminPost);
@@ -28,5 +33,11 @@ router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 
 router.patch('/admin/:postId/status', updatePostStatus);
+
+
+
+
+router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
+
 
 export default router;

@@ -14,7 +14,6 @@ const CreatePostPage = () => {
   const [formState, setFormState] = useState({
     showForm: false,
     type: '',
-    title: '',
     content: '',
     image: null,
     jobDetails: {
@@ -70,7 +69,6 @@ const CreatePostPage = () => {
     setFormState(prev => ({
       ...prev,
       showForm: false,
-      title: '',
       content: '',
       image: null,
       jobDetails: { companyName: '', jobTitle: '', jobLocation: '' },
@@ -80,23 +78,22 @@ const CreatePostPage = () => {
   }, []);
 
   const handleSubmitPost = useCallback(async () => {
-    const { title, content, type, image } = formState;
+    const { content, type, image } = formState;
 
-    if (!title?.trim() || !content?.trim() || !type) {
-      alert('Post title, content, and type are required!');
+    if (!content?.trim() || !type) {
+      alert('Post content and type are required!');
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append('title', title);
       formData.append('content', content);
       formData.append('type', type);
 
       if (image) {
         formData.append('image', image);
       }
-      
+
       if (type === 'job') {
         formData.append('jobDetails', JSON.stringify(formState.jobDetails));
       }
@@ -107,7 +104,7 @@ const CreatePostPage = () => {
         formData.append('eventDetails', JSON.stringify(formState.eventDetails));
       }
 
-      const response = await axiosInstance.post('/admin-posts/create', formData, {
+      const response = await axiosInstance.post('/posts/admin/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -132,15 +129,6 @@ const CreatePostPage = () => {
 
     return (
       <>
-        <input
-          type="text"
-          name="title"
-          value={formState.title}
-          onChange={handleInputChange}
-          placeholder="Enter post title"
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md"
-          required
-        />
         <textarea
           name="content"
           value={formState.content}
@@ -298,10 +286,11 @@ const CreatePostPage = () => {
         </div>
       )}
 
-      {formState.isSuccess && (
-        <div className="mt-6 mx-auto lg:ml-4 p-4 bg-green-100 text-green-700 rounded-lg shadow-md text-center lg:text-left max-w-md">
-          <p>Your post was successfully created!</p>
-          <p><strong>Timestamp:</strong> {formState.timestamp}</p>
+{formState.isSuccess && (
+        <div className="mt-6 text-center">
+          <p className="text-green-600 font-bold">
+            Post created successfully at {formState.timestamp}!
+          </p>
         </div>
       )}
     </div>
