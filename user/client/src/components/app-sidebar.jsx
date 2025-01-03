@@ -32,6 +32,7 @@ const data = {
         { title: "Make Post", url: "/post-creation" },
         { title: "Admin Posts", url: "/adminposts" },
         { title: "Post Request", url: "/postrequest" },
+        { title: "Build Admin Profile", url: "/buildprofile" },
       ],
     },
   ],
