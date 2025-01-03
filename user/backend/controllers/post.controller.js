@@ -275,41 +275,44 @@ export const reviewPost = async (req, res) => {
     }
   };
   
-export const createAdminPost = async (req, res) => {
+  export const createAdminPost = async (req, res) => {
     try {
-        const { content, image, type, jobDetails, internshipDetails, eventDetails } = req.body; // Destructure additional details
-        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails });
-
-        let newPostData = {
-            author: req.user._id,
-            content,
-            type,
-        };
-
-        // Include details based on post type
-        if (type === "job" && jobDetails) {
-            newPostData.jobDetails = jobDetails; // Add jobDetails to post data
-        } else if (type === "internship" && internshipDetails) {
-            newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
-        } else if (type === "event" && eventDetails) {
-            newPostData.eventDetails = eventDetails; // Add eventDetails to post data
-        }
-
-        // Upload image to Cloudinary if provided
-        if (image) {
-            const imgResult = await cloudinary.uploader.upload(image);
-            newPostData.image = imgResult.secure_url; // Add image URL to post data
-        }
-
-        // Create a new post instance with the correct structure
-        const newPost = new Post(newPostData);
-        await newPost.save();
-
-        console.log("Post created successfully:", newPost); // Log successful creation
-        res.status(201).json(newPost);
+      const { title, content, type, jobDetails, internshipDetails, eventDetails } = req.body;
+      const image = req.file ? req.file.path : null;
+  
+      console.log("Received data:", { title, content, type, jobDetails, internshipDetails, eventDetails, image });
+  
+      let newAdminPostData = {
+        author: req.user._id,
+        title,
+        content,
+        type,
+        status: "approved", // Ensure admin posts are approved by default
+      };
+  
+      // Include details based on AdminPost type
+      if (type === "job" && jobDetails) {
+        newAdminPostData.jobDetails = JSON.parse(jobDetails);
+      } else if (type === "internship" && internshipDetails) {
+        newAdminPostData.internshipDetails = JSON.parse(internshipDetails);
+      } else if (type === "event" && eventDetails) {
+        newAdminPostData.eventDetails = JSON.parse(eventDetails);
+      }
+  
+      // Upload image to Cloudinary if provided
+      if (image) {
+        const imgResult = await cloudinary.uploader.upload(image);
+        newAdminPostData.image = imgResult.secure_url;
+      }
+  
+      // Create the post
+      const newAdminPost = new Post(newAdminPostData);
+      await newAdminPost.save();
+  
+      console.log("AdminPost created successfully:", newAdminPost);
+      res.status(201).json(newAdminPost);
     } catch (error) {
-        console.error("Error in createPost controller:", error);
-        res.status(500).json({ message: "Server error" });
+      console.error("Error in createAdminPost controller:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-};
-
+  };

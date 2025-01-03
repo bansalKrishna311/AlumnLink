@@ -29,7 +29,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     queryFn: async () => {
       const response = await axiosInstance.get("/links");
       return response.data.map(link => ({
-        value: link._id,
+        value: link.user._id,
         label: `${link.user.name} - ${link.courseName} (Batch ${link.batch})`,
         linkData: {
           userId: link.user._id,
