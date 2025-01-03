@@ -7,61 +7,70 @@
 
 	export const signup = async (req, res) => {
 		try {
-		const { name, username, email, password, role, adminType } = req.body;
+			const { name, username, email, password, role, adminType } = req.body;
 	
-		if (!name || !username || !email || !password) {
-			return res.status(400).json({ message: "All fields are required" });
-		}
+			if (!name || !username || !email || !password) {
+				return res.status(400).json({ message: "All fields are required" });
+			}
 	
-		const existingEmail = await User.findOne({ email });
-		if (existingEmail) return res.status(400).json({ message: "Email already exists" });
+			const existingEmail = await User.findOne({ email });
+			if (existingEmail) return res.status(400).json({ message: "Email already exists" });
 	
-		const existingUsername = await User.findOne({ username });
-		if (existingUsername) return res.status(400).json({ message: "Username already exists" });
+			const existingUsername = await User.findOne({ username });
+			if (existingUsername) return res.status(400).json({ message: "Username already exists" });
 	
-		if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
+			if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
 	
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+			const salt = await bcrypt.genSalt(10);
+			const hashedPassword = await bcrypt.hash(password, salt);
 	
-		// For "admin" role, adminType is required
-		if (role === "admin" && !adminType) {
-			return res.status(400).json({ message: "Admin type is required" });
-		}
+			// For "admin" role, adminType is required
+			if (role === "admin" && !adminType) {
+				return res.status(400).json({ message: "Admin type is required for admin role" });
+			}
 	
-		const user = new User({
-			name,
-			email,
-			password: hashedPassword,
-			username,
-			role: role || "user",
-			adminType: role === "admin" ? adminType : undefined,  // Set adminType only if the role is admin
-		});
+			// Set headline based on role
+			let headline = "AlumnLink User"; // Default headline
+			if (role === "admin") {
+				headline = "AlumnLink Admin";
+			} else if (role === "AlumnLink superadmin") {
+				headline = "SuperAdmin";
+			}
 	
-		await user.save();
+			const user = new User({	
+				name,
+				email,
+				password: hashedPassword,
+				username,
+				role: role || "user",
+				adminType: role === "admin" ? adminType : undefined, // Set adminType only if role is admin
+				headline, // Assign calculated headline
+			});
 	
-		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
-		const session = new Session({ userId: user._id, token });
-		await session.save();
+			await user.save();
 	
-		res.cookie("jwt-AlumnLink", token, {
-			httpOnly: true,
-			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
-		});
+			const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
+			const session = new Session({ userId: user._id, token });
+			await session.save();
 	
-		res.status(201).json({ message: "User registered successfully" });
+			res.cookie("jwt-AlumnLink", token, {
+				httpOnly: true,
+				maxAge: 3 * 24 * 60 * 60 * 1000,
+				sameSite: "strict",
+				secure: process.env.NODE_ENV === "production",
+			});
 	
-		const profileUrl = process.env.CLIENT_URL + "/profile/" + user.username;
-		try {
-			await sendWelcomeEmail(user.email, user.name, profileUrl);
-		} catch (emailError) {
-			console.error("Error sending welcome email", emailError);
-		}
+			res.status(201).json({ message: "User registered successfully" });
+	
+			const profileUrl = process.env.CLIENT_URL + "/profile/" + user.username;
+			try {
+				await sendWelcomeEmail(user.email, user.name, profileUrl);
+			} catch (emailError) {
+				console.error("Error sending welcome email", emailError);
+			}
 		} catch (error) {
-		console.log("Error in signup:", error.message);
-		res.status(500).json({ message: "Internal server error" });
+			console.log("Error in signup:", error.message);
+			res.status(500).json({ message: "Internal server error" });
 		}
 	};
 	
