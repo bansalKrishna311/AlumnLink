@@ -8,6 +8,7 @@ import LinkRequestsTable from "@/admin/ManageUsers";
 import UserLinks from "@/admin/manage-alumni";
 import RejectedRequests from "@/admin/rejectedRequests";
 import PostRequest from "@/admin/PostRequest";
+import ProfileBuild from "@/admin/ProfileBuild";
 
 const adminRoutes = [
     { 
@@ -79,6 +80,15 @@ const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Admin Request | AlumnLink" />
                 <PostRequest />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/buildprofile", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Admin Profile | AlumnLink" />
+                <ProfileBuild />
             </AdminLayout>
         )
     },
