@@ -40,7 +40,9 @@ export const sendLinkRequest = async (req, res) => {
             rollNumber: req.body.rollNumber,
             batch: req.body.batch,
             courseName: req.body.courseName,
+            chapter: req.body.chapter,
             status: "pending", // Set initial status to pending
+
         });
 
         await newRequest.save();
@@ -64,8 +66,8 @@ export const acceptLinkRequest = async (req, res) => {
         const userId = req.user._id;
 
         const request = await LinkRequest.findById(requestId)
-            .populate("sender", "name email username")
-            .populate("recipient", "name username");
+            .populate("sender", "name email username chapter")
+            .populate("recipient", "name username chapter");
 
         if (!request) {
             return res.status(404).json({ message: "Link request not found" });
@@ -130,6 +132,7 @@ export const rejectLinkRequest = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 export const updateLinkRequestStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -156,8 +159,6 @@ export const updateLinkRequestStatus = async (req, res) => {
     }
 };
 
-
-
 export const getPendingRequests = async (req, res) => {
     try {
         const recipientId = req.user?._id;
@@ -179,7 +180,7 @@ export const getPendingRequests = async (req, res) => {
             status: 'pending',
             recipient: new mongoose.Types.ObjectId(recipientId)
         })
-            .select('sender recipient rollNumber batch courseName status createdAt updatedAt')
+            .select('sender recipient rollNumber batch courseName status createdAt updatedAt chapter')
             .populate('sender', 'name email') // Assuming User model has these fields
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -199,7 +200,8 @@ export const getPendingRequests = async (req, res) => {
             academicDetails: {
                 rollNumber: request.rollNumber,
                 courseName: request.courseName,
-                batch: request.batch
+                batch: request.batch,
+                chapter: request.chapter,
             }
         }));
 
@@ -246,8 +248,8 @@ export const getUserLinks = async (req, res) => {
             $or: [{ sender: userId }, { recipient: userId }],
             status: "accepted",
         })
-            .populate("sender", "name username profilePicture headline")
-            .populate("recipient", "name username profilePicture headline")
+            .populate("sender", "name username profilePicture headline chapter")
+            .populate("recipient", "name username profilePicture headline chapter")
             .sort({ createdAt: -1 });
 
         if (!linkRequests || linkRequests.length === 0) {
@@ -265,6 +267,7 @@ export const getUserLinks = async (req, res) => {
             status: request.status,
             createdAt: request.createdAt,
             updatedAt: request.updatedAt,
+            chapter: request.chapter,
         }));
 
         res.json(transformedLinks);
@@ -290,8 +293,8 @@ export const getRejectedLinks = async (req, res) => {
             ],
             status: 'rejected' // Only fetch link requests with status 'pending'
         })
-        .populate('sender', 'name username profilePicture headline')
-        .populate('recipient', 'name username profilePicture headline')
+        .populate('sender', 'name username profilePicture headline chapter')
+        .populate('recipient', 'name username profilePicture headline chapter')
         .sort({ createdAt: -1 }); // Sort by newest first
 
         // Transform the data to include connection type (sent/received)
@@ -304,7 +307,8 @@ export const getRejectedLinks = async (req, res) => {
             courseName: request.courseName,
             status: request.status,
             createdAt: request.createdAt,
-            updatedAt: request.updatedAt
+            updatedAt: request.updatedAt,
+            chapter: request.chapter,
         }));
 
         res.json(transformedLinks);

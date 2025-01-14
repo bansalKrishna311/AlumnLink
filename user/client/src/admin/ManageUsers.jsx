@@ -17,6 +17,7 @@ const RequestRow = memo(({ request, onStatusChange, actionLoading }) => (
     <TableCell>{request.academicDetails.rollNumber}</TableCell>
     <TableCell>{request.academicDetails.batch}</TableCell>
     <TableCell>{request.academicDetails.courseName}</TableCell>
+    <TableCell>{request.academicDetails.chapter}</TableCell>
     <TableCell>
       {new Date(request.createdAt).toLocaleDateString()}
     </TableCell>
@@ -132,15 +133,12 @@ const LinkRequestsTable = () => {
       const response = await axiosInstance.put(endpoint);
   
       if (response.data.success) {
-        // setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
         setPagination(prev => ({
           ...prev,
           totalRequests: prev.totalRequests - 1,
           currentPage: prev.totalRequests === 1 && prev.currentPage > 1 ? prev.currentPage - 1 : prev.currentPage,
-
         }));
         setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
-
       }
     } catch (error) {
       console.error(`Error ${action}ing request ${requestId}:`, error);
@@ -191,6 +189,7 @@ const LinkRequestsTable = () => {
                 <TableHead>Roll Number</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Course</TableHead>
+                <TableHead>Chapter</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -207,7 +206,7 @@ const LinkRequestsTable = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     No link requests found
                   </TableCell>
                 </TableRow>

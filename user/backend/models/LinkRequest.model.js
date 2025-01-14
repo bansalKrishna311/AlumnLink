@@ -31,6 +31,11 @@ const LinkRequestSchema = new mongoose.Schema(
 		enum: ["pending", "accepted", "rejected"],
 		default: "pending",
 	},
+  chapter:{
+    type: String,
+    required: [true, "Current Location is required"],
+    enum: ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai","Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur",]
+  }
   },
   { timestamps: true }
 );

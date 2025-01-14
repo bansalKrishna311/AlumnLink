@@ -109,6 +109,10 @@ const RejectedRequests = () => {
                     {new Date(link.createdAt).toLocaleDateString()}
                   </span>
                 </div>
+                <div>
+                  <span className="text-gray-500">Chapter:</span>
+                  <span className="ml-2 font-medium">{link.chapter || "N/A"}</span>
+                </div>
               </div>
             </div>
           </div>
