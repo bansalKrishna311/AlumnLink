@@ -13,7 +13,9 @@ const UserLinksPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserLinks();
+    if (userId) {
+      fetchUserLinks();
+    }
   }, [userId]);
 
   const fetchUserLinks = async () => {
@@ -128,4 +130,4 @@ const UserLinksPage = () => {
   );
 };
 
-export default UserLinksPage; 
+export default UserLinksPage;
