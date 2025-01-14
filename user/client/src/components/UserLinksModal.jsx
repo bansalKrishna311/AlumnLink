@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/axios";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserCircle2, Search } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 const UserLinksPage = () => {
   const { userId } = useParams();
   const [links, setLinks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,37 +27,73 @@ const UserLinksPage = () => {
     }
   };
 
-  const getProfilePicture = (profilePicture) => {
-    return profilePicture || "/avatar.png"; // Default avatar if profilePicture is missing
-  };
+  // Filter links based on search query
+  const filteredLinks = links.filter((link) => {
+    const searchTerm = searchQuery.toLowerCase();
+    const name = (link.name || "").toLowerCase();
+    const username = (link.username || "").toLowerCase();
+    return name.includes(searchTerm) || username.includes(searchTerm);
+  });
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">User Links</h2>
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search connections..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+      </div>
+
       {isLoading ? (
         <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
-      ) : links && links.length > 0 ? (
-        <ul className="space-y-2">
-          {links.map((link) => (
-            <li key={link._id} className="flex items-center space-x-4 text-gray-700">
-              <img
-                src={getProfilePicture(link.profilePicture)}
-                alt={`${link.name || link.username || "Unknown User"}'s profile`}
-                className="w-10 h-10 rounded-full"
-              />
-              <span>{link.name || link.username || "Unknown User"}</span>
-            </li>
+      ) : filteredLinks.length > 0 ? (
+        <div className="grid gap-4">
+          {filteredLinks.map((link) => (
+            <div
+              key={link._id}
+              className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+              onClick={() => navigate(`/profile/${link.username}`)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-4">
+                  {link.profilePicture ? (
+                    <img
+                      src={link.profilePicture}
+                      alt={link.name || "Unknown User"}
+                      className="w-12 h-12 rounded-full"
+                    />
+                  ) : (
+                    <UserCircle2 className="w-12 h-12 text-gray-400" />
+                  )}
+                  <div>
+                    <h3 className="font-semibold text-lg">{link.name || "Unknown User"}</h3>
+                    <p className="text-gray-600">@{link.username || "unknown"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       ) : (
-        <p className="text-gray-500">No links available</p>
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <UserCircle2 className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">
+            {searchQuery ? "No matches found" : "No connections yet"}
+          </h3>
+          <p className="mt-2 text-gray-500">
+            {searchQuery
+              ? "Try adjusting your search terms"
+              : "Start connecting with other users to build your network."}
+          </p>
+        </div>
       )}
-      <button
-        onClick={() => navigate(-1)}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Go Back
-      </button>
     </div>
   );
 };
