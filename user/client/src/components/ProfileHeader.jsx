@@ -3,13 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3 } from "lucide-react";
-import UserLinksModal from "./UserLinksModal"; // A modal component to display user links
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // Initialize navigate
 
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
@@ -150,7 +150,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   };
 
   const handleLinkCountClick = () => {
-    setIsModalOpen(true);
+    navigate(`/links/${userData._id}`); // Navigate to the new page
   };
 
   return (
@@ -265,13 +265,6 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
           )}
         </div>
       </div>
-
-      {isModalOpen && (
-        <UserLinksModal
-          userId={userData._id}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
     </div>
   );
 };
