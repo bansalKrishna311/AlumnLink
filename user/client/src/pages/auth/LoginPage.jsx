@@ -5,7 +5,7 @@ import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
 import { Loader, Eye, EyeOff, User, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import Login from "../../../public/login/2.png";
+import Login from "../../../public/Login.png";
 import icon from "../../../public/login-icon.webp";
 import Input from "../auth/components/Input"; // Adjust the import path as needed
 
@@ -41,8 +41,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[60vw] m-auto lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
-      <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden">
+    <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[58vw] m-auto my-4 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white ">
+      <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden ">
         <div className="w-full lg:w-1/2 h-[200px] lg:h-full hidden lg:block">
           <img
             src={Login}
