@@ -57,7 +57,6 @@ export const sendLinkRequest = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 export const acceptLinkRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
@@ -105,7 +104,6 @@ export const acceptLinkRequest = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 export const rejectLinkRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
@@ -155,9 +153,6 @@ export const updateLinkRequestStatus = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
-
-
 export const getPendingRequests = async (req, res) => {
     try {
         const recipientId = req.user?._id;
@@ -227,10 +222,6 @@ export const getPendingRequests = async (req, res) => {
         });
     }
 };
-
-
-
-
 export const getUserLinks = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -277,7 +268,6 @@ export const getUserLinks = async (req, res) => {
         });
     }
 };
-
 export const getRejectedLinks = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -317,7 +307,6 @@ export const getRejectedLinks = async (req, res) => {
         });
     }
 };
-
 export const removeLink = async (req, res) => {
     try {
         const myId = req.user._id;
@@ -332,7 +321,6 @@ export const removeLink = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 export const getLinkstatus = async (req, res) => {
     try {
         const targetUserId = req.params.userId;
@@ -366,3 +354,31 @@ export const getLinkstatus = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+export const getUsersLinks = async (req, res) => {
+  try {
+    const userId = req.params.userId; // Validate this parameter
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    const user = await User.findById(userId).populate({
+      path: "Links",
+      select: "name username profilePicture location", // Added 'location'
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json(user.Links);
+  } catch (error) {
+    console.error("Error fetching user links:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user links",
+      error: error.message,
+    });
+  }
+};
+
