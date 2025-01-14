@@ -8,18 +8,22 @@ const UserLinksModal = ({ userId, onClose }) => {
 
   useEffect(() => {
     fetchUserLinks();
-  }, [userId]); // Fetch links only when `userId` changes
+  }, [userId]);
 
   const fetchUserLinks = async () => {
     try {
       const response = await axiosInstance.get(`/links/${userId}`);
-      console.log("API Response:", response.data); // Log API response
-      setLinks(response.data || []); // Replace state, avoid appending
+      console.log("API Response:", response.data);
+      setLinks(response.data || []);
     } catch (error) {
       console.error("Failed to fetch user links:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getProfilePicture = (profilePicture) => {
+    return profilePicture || "/avatar.png"; // Use default avatar if profilePicture is missing
   };
 
   return (
@@ -31,8 +35,13 @@ const UserLinksModal = ({ userId, onClose }) => {
         ) : links && links.length > 0 ? (
           <ul className="space-y-2">
             {links.map((link) => (
-              <li key={link._id} className="text-gray-700">
-                {link.name || link.username || "Unknown User"}
+              <li key={link._id} className="flex items-center space-x-4 text-gray-700">
+                <img
+                  src={getProfilePicture(link.profilePicture)}
+                  alt={`${link.name || link.username || "Unknown User"}'s profile`}
+                  className="w-10 h-10 rounded-full"
+                />
+                <span>{link.name || link.username || "Unknown User"}</span>
               </li>
             ))}
           </ul>
