@@ -9,7 +9,8 @@ import NotificationsPage from "../pages/NotificationsPage";
 import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
-import UserLinksModal from "@/components/UserLinksModal";
+
+import UserLinksPage from "@/components/UserLinksModal";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -98,7 +99,7 @@ const userRoutes = [
             <ProtectedRoute>
                 <Layout>
                     <PageTitle title="Profile | AlumnLink" />
-                    <UserLinksModal/>
+                    <UserLinksPage/>
                 </Layout>
             </ProtectedRoute>
         ),
