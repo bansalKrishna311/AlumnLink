@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '@/lib/axios';
-import { UserCircle2, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { UserCircle2, Clock, CheckCircle, XCircle, Loader2, MapPin } from 'lucide-react';
 
 const RejectedRequests = () => {
   const [links, setLinks] = useState([]);
@@ -76,8 +76,13 @@ const RejectedRequests = () => {
                 <div>
                   <h3 className="font-semibold text-lg">{link.user.name}</h3>
                   <p className="text-gray-600">@{link.user.username}</p>
-                  {link.user.headline && (
-                    <p className="text-sm text-gray-500 mt-1">{link.user.headline}</p>
+                 
+                  {/* Added location display with icon */}
+                  {link.user.location && (
+                    <p className="text-sm text-gray-500 mt-1 flex items-center">
+                      <MapPin className="h-4 w-4 text-gray-500 mr-1" />
+                      {link.user.location}
+                    </p>
                   )}
                 </div>
               </div>

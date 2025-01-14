@@ -24,8 +24,11 @@ const userSchema = new mongoose.Schema(
 			default: "AlumnLink User",
 		},
 		location: {
-			type: String,
-			default: "Earth",
+			
+				type: String,
+				required: [true, "Current Location is required"],
+				enum: ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai","Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur",]
+		
 		},
 		about: {
 			type: String,

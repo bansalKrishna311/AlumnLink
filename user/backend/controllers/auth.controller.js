@@ -7,11 +7,16 @@
 
 	export const signup = async (req, res) => {
 		try {
-			const { name, username, email, password, role, adminType } = req.body;
+			const { name, username, email, password, role, adminType, location } = req.body;
 	
-			if (!name || !username || !email || !password) {
+			if (!name || !username || !email || !password || !location) {
 				return res.status(400).json({ message: "All fields are required" });
 			}
+	
+			if (!["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai", "Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur"].includes(location)) {
+				return res.status(400).json({ message: "Invalid location selected" });
+			}
+	
 	
 			const existingEmail = await User.findOne({ email });
 			if (existingEmail) return res.status(400).json({ message: "Email already exists" });
@@ -44,7 +49,8 @@
 				username,
 				role: role || "user",
 				adminType: role === "admin" ? adminType : undefined, // Set adminType only if role is admin
-				headline, // Assign calculated headline
+				headline,
+				location // Assign calculated headline
 			});
 	
 			await user.save();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '@/lib/axios';
-import { UserCircle2, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { UserCircle2, Clock, CheckCircle, XCircle, Loader2, MapPin } from 'lucide-react';
 
 const UserLinks = () => {
   const [links, setLinks] = useState([]);
@@ -76,8 +76,13 @@ const UserLinks = () => {
                 <div>
                   <h3 className="font-semibold text-lg">{link.user.name}</h3>
                   <p className="text-gray-600">@{link.user.username}</p>
-                  {link.user.headline && (
-                    <p className="text-sm text-gray-500 mt-1">{link.user.headline}</p>
+                 
+                  {/* Added location display with icon */}
+                  {link.user.location && (
+                    <p className="text-sm text-gray-500 mt-1 flex items-center">
+                      <MapPin className="h-4 w-4 text-red-500 mr-1" />
+                      {link.user.location}
+                    </p>
                   )}
                 </div>
               </div>
@@ -108,10 +113,6 @@ const UserLinks = () => {
                   <span className="ml-2 font-medium">
                     {new Date(link.createdAt).toLocaleDateString()}
                   </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Chapter:</span>
-                  <span className="ml-2 font-medium">{link.chapter || "N/A"}</span>
                 </div>
               </div>
             </div>

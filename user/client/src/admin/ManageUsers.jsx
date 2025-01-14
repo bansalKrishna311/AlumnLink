@@ -17,10 +17,10 @@ const RequestRow = memo(({ request, onStatusChange, actionLoading }) => (
     <TableCell>{request.academicDetails.rollNumber}</TableCell>
     <TableCell>{request.academicDetails.batch}</TableCell>
     <TableCell>{request.academicDetails.courseName}</TableCell>
-    <TableCell>{request.academicDetails.chapter}</TableCell>
     <TableCell>
       {new Date(request.createdAt).toLocaleDateString()}
     </TableCell>
+    <TableCell>{request.sender?.location}</TableCell> {/* Added location column */}
     <TableCell>
       <div className="space-x-2">
         <Button
@@ -189,8 +189,8 @@ const LinkRequestsTable = () => {
                 <TableHead>Roll Number</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Course</TableHead>
-                <TableHead>Chapter</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Location</TableHead> {/* Added Location Header */}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
