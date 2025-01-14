@@ -11,6 +11,7 @@ const CreateAdminForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adminType, setAdminType] = useState("institute"); // Default type
+  const [location, setLocation] = useState(""); // Added state for location
   const queryClient = useQueryClient();
 
   const { mutate: createAdmin, isLoading } = useMutation({
@@ -23,6 +24,7 @@ const CreateAdminForm = () => {
       setEmail("");
       setPassword("");
       setAdminType("institute"); // Reset to default type
+      setLocation(""); // Reset location
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -31,7 +33,7 @@ const CreateAdminForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createAdmin({ name, username, email, password, role: "admin", adminType });
+    createAdmin({ name, username, email, password, role: "admin", adminType, location });
   };
 
   return (
@@ -63,6 +65,54 @@ const CreateAdminForm = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
+          {/* Wrap location and adminType in a flex container */}
+          <div className="flex gap-4 mb-4">
+            <select
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              className="input w-full"
+            >
+              <option value="" disabled>
+                Select your location
+              </option>
+              {[
+                "Bengaluru",
+                "Hyderabad",
+                "Pune",
+                "Chennai",
+                "Mumbai",
+                "Delhi NCR",
+                "Kolkata",
+                "Ahmedabad",
+                "Jaipur",
+                "Thiruvananthapuram",
+                "Lucknow",
+                "Indore",
+                "Chandigarh",
+                "Nagpur",
+              ].map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={adminType}
+              onChange={(e) => setAdminType(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg"
+            >
+              <option value="" disabled>
+                Select Admin Type
+              </option>
+              <option value="institute">Institute</option>
+              <option value="corporate">Corporate</option>
+              <option value="school">School</option>
+            </select>
+          </div>
+
           <Input
             icon={Lock}
             type="password"
@@ -71,15 +121,6 @@ const CreateAdminForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <select
-            value={adminType}
-            onChange={(e) => setAdminType(e.target.value)}
-            className="w-full mt-4 p-2 border border-gray-300 rounded-lg"
-          >
-            <option value="institute">Institute</option>
-            <option value="corporate">Corporate</option>
-            <option value="school">School</option>
-          </select>
 
           <button
             type="submit"
@@ -93,9 +134,5 @@ const CreateAdminForm = () => {
     </div>
   );
 };
-
-
-
-
 
 export default CreateAdminForm;

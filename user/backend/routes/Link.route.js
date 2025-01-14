@@ -8,6 +8,7 @@ import {
 	getPendingRequests,
 	getRejectedLinks,
 	getUserLinks,
+	getUsersLinks,
 	rejectLinkRequest,
 	removeLink,
 	sendLinkRequest,
@@ -44,33 +45,7 @@ router.get("/status/:userId", protectRoute, getLinkstatus);
 // router.patch("/link-requests/:id", updateLinkRequestStatus);
 
 // Link.route.js
-router.get("/:userId", protectRoute, async (req, res) => {
-	try {
-	  const userId = req.params.userId; // Validate this parameter
-  
-	  if (!mongoose.Types.ObjectId.isValid(userId)) {
-		return res.status(400).json({ message: "Invalid userId" });
-	  }
-  
-	  const user = await User.findById(userId).populate({
-		path: "Links",
-		select: "name username profilePicture",
-	  });
-  
-	  if (!user) {
-		return res.status(404).json({ success: false, message: "User not found" });
-	  }
-  
-	  res.json(user.Links);
-	} catch (error) {
-	  console.error("Error fetching user links:", error);
-	  res.status(500).json({
-		success: false,
-		message: "Failed to fetch user links",
-		error: error.message,
-	  });
-	}
-  });
+router.get("/:userId", protectRoute, getUsersLinks);
   
   
 
