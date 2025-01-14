@@ -14,6 +14,7 @@
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [location, setLocation] = useState("");
 
     const queryClient = useQueryClient();
 
@@ -33,7 +34,7 @@
 
     const handleSignUp = (e) => {
       e.preventDefault();
-      signUpMutation({ name, username, email, password });
+      signUpMutation({ name, username, email, password,location  });
     };
 
     const togglePasswordVisibility = () => {
@@ -147,6 +148,24 @@
                     className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
                     required
                   />
+                </div>
+
+                <div>
+                <select
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            required
+                            className="input w-full"
+                        >
+                            <option value="" disabled>
+                                Select your location
+                            </option>
+                            {["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai", "Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur"].map((loc) => (
+                                <option key={loc} value={loc}>
+                                    {loc}
+                                </option>
+                            ))}
+                        </select>
                 </div>
 
                 <div className="relative">

@@ -36,26 +36,7 @@ const JoinNetwork = () => {
     rollNumber: "",
     batch: "",
     courseName: "", // Added Course Name field
-    chapter: "",
   });
-
-  const cityList = [
-    "Bengaluru",
-    "Hyderabad",
-    "Pune",
-    "Chennai",
-    "Mumbai",
-    "Delhi NCR",
-    "Kolkata",
-    "Ahmedabad",
-    "Jaipur",
-    "Thiruvananthapuram",
-    "Lucknow",
-    "Indore",
-    "Chandigarh",
-    "Nagpur",
-  ];
-
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -113,13 +94,11 @@ const JoinNetwork = () => {
     const newErrors = {};
     if (!formData.network) newErrors.network = "Please select a network.";
     if (!formData.rollNumber || !/^[a-zA-Z0-9]+$/.test(formData.rollNumber))
-      newErrors.rollNumber =
-        "Roll Number must contain only letters and numbers.";
+      newErrors.rollNumber = "Roll Number must contain only letters and numbers.";
     if (!formData.batch || !/^\d+$/.test(formData.batch))
       newErrors.batch = "Batch must be a number.";
     if (!formData.courseName) newErrors.courseName = "Course Name is required.";
-    if (!formData.chapter)
-      newErrors.chapter = "Please select a location."; // Validation for location
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -129,9 +108,9 @@ const JoinNetwork = () => {
 
     if (validateForm()) {
       try {
-        const recipientUserId = formData.network;
+        const recipientUserId = formData.network; // Assuming 'network' holds recipientUserId
         if (!recipientUserId) {
-          return alert("Recipient user ID is missing.");
+          return alert('Recipient user ID is missing.');
         }
 
         const response = await axiosInstance.post(
@@ -145,7 +124,6 @@ const JoinNetwork = () => {
           rollNumber: "",
           batch: "",
           courseName: "",
-          chapter: "", // Reset location
         });
       } catch (error) {
         console.error("Error sending request:", error.response?.data || error);
@@ -165,37 +143,33 @@ const JoinNetwork = () => {
   return (
     <div>
       <Dialog.Root>
-        <Dialog.Trigger asChild>
-          <button className="group relative flex w-full max-w-lg items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg">
-            {/* Main text that slides out */}
-            <span className="transform transition-all duration-500 group-hover:translate-x-96">
-              Join a network
-            </span>
-
-            {/* Arrow icon that slides in */}
-            <span className="absolute inset-0 flex transform items-center justify-center opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
-              <FiArrowRight className="h-5 w-5" />
-            </span>
-
-            {/* Hover effect overlay */}
-            <span className="absolute inset-0 transform bg-black opacity-0 transition-all duration-300 group-hover:opacity-10" />
-          </button>
-        </Dialog.Trigger>
+      <Dialog.Trigger asChild>
+      <button className="group relative flex w-full max-w-lg items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg">
+        {/* Main text that slides out */}
+        <span className="transform transition-all duration-500 group-hover:translate-x-96">
+          Join a network
+        </span>
+        
+        {/* Arrow icon that slides in */}
+        <span className="absolute inset-0 flex transform items-center justify-center opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+          <FiArrowRight className="h-5 w-5" />
+        </span>
+        
+        {/* Hover effect overlay */}
+        <span className="absolute inset-0 transform bg-black opacity-0 transition-all duration-300 group-hover:opacity-10" />
+      </button>
+    </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />
           <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <Dialog.Title className="text-lg font-bold">
-              Join Network
-            </Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">Join Network</Dialog.Title>
             <Dialog.Description className="text-gray-500 mt-2 mb-4">
               Select your preferred network and enter your details.
             </Dialog.Description>
             <Card className="w-full">
               <CardHeader>
                 <CardTitle>Enter Details</CardTitle>
-                <CardDescription>
-                  Fill in the required information to join a network.
-                </CardDescription>
+                <CardDescription>Fill in the required information to join a network.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit}>
@@ -234,45 +208,12 @@ const JoinNetwork = () => {
                           )}
                         </SelectContent>
                       </Select>
-                      {errors.network && (
-                        <p className="text-red-500 text-sm">{errors.network}</p>
-                      )}
-                    </div>
-
-                    {/* Current Location */}
-                    <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="chapter">Chapter</Label>
-                      <Select
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            chapter: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger id="chapter">
-                          <SelectValue placeholder="Select your Chapter" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cityList.map((city) => (
-                            <SelectItem key={city} value={city}>
-                              {city}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.chapter && (
-                        <p className="text-red-500 text-sm">
-                          {errors.chapter}
-                        </p>
-                      )}
+                      {errors.network && <p className="text-red-500 text-sm">{errors.network}</p>}
                     </div>
 
                     {/* Roll Number */}
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="rollNumber">
-                        College Admission Number
-                      </Label>
+                      <Label htmlFor="rollNumber">College Admission Number</Label>
                       <Input
                         id="rollNumber"
                         name="rollNumber"
@@ -280,11 +221,7 @@ const JoinNetwork = () => {
                         value={formData.rollNumber}
                         onChange={handleInputChange}
                       />
-                      {errors.rollNumber && (
-                        <p className="text-red-500 text-sm">
-                          {errors.rollNumber}
-                        </p>
-                      )}
+                      {errors.rollNumber && <p className="text-red-500 text-sm">{errors.rollNumber}</p>}
                     </div>
 
                     {/* Batch */}
@@ -298,9 +235,7 @@ const JoinNetwork = () => {
                         onChange={handleInputChange}
                         type="number"
                       />
-                      {errors.batch && (
-                        <p className="text-red-500 text-sm">{errors.batch}</p>
-                      )}
+                      {errors.batch && <p className="text-red-500 text-sm">{errors.batch}</p>}
                     </div>
 
                     {/* Course Name */}
@@ -313,11 +248,7 @@ const JoinNetwork = () => {
                         value={formData.courseName}
                         onChange={handleInputChange}
                       />
-                      {errors.courseName && (
-                        <p className="text-red-500 text-sm">
-                          {errors.courseName}
-                        </p>
-                      )}
+                      {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
                     </div>
                   </div>
                   <CardFooter className="flex justify-between mt-4">
