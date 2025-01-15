@@ -1,151 +1,148 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "../lib/axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, UserCircle2, Search, MapPin } from 'lucide-react';
+import { useEffect, useState, useCallback } from "react";
+import { Search, UserCircle2, MapPin, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { axiosInstance } from "@/lib/axios";
 
-const SelfLinks = () => {
+const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
+  const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
-  const { userId } = useParams();
+  const [filteredLinks, setFilteredLinks] = useState([]);
 
-  const { 
-    data: links = [], 
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ["userLinks", userId],
-    queryFn: async () => {
+  useEffect(() => {
+    const fetchLinks = async () => {
       try {
-        const response = await axiosInstance.get(`/links/${userId}`);
-        return response.data || [];
+        const response = await axiosInstance.get("/links");
+        setLinks(response.data);
       } catch (error) {
-        console.error("Failed to fetch user links:", error);
-        throw new Error("Failed to fetch links. Please try again later.");
+        console.error("Error fetching links:", error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchLinks();
+  }, []);
+
+  useEffect(() => {
+    const filtered = links.filter((link) =>
+      link.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredLinks(filtered);
+  }, [searchQuery, links]);
+
+  const handleOpenUserAccount = useCallback(
+    (username) => {
+      onOpenUserAccount(username);
     },
-    enabled: !!userId,
-  });
+    [onOpenUserAccount]
+  );
 
-  const filteredLinks = links.filter((link) => {
-    if (!searchQuery.trim()) return true;
-    
-    const searchTerm = searchQuery.toLowerCase().trim();
-    const name = (link.user?.name || "").toLowerCase();
-    const username = (link.user?.username || "").toLowerCase();
-    const headline = (link.user?.headline || "").toLowerCase();
-    const location = (link.user?.location || "").toLowerCase();
-    
-    return name.includes(searchTerm) || 
-           username.includes(searchTerm) ||
-           headline.includes(searchTerm) ||
-           location.includes(searchTerm);
-  });
-
-  if (error) {
+  if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-4 text-center">
-        <div className="bg-red-50 p-4 rounded-lg">
-          <h3 className="text-red-800 font-medium">Error Loading Links</h3>
-          <p className="text-red-600 mt-2">{error.message}</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center gap-4">
-        <div className="relative w-full max-w-[70%]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search links by name, username, or location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-full p-2 border rounded-md"
-            />
-          </div>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        </div>
-      ) : filteredLinks.length > 0 ? (
-        <div className="grid gap-4">
-          {filteredLinks.map((link) => (
-            <div
-              key={link._id}
-              className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
-              onClick={() => navigate(`/profile/${link.user?.username}`)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-4">
-                  {link.user?.profilePicture ? (
-                    <img
-                      src={link.user.profilePicture}
-                      alt={link.user.name || "Unknown User"}
-                      className="w-12 h-12 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "";
-                        e.target.className = "hidden";
-                        e.target.nextSibling.className = "w-12 h-12 text-gray-400";
-                      }}
-                    />
-                  ) : (
-                    <UserCircle2 className="w-12 h-12 text-gray-400" />
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      {link.user?.name || "Unknown User"}
-                    </h3>
-                    <p className="text-gray-600">
-                      @{link.user?.username || "unknown"}
-                    </p>
-                    {link.user?.headline && (
-                      <p className="text-gray-600 text-sm mt-1">{link.user.headline}</p>
-                    )}
-                    {link.user?.location && (
-                      <p className="text-gray-500 flex items-center space-x-2 mt-1">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span>{link.user.location}</span>
-                      </p>
-                    )}
-                    <p className="text-gray-500 text-sm mt-1">
-                      {link.courseName} - Batch {link.batch}
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      Roll Number: {link.rollNumber}
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      Status: {link.status}
-                    </p>
-                  </div>
-                </div>
-              </div>
+    <Card className="max-w-4xl mx-auto shadow-lg">
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          {/* Header Section */}
+          <div className="flex flex-col space-y-4">
+            <h2 className="text-2xl font-semibold tracking-tight">My Alma Matters</h2>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search Alma Matters..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-background"
+              />
             </div>
-          ))}
+          </div>
+
+          {/* Alma Matters List */}
+          <ScrollArea className="h-[600px] pr-4">
+            {filteredLinks.length > 0 ? (
+              <div className="space-y-4">
+                {filteredLinks.map((link) => (
+                  <Card
+                    key={link._id}
+                    className="group hover:shadow-md transition-all duration-200 cursor-pointer"
+                    onClick={() => handleOpenUserAccount(link.user.username)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative">
+                          {link.user.profilePicture ? (
+                            <img
+                              src={link.user.profilePicture}
+                              alt={link.user.name || "Unknown User"}
+                              className="w-14 h-14 rounded-full object-cover border-2 border-background"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+                              <UserCircle2 className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          {link.user.isOnline && (
+                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                              {link.user.name || "Unknown User"}
+                            </h3>
+                            <Badge variant="secondary" className="text-xs">
+                              {link.connectionType || "Connection"}
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground">
+                            @{link.user.username || "unknown"}
+                          </p>
+                          
+                          {link.user.location && (
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              <span>{link.user.location}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="bg-muted/50">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <UserCircle2 className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">
+                    {searchQuery ? "No matches found" : "No Alma Matters yet"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-2 text-center max-w-sm">
+                    {searchQuery
+                      ? "Try adjusting your search terms or clearing the search."
+                      : "Start connecting with other users to build your network."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </ScrollArea>
         </div>
-      ) : (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <UserCircle2 className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">
-            {searchQuery ? "No matches found" : "No links yet"}
-          </h3>
-          <p className="mt-2 text-gray-500">
-            {searchQuery
-              ? "Try adjusting your search terms"
-              : "Start adding links to build your network."}
-          </p>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
 export default SelfLinks;
-
