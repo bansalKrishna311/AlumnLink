@@ -92,34 +92,6 @@ const Post = ({ post }) => {
       ]);
     }
   };
-  const handleSharePost = async () => {
-    const postUrl = `${window.location.origin}/posts/${post._id}`;
-
-    // Check if Web Share API is available
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.content,
-          text: "Check out this post!",
-          url: postUrl,
-        });
-        toast.success("Post shared successfully!");
-      } catch (error) {
-        console.error("Error sharing post:", error);
-        toast.error("Failed to share the post.");
-      }
-    } else {
-      // Fallback: Copy link to clipboard
-      try {
-        await navigator.clipboard.writeText(postUrl);
-        toast.success("Post link copied to clipboard!");
-      } catch (error) {
-        console.error("Error copying link:", error);
-        toast.error("Failed to copy the link.");
-      }
-    }
-  };
-
 
   return (
     <div className="bg-white rounded-lg shadow-md mb-4">
@@ -210,11 +182,7 @@ const Post = ({ post }) => {
             text={`Comment (${comments.length})`}
             onClick={() => setShowComments(!showComments)}
           />
-               <PostAction
-            icon={<Share2 size={18} />}
-            text="Share"
-            onClick={handleSharePost}
-          />
+          <PostAction icon={<Share2 size={18} />} text="Share" />
         </div>
       </div>
 
