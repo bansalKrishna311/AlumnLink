@@ -50,14 +50,16 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   }
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-lg sticky top-16">
+    <Card className="max-w-4xl mx-auto shadow-lg sticky top-16 w-96">
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Header Section */}
-          <div className="flex flex-col space-y-4 ">
-            <h2 className="text-2xl font-semibold tracking-tight">My Alma Matters</h2>
+          <div className="flex flex-col space-y-4">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              My Alma Matters
+            </h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search color="red" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search Alma Matters..."
@@ -80,43 +82,44 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-4">
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                           {link.user.profilePicture ? (
                             <img
                               src={link.user.profilePicture}
                               alt={link.user.name || "Unknown User"}
-                              className="w-14 h-14 rounded-full object-cover border-2 border-background"
+                              className="w-12 h-12 rounded-full object-cover border-2 border-background"
                             />
                           ) : (
                             <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                              <UserCircle2 className="w-8 h-8 text-muted-foreground" />
+                              <UserCircle2 color="grey" className="w-10 h-10 text-muted-foreground" />
                             </div>
                           )}
                           {link.user.isOnline && (
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                           )}
                         </div>
-                        
-                        <div className="flex-1 space-y-1">
+
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                            <h3 className="font-medium text-md group-hover:text-primary transition-colors break-words">
                               {link.user.name || "Unknown User"}
                             </h3>
-                            <Badge variant="secondary" className="text-xs">
-                              {link.connectionType || "Connection"}
-                            </Badge>
                           </div>
-                          
-                          <p className="text-sm text-muted-foreground">
+
+                          <div className="flex items-center justify-between mt-3">
+                          <p className="text-sm text-muted-foreground break-words">
                             @{link.user.username || "unknown"}
                           </p>
-                          
+
                           {link.user.location && (
-                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              <span>{link.user.location}</span>
+                            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4 text-red-600" />
+                              <span className="break-words">
+                                {link.user.location}
+                              </span>
                             </div>
                           )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
