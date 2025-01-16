@@ -50,11 +50,11 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   }
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-lg">
+    <Card className="max-w-4xl mx-auto shadow-lg sticky top-16">
       <CardContent className="p-6">
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Header Section */}
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-4 ">
             <h2 className="text-2xl font-semibold tracking-tight">My Alma Matters</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -69,7 +69,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
           </div>
 
           {/* Alma Matters List */}
-          <ScrollArea className="h-[600px] pr-4">
+          <ScrollArea className="max-h-[450px] pr-4">
             {filteredLinks.length > 0 ? (
               <div className="space-y-4">
                 {filteredLinks.map((link) => (
