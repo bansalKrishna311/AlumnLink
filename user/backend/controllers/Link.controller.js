@@ -246,17 +246,23 @@ export const getUserLinks = async (req, res) => {
         }
 
         // Transform data
-        const transformedLinks = linkRequests.map((request) => ({
-            _id: request._id,
-            connection: request.sender._id.equals(userId) ? "sent" : "received",
-            user: request.sender._id.equals(userId) ? request.recipient : request.sender,
-            rollNumber: request.rollNumber,
-            batch: request.batch,
-            courseName: request.courseName,
-            status: request.status,
-            createdAt: request.createdAt,
-            updatedAt: request.updatedAt,
-        }));
+        const transformedLinks = linkRequests
+            .filter((request) => request.sender && request.recipient) // Ensure sender and recipient exist
+            .map((request) => ({
+                _id: request._id,
+                connection: request.sender._id.equals(userId) ? "sent" : "received",
+                user: request.sender._id.equals(userId) ? request.recipient : request.sender,
+                rollNumber: request.rollNumber,
+                batch: request.batch,
+                courseName: request.courseName,
+                status: request.status,
+                createdAt: request.createdAt,
+                updatedAt: request.updatedAt,
+            }));
+
+        if (transformedLinks.length === 0) {
+            return res.status(404).json({ success: false, message: "No valid links found" });
+        }
 
         res.json(transformedLinks);
     } catch (error) {
@@ -268,6 +274,7 @@ export const getUserLinks = async (req, res) => {
         });
     }
 };
+
 export const getRejectedLinks = async (req, res) => {
     try {
         const userId = req.user._id;

@@ -10,9 +10,15 @@ import mongoose from "mongoose";
 // Modify getFeedPosts to only show approved posts
 export const getFeedPosts = async (req, res) => {
     try {
+        // Get the user's ID and linked user IDs
         const userIds = [...req.user.Links, req.user._id];
-        const posts = await Post.find({ 
-            author: { $in: userIds },
+
+        // Find posts by authors in `userIds` or where the post has links to any user in `userIds`
+        const posts = await Post.find({
+            $or: [
+                { author: { $in: userIds } },
+                { links: { $in: userIds } }
+            ],
             status: "approved" // Only show approved posts
         })
             .populate("author", "name username profilePicture headline")
@@ -25,6 +31,7 @@ export const getFeedPosts = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 // Create a new post
 
