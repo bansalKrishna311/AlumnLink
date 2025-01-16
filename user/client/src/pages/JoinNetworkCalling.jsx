@@ -1,35 +1,10 @@
 import React from "react";
 import JoinNetwork from "./joinNetwork";
 import JNImageSlider from "./JNImageSlider";
-import MyLinksButton from "@/components/MyLinksButton";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {axiosInstance} from "@/lib/axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 const JoinNetworkCalling = () => {
   const queryClient = useQueryClient();
-
-  const { data: links, error, isLoading } = useQuery({
-    queryKey: ["Links"],
-    queryFn: () => axiosInstance.get("/Links").then((res) => res.data),
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-    onError: (err) => {
-      console.error("Error fetching links:", err);
-    },
-  });
-
-  const handleRemoveLink = async (linkId) => {
-    try {
-      await axiosInstance.delete(`/Links/${linkId}`);
-      queryClient.invalidateQueries(["Links"]);
-    } catch (error) {
-      console.error("Failed to remove link:", error);
-    }
-  };
-
-  const handleOpenUserAccount = (username) => {
-    window.location.href = `/profile/${username}`;
-  };
 
   return (
     <div className="min-h-screen flex flex-col justify-start items-center pt-4">
@@ -53,18 +28,6 @@ const JoinNetworkCalling = () => {
         <div className="relative">
           <JoinNetwork />
         </div>
-
-        {isLoading ? (
-          <p className="text-gray-500">Loading links...</p>
-        ) : error ? (
-          <p className="text-red-500">Failed to load links. Please try again.</p>
-        ) : links?.length > 0 ? (
-          <MyLinksButton
-            links={links}
-            onRemoveLink={handleRemoveLink}
-            onOpenUserAccount={handleOpenUserAccount}
-          />
-        ) : null}
       </div>
     </div>
   );
