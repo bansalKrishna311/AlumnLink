@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
-import { axiosInstance } from "@/lib/axios"; // Import the axios instance
-import toast from "react-hot-toast"; // Importing react-hot-toast
+import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
+import { User, MapPin, Calendar, BookOpen, Code } from "lucide-react";
 
 const ManageUsers = () => {
   const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // To track loading state
-  const [error, setError] = useState(null); // To track errors
-  const [page, setPage] = useState(1); // Pagination state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    // Fetch the network requests from the backend
     const fetchRequests = async () => {
       try {
         const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
@@ -20,7 +20,7 @@ const ManageUsers = () => {
         console.error("Error fetching requests:", error);
         setError("Error fetching requests.");
       } finally {
-        setLoading(false); // Set loading to false once the fetch is complete
+        setLoading(false);
       }
     };
 
@@ -30,19 +30,12 @@ const ManageUsers = () => {
   const handleStatusUpdate = async (id, status) => {
     try {
       const route = status === "Approved" ? "/accept" : "/reject";
-
-      // Update the status of the request in the backend
       await axiosInstance.put(`/links${route}/${id}`);
-
-      // Removing the request from the list (approved or rejected)
       setRequests((prevRequests) =>
         prevRequests.filter((request) => request._id !== id)
       );
-
-      // Show success toast for the action
       toast.success(`Request ${status === "Approved" ? "approved" : "rejected"} successfully!`);
     } catch (error) {
-      // Show error toast if there's an issue with the request
       console.error("Error updating request status:", error);
       toast.error("Error updating request status.");
     }
@@ -57,65 +50,106 @@ const ManageUsers = () => {
   );
 
   return (
-    <div className="p-6 w-[85vw]">
-      <h1 className="text-2xl font-bold mb-4">Manage User Requests</h1>
+    <div className="p-8 w-full max-w-[1400px] mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage User Requests</h1>
 
-      {/* Error Message */}
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+          {error}
+        </div>
+      )}
 
-      {/* Loading Spinner */}
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
+        </div>
       ) : (
         <>
-          {/* Search controls */}
-          <div className="mb-4 flex space-x-4">
-            <div className="flex items-center border border-gray-300 rounded">
-              <FaSearch className="ml-2" />
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
+              </div>
               <input
                 type="text"
-                placeholder="Search"
-                className="px-2 py-1"
+                placeholder="Search by name or roll number..."
+                className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                 onChange={handleSearchChange}
               />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-lg shadow-md">
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead>
-                <tr className="bg-gray-800 text-white text-left">
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Admission No.</th>
-                  <th className="px-6 py-3 font-medium">Batch</th>
-                  <th className="px-6 py-3 font-medium">Course Name</th>
-                  <th className="px-6 py-3 font-medium">Actions</th>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sender</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Roll Number</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Batch</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredRequests.map((request) => (
-                  <tr key={request._id} className="border-t bg-white">
-                    <td className="px-6 py-4">{request?.sender?.name}</td>
-                    <td className="px-6 py-4">{request?.rollNumber}</td>
-                    <td className="px-6 py-4">{request?.batch}</td>
-                    <td className="px-6 py-4">{request?.courseName}</td>
-                    <td className="px-6 py-4 flex space-x-2">
-                      {/* Accept button */}
-                      <button
-                        className="w-10 h-10 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded"
-                        aria-label="Accept"
-                        onClick={() => handleStatusUpdate(request._id, "Approved")}
-                      >
-                        <FaCheck />
-                      </button>
-                      {/* Reject button */}
-                      <button
-                        className="w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded"
-                        aria-label="Reject"
-                        onClick={() => handleStatusUpdate(request._id, "Rejected")}
-                      >
-                        <FaTimes />
-                      </button>
+                  <tr key={request._id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <User size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-900 font-medium">{request?.sender?.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Code size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.rollNumber}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Calendar size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.batch}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <BookOpen size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.courseName}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <MapPin size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.sender?.location}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Calendar size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors duration-200"
+                          aria-label="Accept"
+                          onClick={() => handleStatusUpdate(request._id, "Approved")}
+                        >
+                          <FaCheck size={14} />
+                        </button>
+                        <button
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200"
+                          aria-label="Reject"
+                          onClick={() => handleStatusUpdate(request._id, "Rejected")}
+                        >
+                          <FaTimes size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
