@@ -41,13 +41,13 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[58vw] m-auto my-4 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white ">
+    <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[52vw] m-auto my-4 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white ">
       <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden ">
         <div className="w-full lg:w-1/2 h-[200px] lg:h-full hidden lg:block">
           <img
             src={Login}
             alt="Visual Representation"
-            className="w-full h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
+            className="w-[25vw] h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
           />
         </div>
 
@@ -73,7 +73,7 @@ const LoginPage = () => {
                 }}
                 style={{ transformOrigin: "70% 70%" }}
               />
-              <h2 className="text-xl lg:text-2xl font-medium text-center text-gray-800">
+              <h2 className="text-xl lg:text-1xl font-medium text-center text-gray-800">
                 Welcome Back to AlumnLink!
               </h2>
             </div>
