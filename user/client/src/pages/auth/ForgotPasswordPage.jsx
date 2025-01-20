@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import Login from "../../../public/login/3.png"; // Same visual asset
 import icon from "../../../public/login-icon.webp";
 import axios from "axios";
+import { axiosInstance } from "@/lib/axios";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/v1/auth/forgot-password", { email });
+      const response = await axiosInstance.post("/auth/forgot-password", { email });
       setIsSubmitted(true);
     } catch (error) {
       console.error("Error submitting email:", error);
