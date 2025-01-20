@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
@@ -20,6 +20,19 @@ import {
 } from "@/components/ui/sidebar";
 import { axiosInstance } from "@/lib/axios";
 
+
+
+export function AppSidebar({ ...props }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+// Fetch the authenticated user data
+const { data: authUser } = useQuery({
+  queryKey: ["authUser"],
+});
+
+const username = authUser?.username || ""; // Fallback to empty string if not logged in
+
 const data = {
   versions: ["Admin"],
   navMain: [
@@ -32,16 +45,11 @@ const data = {
         { title: "Make Post", url: "/post-creation" },
         { title: "Admin Posts", url: "/adminposts" },
         { title: "Post Request", url: "/postrequest" },
-        { title: "Build Admin Profile", url: "/buildprofile" },
+        { title: "Build Admin Profile", url: `/buildprofile/${username}` },
       ],
     },
   ],
 };
-
-export function AppSidebar({ ...props }) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
   // Logout mutation
   const { mutate: logout } = useMutation({
     mutationFn: () => axiosInstance.post("/auth/logout"),
@@ -60,30 +68,31 @@ export function AppSidebar({ ...props }) {
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        {data.navMain.map((item) => (
-          <Collapsible
-            key={item.title}
-            title={item.title}
-            defaultOpen
-            className="group/collapsible"
-          >
-            <SidebarGroup>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {item.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild isActive={item.isActive}>
-                          <a href={item.url}>{item.title}</a>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ))}
+      {data.navMain.map((navGroup, groupIndex) => (
+  <Collapsible
+    key={`nav-group-${groupIndex}`} // Ensure unique key
+    title={navGroup.title}
+    defaultOpen
+    className="group/collapsible"
+  >
+    <SidebarGroup>
+      <CollapsibleContent>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {navGroup.items.map((item, itemIndex) => (
+              <SidebarMenuItem key={`menu-item-${groupIndex}-${itemIndex}`}>
+                <SidebarMenuButton asChild isActive={item.isActive}>
+                  <a href={item.url}>{item.title}</a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </CollapsibleContent>
+    </SidebarGroup>
+  </Collapsible>
+))}
+
       </SidebarContent>
       <div className="p-4">
         <button
