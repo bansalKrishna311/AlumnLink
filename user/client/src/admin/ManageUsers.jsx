@@ -1,229 +1,131 @@
-import React, { useEffect, useState, useCallback, memo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import { axiosInstance } from "@/lib/axios";
+import React, { useState, useEffect } from "react";
+import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
+import { axiosInstance } from "@/lib/axios"; // Import the axios instance
+import toast from "react-hot-toast"; // Importing react-hot-toast
 
-// Memoized table row component to prevent unnecessary re-renders
-const RequestRow = memo(({ request, onStatusChange, actionLoading }) => (
-  <TableRow>
-    <TableCell>
-      <div>
-        <div className="font-medium">{request.sender?.name}</div>
-        <div className="text-sm text-gray-500">{request.sender?.email}</div>
-      </div>
-    </TableCell>
-    <TableCell>{request.academicDetails.rollNumber}</TableCell>
-    <TableCell>{request.academicDetails.batch}</TableCell>
-    <TableCell>{request.academicDetails.courseName}</TableCell>
-    <TableCell>
-      {new Date(request.createdAt).toLocaleDateString()}
-    </TableCell>
-    <TableCell>{request.sender?.location}</TableCell> {/* Added location column */}
-    <TableCell>
-      <div className="space-x-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className="bg-green-50 text-green-600 hover:bg-green-100 min-w-[80px]"
-          onClick={() => onStatusChange(request._id, "accepted")}
-          disabled={actionLoading[request._id]}
-        >
-          {actionLoading[request._id] ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            "Accept"
-          )}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="bg-red-50 text-red-600 hover:bg-red-100 min-w-[80px]"
-          onClick={() => onStatusChange(request._id, "rejected")}
-          disabled={actionLoading[request._id]}
-        >
-          {actionLoading[request._id] ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            "Reject"
-          )}
-        </Button>
-      </div>
-    </TableCell>
-  </TableRow>
-));
-
-RequestRow.displayName = 'RequestRow';
-
-// Memoized pagination component
-const Pagination = memo(({ pagination, onPageChange }) => (
-  <div className="flex justify-between items-center mt-4">
-    <p className="text-sm text-gray-500">
-      Page {pagination.currentPage} of {pagination.totalPages}
-    </p>
-    <div className="flex space-x-2">
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!pagination.hasPreviousPage}
-        onClick={() => onPageChange(pagination.currentPage - 1)}
-      >
-        <ChevronLeft className="w-4 h-4 mr-1" />
-        Previous
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!pagination.hasNextPage}
-        onClick={() => onPageChange(pagination.currentPage + 1)}
-      >
-        Next
-        <ChevronRight className="w-4 h-4 ml-1" />
-      </Button>
-    </div>
-  </div>
-));
-
-Pagination.displayName = 'Pagination';
-
-const LinkRequestsTable = () => {
+const ManageUsers = () => {
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [actionLoading, setActionLoading] = useState({});
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalRequests: 0,
-    hasNextPage: false,
-    hasPreviousPage: false
-  });
-
-  const fetchRequests = useCallback(async (page = 1) => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
-  
-      if (response.data.success) {
-        setRequests(response.data.data);
-        setPagination(response.data.pagination);
-      } else {
-        setRequests([]);
-        setError("Failed to fetch requests");
-      }
-    } catch (error) {
-      setError("Error fetching link requests");
-      console.error("Error fetching link requests:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [axiosInstance, setRequests, setPagination, setError, setLoading]);
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true); // To track loading state
+  const [error, setError] = useState(null); // To track errors
+  const [page, setPage] = useState(1); // Pagination state
 
   useEffect(() => {
-    fetchRequests(pagination.currentPage);
-  }, [pagination.currentPage, fetchRequests]);
-
-  const handleStatusChange = useCallback(async (requestId, action) => {
-    setActionLoading(prev => ({ ...prev, [requestId]: true }));
-  
-    try {
-      const endpoint = action === "accepted" ? `/links/accept/${requestId}` : `/links/reject/${requestId}`;
-      const response = await axiosInstance.put(endpoint);
-  
-      if (response.data.success) {
-        setPagination(prev => ({
-          ...prev,
-          totalRequests: prev.totalRequests - 1,
-          currentPage: prev.totalRequests === 1 && prev.currentPage > 1 ? prev.currentPage - 1 : prev.currentPage,
-        }));
-        setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
+    // Fetch the network requests from the backend
+    const fetchRequests = async () => {
+      try {
+        const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
+        setRequests(response.data.data);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+        setError("Error fetching requests.");
+      } finally {
+        setLoading(false); // Set loading to false once the fetch is complete
       }
+    };
+
+    fetchRequests();
+  }, [page]);
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const route = status === "Approved" ? "/accept" : "/reject";
+
+      // Update the status of the request in the backend
+      await axiosInstance.put(`/links${route}/${id}`);
+
+      // Removing the request from the list (approved or rejected)
+      setRequests((prevRequests) =>
+        prevRequests.filter((request) => request._id !== id)
+      );
+
+      // Show success toast for the action
+      toast.success(`Request ${status === "Approved" ? "approved" : "rejected"} successfully!`);
     } catch (error) {
-      console.error(`Error ${action}ing request ${requestId}:`, error);
-    } finally {
-      setActionLoading(prev => ({ ...prev, [requestId]: false }));
+      // Show error toast if there's an issue with the request
+      console.error("Error updating request status:", error);
+      toast.error("Error updating request status.");
     }
-  }, [requests, pagination]);
-  
+  };
 
-  const handlePageChange = useCallback((newPage) => {
-    setPagination(prev => ({
-      ...prev,
-      currentPage: newPage
-    }));
-  }, []);
+  const handleSearchChange = (e) => setSearchTerm(e.target.value.toLowerCase());
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-4 bg-red-50 text-red-600">
-        <p>{error}</p>
-      </Card>
-    );
-  }
+  const filteredRequests = requests.filter(
+    (request) =>
+      request?.sender?.name?.toLowerCase().includes(searchTerm) ||
+      request?.rollNumber?.toLowerCase().includes(searchTerm)
+  );
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Link Requests</h2>
-        <div className="text-sm text-gray-500">
-          Total Requests: {pagination.totalRequests}
-        </div>
-      </div>
+    <div className="p-6 w-[85vw]">
+      <h1 className="text-2xl font-bold mb-4">Manage User Requests</h1>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sender</TableHead>
-                <TableHead>Roll Number</TableHead>
-                <TableHead>Batch</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Location</TableHead> {/* Added Location Header */}
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {requests.length > 0 ? (
-                requests.map((request) => (
-                  <RequestRow
-                    key={request._id}
-                    request={request}
-                    onStatusChange={handleStatusChange}
-                    actionLoading={actionLoading}
-                  />
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No link requests found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+      {/* Error Message */}
+      {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      {requests.length > 0 && (
-        <Pagination 
-          pagination={pagination}
-          onPageChange={handlePageChange}
-        />
+      {/* Loading Spinner */}
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <>
+          {/* Search controls */}
+          <div className="mb-4 flex space-x-4">
+            <div className="flex items-center border border-gray-300 rounded">
+              <FaSearch className="ml-2" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="px-2 py-1"
+                onChange={handleSearchChange}
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 rounded-lg shadow-md">
+              <thead>
+                <tr className="bg-gray-800 text-white text-left">
+                  <th className="px-6 py-3 font-medium">Name</th>
+                  <th className="px-6 py-3 font-medium">Admission No.</th>
+                  <th className="px-6 py-3 font-medium">Batch</th>
+                  <th className="px-6 py-3 font-medium">Course Name</th>
+                  <th className="px-6 py-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRequests.map((request) => (
+                  <tr key={request._id} className="border-t bg-white">
+                    <td className="px-6 py-4">{request?.sender?.name}</td>
+                    <td className="px-6 py-4">{request?.rollNumber}</td>
+                    <td className="px-6 py-4">{request?.batch}</td>
+                    <td className="px-6 py-4">{request?.courseName}</td>
+                    <td className="px-6 py-4 flex space-x-2">
+                      {/* Accept button */}
+                      <button
+                        className="w-10 h-10 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded"
+                        aria-label="Accept"
+                        onClick={() => handleStatusUpdate(request._id, "Approved")}
+                      >
+                        <FaCheck />
+                      </button>
+                      {/* Reject button */}
+                      <button
+                        className="w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded"
+                        aria-label="Reject"
+                        onClick={() => handleStatusUpdate(request._id, "Rejected")}
+                      >
+                        <FaTimes />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
 };
 
-export default LinkRequestsTable;
+export default ManageUsers;

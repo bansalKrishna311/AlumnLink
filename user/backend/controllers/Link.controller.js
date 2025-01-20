@@ -128,31 +128,7 @@ export const rejectLinkRequest = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-export const updateLinkRequestStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
 
-        if (!["accepted", "rejected"].includes(status)) {
-            return res.status(400).json({ message: "Invalid status" });
-        }
-
-        const request = await LinkRequest.findByIdAndUpdate(
-            id,
-            { status },
-            { new: true }
-        );
-
-        if (!request) {
-            return res.status(404).json({ message: "Request not found" });
-        }
-
-        res.json({ message: "Request status updated", request });
-    } catch (error) {
-        console.error("Error updating link request status:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
 export const getPendingRequests = async (req, res) => {
     try {
         const recipientId = req.user?._id;
