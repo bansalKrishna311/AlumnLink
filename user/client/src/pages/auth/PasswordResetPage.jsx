@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
 import Input from "./components/Input";
-
 import ResetImage from "../../../public/login/1.png";
-
+import { axiosInstance } from "@/lib/axios";
 
 const PasswordResetPage = () => {
   const { token } = useParams();
@@ -19,10 +17,7 @@ const PasswordResetPage = () => {
 
   const { mutate: resetPassword, isLoading } = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post(
-        `http://localhost:5000/api/v1/auth/reset-password/${token}`,
-        data
-      );
+      const response = await axiosInstance.post(`/auth/reset-password/${token}`, data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -58,27 +53,22 @@ const PasswordResetPage = () => {
   ];
 
   const getStrength = () => {
-    let strength = 0;
-    if (password.length >= 6) strength++;
-    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-    return strength;
+    return criteria.reduce((acc, curr) => (curr.met ? acc + 1 : acc), 0);
   };
 
   const strength = getStrength();
 
   const getColor = (strength) => {
     const colors = ["bg-[#4c3300]", "bg-[#805500]", "bg-[#b37500]", "bg-[#dda700]", "bg-[#ffcc33]"];
-    return colors[strength];
+    return colors[strength] || "bg-gray-600";
   };
 
-  const getStrengthText = (strength) => ["Very Weak", "Weak", "Fair", "Good", "Strong"][strength];
+  const getStrengthText = (strength) =>
+    ["Very Weak", "Weak", "Fair", "Good", "Strong"][strength] || "Very Weak";
 
   return (
     <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[60vw] m-auto lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white">
       <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden">
-        {/* Left Side - Image Section */}
         <div className="w-full lg:w-1/2 h-[200px] lg:h-full hidden lg:block">
           <img
             src={ResetImage}
@@ -86,8 +76,6 @@ const PasswordResetPage = () => {
             className="w-full h-full object-cover rounded-tl-[15px] rounded-tr-[100px] rounded-bl-[100px]"
           />
         </div>
-
-        {/* Right Side - Reset Password Form */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -122,7 +110,7 @@ const PasswordResetPage = () => {
                   <span className="text-xs text-gray-400">{getStrengthText(strength)}</span>
                 </div>
                 <div className="flex space-x-1">
-                  {[...Array(4)].map((_, index) => (
+                  {[...Array(5)].map((_, index) => (
                     <div
                       key={index}
                       className={`h-1 w-1/4 rounded-full transition-colors duration-300 ${

@@ -8,7 +8,7 @@ import LinkRequestsTable from "@/admin/ManageUsers";
 import UserLinks from "@/admin/manage-alumni";
 import RejectedRequests from "@/admin/rejectedRequests";
 import PostRequest from "@/admin/PostRequest";
-import ProfileBuild from "@/admin/ProfileBuild";
+import ProfileBuild from "@/pages/ProfileBuild";
 
 const adminRoutes = [
     { 
@@ -84,7 +84,7 @@ const adminRoutes = [
         )
     },
     { 
-        path: "/buildprofile", 
+        path: "/buildprofile/:username", 
         element: (
             <AdminLayout>
                 <PageTitle title="Admin Profile | AlumnLink" />
