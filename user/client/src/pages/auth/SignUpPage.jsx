@@ -3,7 +3,17 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios.js";
 import { toast } from "react-hot-toast";
-import { Loader, Eye, EyeOff, Check, X, User, Mail, MapPin, Lock } from "lucide-react";
+import {
+  Loader,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  User,
+  Mail,
+  MapPin,
+  Lock,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import SignupImage from "../../../public/login/4.png";
 import icon from "../../../public/login-icon.webp";
@@ -181,87 +191,100 @@ const SignUpPage = () => {
               </div>
 
               <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password (6+ characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#CF9400]"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-
-                {/* Password Strength Meter */}
-                <div className="mt-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-400">Password strength</span>
-                    <span className="text-xs text-gray-400">{getStrengthText(strength)}</span>
-                  </div>
-
-                  <div className="flex space-x-1">
-                    {[...Array(4)].map((_, index) => (
-                      <div
-                        key={index}
-                        className={`h-1 w-1/4 rounded-full transition-colors duration-300 
-                        ${index < strength ? getColor(strength) : "bg-gray-600"}`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Password Criteria */}
-                  <div className="mt-2 space-y-1">
-                    {criteria.map((item) => (
-                      <div key={item.label} className="flex items-center text-xs">
-                        {item.met ? (
-                          <Check className="size-4 text-[#FBD200] mr-2" />
-                        ) : (
-                          <X className="size-4 text-[#FBD200] mr-2" />
-                        )}
-                        <span className={item.met ? "text-[#D69E00]" : "text-gray-400"}>
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-2 lg:py-3 px-4 bg-[#DFDFDF] text-slate-600 font-bold rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200"
-                  type="submit"
-                  disabled={isLoading}
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#CF9400]" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password (6+ characters)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input input-bordered w-full py-2 pl-10 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FBD200]"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-3 flex items-center text-[#CF9400]"
                 >
-                  {isLoading ? (
-                    <Loader className="w-5 h-5 lg:w-6 lg:h-6 animate-spin mx-auto" />
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    "Agree & Join"
-                    
+                    <Eye className="w-5 h-5" />
                   )}
-                </motion.button>
-              </form>
-
-              <div className="mt-2 lg:mt-6 text-center">
-                <p className="text-sm lg:text-md text-gray-600 border-2 border-opacity-20 p-2 lg:p-3 rounded-full border-slate-500">
-                  Already have an account?{" "}
-                  <Link to="/login" className="text-blue-600 hover:underline">
-                    Sign in
-                  </Link>
-                </p>
+                </button>
               </div>
+
+              {/* Password Strength Meter */}
+              <div className="mt-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-gray-400">
+                    Password strength
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {getStrengthText(strength)}
+                  </span>
+                </div>
+
+                <div className="flex space-x-1">
+                  {[...Array(4)].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1 w-1/4 rounded-full transition-colors duration-300 
+                        ${
+                          index < strength ? getColor(strength) : "bg-gray-600"
+                        }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Password Criteria */}
+                <div className="mt-2 space-y-1">
+                  {criteria.map((item) => (
+                    <div key={item.label} className="flex items-center text-xs">
+                      {item.met ? (
+                        <Check className="size-4 text-[#FBD200] mr-2" />
+                      ) : (
+                        <X className="size-4 text-[#FBD200] mr-2" />
+                      )}
+                      <span
+                        className={
+                          item.met ? "text-[#D69E00]" : "text-gray-400"
+                        }
+                      >
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-2 lg:py-3 px-4 bg-[#DFDFDF] text-slate-600 font-bold rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader className="w-5 h-5 lg:w-6 lg:h-6 animate-spin mx-auto" />
+                ) : (
+                  "Agree & Join"
+                )}
+              </motion.button>
+            </form>
+
+            <div className="mt-2 lg:mt-6 text-center">
+              <p className="text-sm lg:text-md text-gray-600 border-2 border-opacity-20 p-2 lg:p-3 rounded-full border-slate-500">
+                Already have an account?{" "}
+                <Link to="/login" className="text-blue-600 hover:underline">
+                  Sign in
+                </Link>
+              </p>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
-  export default SignUpPage;
-
+export default SignUpPage;
