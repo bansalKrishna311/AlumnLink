@@ -8,9 +8,9 @@ import toast, { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./lib/axios";
 // Import role-based routes
-import userRoutes from "./routes/userRoutes";
-import adminRoutes from "./routes/adminRoutes";
-import superAdminRoutes from "./routes/superAdminRoutes";
+import {userRoutes} from "./routes/userRoutes";
+import {adminRoutes} from "./routes/adminRoutes";
+import {superAdminRoutes} from "./routes/superAdminRoutes";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({

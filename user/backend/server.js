@@ -24,11 +24,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
-if (process.env.NODE_ENV !== "production") {
-	app.use(
-		cors()
-	);
-}
+const allowedOrigins = process.env.NODE_ENV === "production" 
+    ? ["https://alumn-link.vercel.app", "https://alumn-link-five.vercel.app"] 
+    : ["http://localhost:5173"];
+
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (allowedOrigins.includes(origin) || !origin) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+    })
+);
 
 app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
