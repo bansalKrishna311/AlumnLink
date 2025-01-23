@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-const userRoutes = [
+ export const userRoutes = [
     {
         path: "/",
         element: (
@@ -106,4 +106,4 @@ const userRoutes = [
     },
 ];
 
-export default userRoutes;
+
