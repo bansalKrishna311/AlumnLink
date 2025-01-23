@@ -98,7 +98,7 @@ const userRoutes = [
         element: (
             <ProtectedRoute>
                 <Layout>
-                    <PageTitle title="Profile | AlumnLink" />
+                    <PageTitle title="UserLinks | AlumnLink" />
                     <UserLinksPage/>
                 </Layout>
             </ProtectedRoute>

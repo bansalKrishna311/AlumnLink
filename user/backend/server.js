@@ -24,11 +24,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
+
 if (process.env.NODE_ENV !== "production") {
 	app.use(
 		cors()
 	);
 }
+
 
 app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
