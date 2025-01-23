@@ -1,16 +1,18 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react"; 
 import { Search, UserCircle2, MapPin, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { axiosInstance } from "@/lib/axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredLinks, setFilteredLinks] = useState([]);
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -36,9 +38,9 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
 
   const handleOpenUserAccount = useCallback(
     (username) => {
-      onOpenUserAccount(username);
+      navigate(`/profile/${username}`); // Navigate to the profile page
     },
-    [onOpenUserAccount]
+    [navigate] // Ensure navigate is included as a dependency
   );
 
   if (loading) {
@@ -107,18 +109,18 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                           </div>
 
                           <div className="flex items-center justify-between mt-3">
-                          <p className="text-sm text-muted-foreground break-words">
-                            @{link.user.username || "unknown"}
-                          </p>
+                            <p className="text-sm text-muted-foreground break-words">
+                              @{link.user.username || "unknown"}
+                            </p>
 
-                          {link.user.location && (
-                            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                              <MapPin className="h-4 w-4 text-red-600" />
-                              <span className="break-words">
-                                {link.user.location}
-                              </span>
-                            </div>
-                          )}
+                            {link.user.location && (
+                              <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4 text-red-600" />
+                                <span className="break-words">
+                                  {link.user.location}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
