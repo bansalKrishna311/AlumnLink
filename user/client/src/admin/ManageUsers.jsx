@@ -1,229 +1,165 @@
-import React, { useEffect, useState, useCallback, memo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
+import { User, MapPin, Calendar, BookOpen, Code } from "lucide-react";
 
-// Memoized table row component to prevent unnecessary re-renders
-const RequestRow = memo(({ request, onStatusChange, actionLoading }) => (
-  <TableRow>
-    <TableCell>
-      <div>
-        <div className="font-medium">{request.sender?.name}</div>
-        <div className="text-sm text-gray-500">{request.sender?.email}</div>
-      </div>
-    </TableCell>
-    <TableCell>{request.academicDetails.rollNumber}</TableCell>
-    <TableCell>{request.academicDetails.batch}</TableCell>
-    <TableCell>{request.academicDetails.courseName}</TableCell>
-    <TableCell>
-      {new Date(request.createdAt).toLocaleDateString()}
-    </TableCell>
-    <TableCell>{request.sender?.location}</TableCell> {/* Added location column */}
-    <TableCell>
-      <div className="space-x-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className="bg-green-50 text-green-600 hover:bg-green-100 min-w-[80px]"
-          onClick={() => onStatusChange(request._id, "accepted")}
-          disabled={actionLoading[request._id]}
-        >
-          {actionLoading[request._id] ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            "Accept"
-          )}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="bg-red-50 text-red-600 hover:bg-red-100 min-w-[80px]"
-          onClick={() => onStatusChange(request._id, "rejected")}
-          disabled={actionLoading[request._id]}
-        >
-          {actionLoading[request._id] ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            "Reject"
-          )}
-        </Button>
-      </div>
-    </TableCell>
-  </TableRow>
-));
-
-RequestRow.displayName = 'RequestRow';
-
-// Memoized pagination component
-const Pagination = memo(({ pagination, onPageChange }) => (
-  <div className="flex justify-between items-center mt-4">
-    <p className="text-sm text-gray-500">
-      Page {pagination.currentPage} of {pagination.totalPages}
-    </p>
-    <div className="flex space-x-2">
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!pagination.hasPreviousPage}
-        onClick={() => onPageChange(pagination.currentPage - 1)}
-      >
-        <ChevronLeft className="w-4 h-4 mr-1" />
-        Previous
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!pagination.hasNextPage}
-        onClick={() => onPageChange(pagination.currentPage + 1)}
-      >
-        Next
-        <ChevronRight className="w-4 h-4 ml-1" />
-      </Button>
-    </div>
-  </div>
-));
-
-Pagination.displayName = 'Pagination';
-
-const LinkRequestsTable = () => {
+const ManageUsers = () => {
   const [requests, setRequests] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionLoading, setActionLoading] = useState({});
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalRequests: 0,
-    hasNextPage: false,
-    hasPreviousPage: false
-  });
-
-  const fetchRequests = useCallback(async (page = 1) => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
-  
-      if (response.data.success) {
-        setRequests(response.data.data);
-        setPagination(response.data.pagination);
-      } else {
-        setRequests([]);
-        setError("Failed to fetch requests");
-      }
-    } catch (error) {
-      setError("Error fetching link requests");
-      console.error("Error fetching link requests:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [axiosInstance, setRequests, setPagination, setError, setLoading]);
-  
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetchRequests(pagination.currentPage);
-  }, [pagination.currentPage, fetchRequests]);
-
-  const handleStatusChange = useCallback(async (requestId, action) => {
-    setActionLoading(prev => ({ ...prev, [requestId]: true }));
-  
-    try {
-      const endpoint = action === "accepted" ? `/links/accept/${requestId}` : `/links/reject/${requestId}`;
-      const response = await axiosInstance.put(endpoint);
-  
-      if (response.data.success) {
-        setPagination(prev => ({
-          ...prev,
-          totalRequests: prev.totalRequests - 1,
-          currentPage: prev.totalRequests === 1 && prev.currentPage > 1 ? prev.currentPage - 1 : prev.currentPage,
-        }));
-        setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
+    const fetchRequests = async () => {
+      try {
+        const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
+        setRequests(response.data.data);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+        setError("Error fetching requests.");
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchRequests();
+  }, [page]);
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const route = status === "Approved" ? "/accept" : "/reject";
+      await axiosInstance.put(`/links${route}/${id}`);
+      setRequests((prevRequests) =>
+        prevRequests.filter((request) => request._id !== id)
+      );
+      toast.success(`Request ${status === "Approved" ? "approved" : "rejected"} successfully!`);
     } catch (error) {
-      console.error(`Error ${action}ing request ${requestId}:`, error);
-    } finally {
-      setActionLoading(prev => ({ ...prev, [requestId]: false }));
+      console.error("Error updating request status:", error);
+      toast.error("Error updating request status.");
     }
-  }, [requests, pagination]);
-  
+  };
 
-  const handlePageChange = useCallback((newPage) => {
-    setPagination(prev => ({
-      ...prev,
-      currentPage: newPage
-    }));
-  }, []);
+  const handleSearchChange = (e) => setSearchTerm(e.target.value.toLowerCase());
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-4 bg-red-50 text-red-600">
-        <p>{error}</p>
-      </Card>
-    );
-  }
+  const filteredRequests = requests.filter(
+    (request) =>
+      request?.sender?.name?.toLowerCase().includes(searchTerm) ||
+      request?.rollNumber?.toLowerCase().includes(searchTerm)
+  );
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Link Requests</h2>
-        <div className="text-sm text-gray-500">
-          Total Requests: {pagination.totalRequests}
-        </div>
-      </div>
+    <div className="p-8 w-full max-w-[1400px] mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage User Requests</h1>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sender</TableHead>
-                <TableHead>Roll Number</TableHead>
-                <TableHead>Batch</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Location</TableHead> {/* Added Location Header */}
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {requests.length > 0 ? (
-                requests.map((request) => (
-                  <RequestRow
-                    key={request._id}
-                    request={request}
-                    onStatusChange={handleStatusChange}
-                    actionLoading={actionLoading}
-                  />
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No link requests found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+          {error}
         </div>
-      </Card>
+      )}
 
-      {requests.length > 0 && (
-        <Pagination 
-          pagination={pagination}
-          onPageChange={handlePageChange}
-        />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by name or roll number..."
+                className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                onChange={handleSearchChange}
+              />
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sender</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Roll Number</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Batch</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {filteredRequests.map((request) => (
+                  <tr key={request._id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <User size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-900 font-medium">{request?.sender?.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Code size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.rollNumber}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Calendar size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.batch}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <BookOpen size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.courseName}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <MapPin size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">{request?.sender?.location}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <Calendar size={18} className="text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors duration-200"
+                          aria-label="Accept"
+                          onClick={() => handleStatusUpdate(request._id, "Approved")}
+                        >
+                          <FaCheck size={14} />
+                        </button>
+                        <button
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200"
+                          aria-label="Reject"
+                          onClick={() => handleStatusUpdate(request._id, "Rejected")}
+                        >
+                          <FaTimes size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
 };
 
-export default LinkRequestsTable;
+export default ManageUsers;
