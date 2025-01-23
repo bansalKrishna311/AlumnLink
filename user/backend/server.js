@@ -24,9 +24,23 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
-if (process.env.NODE_ENV !== "production") {
+
+if (process.env.NODE_ENV === "production") {
 	app.use(
-		cors()
+		cors({
+			origin: [
+				"https://alumn-link.vercel.app",
+				"https://alumn-link-five.vercel.app",
+			],
+			credentials: true, // Allow credentials to be included in cross-origin requests
+		})
+	);
+} else {
+	app.use(
+		cors({
+			origin: "http://localhost:5173", // Local development origin
+			credentials: true,
+		})
 	);
 }
 
