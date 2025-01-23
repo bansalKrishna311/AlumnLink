@@ -10,7 +10,7 @@ import RejectedRequests from "@/admin/rejectedRequests";
 import PostRequest from "@/admin/PostRequest";
 import ProfileBuild from "@/pages/ProfileBuild";
 
-const adminRoutes = [
+export const adminRoutes = [
     { 
         path: "/dashboard", 
         element: (
@@ -94,4 +94,3 @@ const adminRoutes = [
     },
 ];
 
-export default adminRoutes;

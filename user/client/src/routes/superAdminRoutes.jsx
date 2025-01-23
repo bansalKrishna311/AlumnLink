@@ -8,7 +8,7 @@ import SuperAdminPage from "../superadmin/SuperAdminPage";
 import InstituteAnalysis from "../superadmin/InstituteAnalysis";
 import PageTitle from "../utils/PageTitle";
 
-const superAdminRoutes = [
+export const superAdminRoutes = [
    
     { 
         path: "/", 
@@ -78,4 +78,4 @@ const superAdminRoutes = [
 ];
 
 
-export default superAdminRoutes;
+
