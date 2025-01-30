@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { Loader, Eye, EyeOff, Check, X } from "lucide-react";
 import Input from "./components/Input";
-import ResetImage from "../../../public/login/1.png";
+import ResetImage from "/login/1.png";
 import { axiosInstance } from "@/lib/axios";
 
 const PasswordResetPage = () => {

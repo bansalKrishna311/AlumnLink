@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance } from "../../lib/axios";
+import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Loader } from "lucide-react";
 import { Link } from "react-router-dom";
-import Login from '../../../public/Login.png';
-import icon from '../../../public/login-icon.webp';
+import Login from '/Login.png';
+import icon from '/login-icon.webp';
 
 const LoginForm = () => {
 	const [username, setUsername] = useState("");
