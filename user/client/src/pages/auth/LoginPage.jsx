@@ -5,9 +5,9 @@ import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
 import { Loader, Eye, EyeOff, User, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import Login from "../../../public/Login.png";
-import icon from "../../../public/login-icon.webp";
-import Input from "../auth/components/Input"; // Adjust the import path as needed
+import Login from "/Login.png";
+import icon from "/login-icon.webp";
+import Input from "./components/Input"; // Adjust the import path as needed
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");

@@ -262,7 +262,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             ref={modalRef}
             className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]"
             style={{
-              backgroundImage: "url('../../public/background.png')",
+              backgroundImage: "url('../../background.png')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

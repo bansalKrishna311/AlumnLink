@@ -3,9 +3,8 @@ import { useState } from "react";
 import Input from "./components/Input";
 import { Mail, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
-import Login from "../../../public/login/3.png"; // Same visual asset
-import icon from "../../../public/login-icon.webp";
-import axios from "axios";
+import Login from "/login/3.png"; // Same visual asset
+import icon from "/login-icon.webp";
 import { axiosInstance } from "@/lib/axios";
 
 const ForgotPasswordPage = () => {
