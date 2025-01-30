@@ -10,7 +10,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [type, setType] = useState(selectedPostType || "discussion");
-  const [selectedLinks, setSelectedLinks] = useState([]);
+  const [selectedLinks, setSelectedLinks] = useState(null);
 
   // Existing state variables
   const [companyName, setCompanyName] = useState("");
@@ -86,7 +86,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       const postData = {
         content,
         type,
-        links: selectedLinks.map(link => link.value)
+        links: selectedLinks ? [selectedLinks.value] : []
       };
 
       if (image) postData.image = await readFileAsDataURL(image);
@@ -213,10 +213,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       <>
         {inputs[type]}
         <Select
-          isMulti
           options={userLinks}
           value={selectedLinks}
-          onChange={setSelectedLinks}
+          onChange={(selectedOption) => setSelectedLinks(selectedOption)}
           className="mb-4"
           placeholder="Select relevant links..."
         />
@@ -262,7 +261,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
             ref={modalRef}
             className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]"
             style={{
-              backgroundImage: "url('../../background.png')",
+              backgroundImage: "url('../../public/background.png')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
