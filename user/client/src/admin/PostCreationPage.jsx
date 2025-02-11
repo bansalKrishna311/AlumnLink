@@ -273,6 +273,7 @@ const CreatePostPage = () => {
                     className="max-w-full h-auto rounded-lg border border-gray-300"
                   />
                 </div>
+                
               )}
             </div>
 
