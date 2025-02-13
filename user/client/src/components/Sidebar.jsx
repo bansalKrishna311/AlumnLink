@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import PostCreation from "./PostCreation"; // Import PostCreation component
 
 // Import your images
-import discussionImg from "../../public/images/discussion.png";
-import jobImg from "../../public/images/job.png";
-import internshipImg from "../../public/images/internship.png";
-import eventImg from "../../public/images/event.png";
-import personalImg from "../../public/images/personal.png";
-import otherImg from "../../public/images/other.png";
+import discussionImg from "/images/discussion.png";
+import jobImg from "/images/job.png";
+import internshipImg from "/images/internship.png";
+import eventImg from "/images/event.png";
+import personalImg from "/images/personal.png";
+import otherImg from "/images/other.png";
 
 const categoryImages = {
   discussion: discussionImg,

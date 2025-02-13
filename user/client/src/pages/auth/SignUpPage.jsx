@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance } from "../../lib/axios.js";
+import { axiosInstance } from "@/lib/axios.js";
 import { toast } from "react-hot-toast";
 import {
   Loader,
@@ -15,8 +15,8 @@ import {
   Lock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import SignupImage from "../../../public/login/4.png";
-import icon from "../../../public/login-icon.webp";
+import SignupImage from "/login/4.png";
+import icon from "/login-icon.webp";
 
 const SignUpPage = () => {
   const [name, setName] = useState("");

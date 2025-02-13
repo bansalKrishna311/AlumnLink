@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosInstance } from "../../../lib/axios";
+import { axiosInstance } from "@/lib/axios";
 import { LogOut } from 'lucide-react';
-import Logo from '../../../../public/logo-white.png'; // Update this path to your logo
+import Logo from '/logo-white.png'; // Update this path to your logo
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
