@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
-
 import ProfileHeader from "@/components/ProfileHeader";
 import AboutSection from "@/components/AboutSection";
 import ExperienceSection from "@/components/ExperienceSection";
@@ -15,11 +14,12 @@ const ProfilePage = () => {
 
     const { data: authUser, isLoading } = useQuery({
         queryKey: ["authUser"],
+        queryFn: () => axiosInstance.get("/auth/me").then((res) => res.data),
     });
 
     const { data: userProfile, isLoading: isUserProfileLoading } = useQuery({
         queryKey: ["userProfile", username],
-        queryFn: () => axiosInstance.get(`/users/${username}`),
+        queryFn: () => axiosInstance.get(`/users/${username}`).then((res) => res.data),
     });
 
     const { mutate: updateProfile } = useMutation({
@@ -32,18 +32,20 @@ const ProfilePage = () => {
         },
     });
 
-    if (isLoading || isUserProfileLoading) return null;
+    if (isLoading || isUserProfileLoading) return <p>Loading...</p>;
 
-    const isOwnProfile = authUser.username === userProfile.data.username;
-    const userData = isOwnProfile ? authUser : userProfile.data;
-    const isAdmin = userData.role === 'admin'; // Assuming role is stored in user data
+    if (!authUser || !userProfile) return <p>Error loading profile.</p>;
+
+    const isOwnProfile = authUser.username === userProfile.username;
+    const userData = isOwnProfile ? authUser : userProfile;
+    const isAdmin = userData.role === "admin";
 
     const handleSave = (updatedData) => {
         updateProfile(updatedData);
     };
 
     return (
-        <div className='max-w-4xl mx-auto p-4'>
+        <div className="max-w-4xl mx-auto p-4">
             <ProfileHeader userData={userData} isOwnProfile={isOwnProfile} onSave={handleSave} />
             <AboutSection userData={userData} isOwnProfile={isOwnProfile} onSave={handleSave} />
             {!isAdmin && (
