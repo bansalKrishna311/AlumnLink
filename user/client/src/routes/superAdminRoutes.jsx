@@ -1,6 +1,6 @@
 import InstituteAnalysis from "@/superadmin/Institutes/InstituteAnalysis";
 import DefaultLayout from "../components/layout/DefaultLayout";
-import Layout from "../components/layout/Layout";
+
 import CorporateList from "../superadmin/Corporates/CorporateList";
 import CreateAdminForm from "../superadmin/CreateAdminForm";
 import InstituteList from "../superadmin/Institutes/InstituteList";
@@ -9,6 +9,7 @@ import SuperAdminPage from "../superadmin/SuperAdminPage";
 
 import PageTitle from "../utils/PageTitle";
 import CorporateAnalysis from "@/superadmin/Corporates/CorporateAnalysis";
+import SchoolAnalysis from "@/superadmin/Schools/SchoolAnalysis";
 
 export const superAdminRoutes = [
    
@@ -71,6 +72,16 @@ export const superAdminRoutes = [
              
                 <SchoolList />
                
+            </DefaultLayout>
+        )
+    },
+    { 
+        path: "/School-Analysis", 
+            element: (
+            <DefaultLayout>
+                <PageTitle title="Analyse Corporates| AlumnLink" />
+                <SchoolAnalysis/>
+                
             </DefaultLayout>
         )
     },
