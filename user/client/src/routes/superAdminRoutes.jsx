@@ -1,12 +1,15 @@
+import InstituteAnalysis from "@/superadmin/Institutes/InstituteAnalysis";
 import DefaultLayout from "../components/layout/DefaultLayout";
-import Layout from "../components/layout/Layout";
+
 import CorporateList from "../superadmin/Corporates/CorporateList";
 import CreateAdminForm from "../superadmin/CreateAdminForm";
 import InstituteList from "../superadmin/Institutes/InstituteList";
 import SchoolList from "../superadmin/Schools/SchoolList";
 import SuperAdminPage from "../superadmin/SuperAdminPage";
-import InstituteAnalysis from "../superadmin/InstituteAnalysis";
+
 import PageTitle from "../utils/PageTitle";
+import CorporateAnalysis from "@/superadmin/Corporates/CorporateAnalysis";
+import SchoolAnalysis from "@/superadmin/Schools/SchoolAnalysis";
 
 export const superAdminRoutes = [
    
@@ -52,6 +55,16 @@ export const superAdminRoutes = [
         )
     },
     { 
+        path: "/Institute-Analysis", 
+        element: (
+            <DefaultLayout>
+                <PageTitle title="Analyse Corporates| AlumnLink" />
+                <InstituteAnalysis/>
+                
+            </DefaultLayout>
+        )
+    },
+    { 
         path: "/School-List", 
         element: (
             <DefaultLayout>
@@ -59,6 +72,16 @@ export const superAdminRoutes = [
              
                 <SchoolList />
                
+            </DefaultLayout>
+        )
+    },
+    { 
+        path: "/School-Analysis", 
+            element: (
+            <DefaultLayout>
+                <PageTitle title="Analyse Corporates| AlumnLink" />
+                <SchoolAnalysis/>
+                
             </DefaultLayout>
         )
     },
@@ -73,6 +96,17 @@ export const superAdminRoutes = [
             </DefaultLayout>
         )
     },
+    { 
+        path: "/corporate-Analysis", 
+        element: (
+            <DefaultLayout>
+                <PageTitle title="Analyse Corporates| AlumnLink" />
+                <CorporateAnalysis/>
+                
+            </DefaultLayout>
+        )
+    },
+
 
     // Add additional super-admin-specific routes here if needed
 ];
