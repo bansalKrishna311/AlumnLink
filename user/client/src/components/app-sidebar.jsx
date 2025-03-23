@@ -1,108 +1,143 @@
-import * as React from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { VersionSwitcher } from "@/components/version-switcher";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+"use client"
+
+import * as React from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
+import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users } from "lucide-react"
+
+import { VersionSwitcher } from "@/components/version-switcher"
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { axiosInstance } from "@/lib/axios";
-
-
+  SidebarSeparator,
+} from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { axiosInstance } from "@/lib/axios"
 
 export function AppSidebar({ ...props }) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-// Fetch the authenticated user data
-const { data: authUser } = useQuery({
-  queryKey: ["authUser"],
-});
+  // Fetch the authenticated user data
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+  })
 
-const username = authUser?.username || ""; // Fallback to empty string if not logged in
+  const username = authUser?.username || "" // Fallback to empty string if not logged in
 
-const data = {
-  versions: ["Admin"],
-  navMain: [
-    {
-      items: [
-        { title: "Dashboard", url: "/" },
-        { title: "Manage User Requests", url: "/userrequests" },
-        { title: "Manage Alumni", url: "/manage-alumni" },
-        { title: "Rejected Requests", url: "/rejected-requests" },
-        { title: "Make Post", url: "/post-creation" },
-        { title: "Admin Posts", url: "/adminposts" },
-        { title: "Post Request", url: "/postrequest" },
-        { title: "Build Admin Profile", url: `/buildprofile/${username}` },
-      ],
-    },
-  ],
-};
+  // Navigation items with icons
+  const navItems = [
+    { title: "Dashboard", url: "/", icon: Home },
+    { title: "Manage User Requests", url: "/userrequests", icon: Users },
+    { title: "Manage Alumni", url: "/manage-alumni", icon: User },
+    { title: "Rejected Requests", url: "/rejected-requests", icon: ThumbsDown },
+    { title: "Make Post", url: "/post-creation", icon: PlusCircle },
+    { title: "Admin Posts", url: "/adminposts", icon: FileText },
+    { title: "Post Request", url: "/postrequest", icon: MessageSquare },
+    { title: "Build Admin Profile", url: `/buildprofile/${username}`, icon: User },
+  ]
+
+  const data = {
+    versions: ["Admin"],
+    navMain: [
+      {
+        items: navItems,
+      },
+    ],
+  }
+
+  // Determine active item based on current path
+  const [activeItem, setActiveItem] = React.useState("")
+
+  React.useEffect(() => {
+    // Set active item based on current path
+    const path = window.location.pathname
+    const currentItem = navItems.find((item) => path === item.url || (item.url !== "/" && path.startsWith(item.url)))
+
+    if (currentItem) {
+      setActiveItem(currentItem.title)
+    } else {
+      setActiveItem("")
+    }
+  }, [])
+
   // Logout mutation
   const { mutate: logout } = useMutation({
     mutationFn: () => axiosInstance.post("/auth/logout"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] }); // Clear auth data
-      navigate("/login", { replace: true }); // Navigate to login page
+      queryClient.invalidateQueries({ queryKey: ["authUser"] }) // Clear auth data
+      navigate("/login", { replace: true }) // Navigate to login page
     },
     onError: (error) => {
-      console.error("Logout failed:", error.response?.data?.message || error.message);
+      console.error("Logout failed:", error.response?.data?.message || error.message)
     },
-  });
+  })
 
   return (
-    <Sidebar {...props} className="flex flex-col lg:flex-row">
-      <SidebarHeader>
-        <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
+    <Sidebar {...props} className="border-r border-border">
+      <SidebarHeader className="py-4">
+        <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} className="w-full" />
       </SidebarHeader>
-      <SidebarContent className="gap-0">
-      {data.navMain.map((navGroup, groupIndex) => (
-  <Collapsible
-    key={`nav-group-${groupIndex}`} // Ensure unique key
-    title={navGroup.title}
-    defaultOpen
-    className="group/collapsible"
-  >
-    <SidebarGroup>
-      <CollapsibleContent>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {navGroup.items.map((item, itemIndex) => (
-              <SidebarMenuItem key={`menu-item-${groupIndex}-${itemIndex}`}>
-                <SidebarMenuButton asChild isActive={item.isActive}>
-                  <a href={item.url}>{item.title}</a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </CollapsibleContent>
-    </SidebarGroup>
-  </Collapsible>
-))}
 
+      <SidebarSeparator />
+
+      <SidebarContent>
+        {data.navMain.map((navGroup, groupIndex) => (
+          <Collapsible key={`nav-group-${groupIndex}`} defaultOpen className="group/collapsible">
+            <SidebarGroup>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {navGroup.items.map((item, itemIndex) => (
+                      <SidebarMenuItem key={`menu-item-${groupIndex}-${itemIndex}`}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={activeItem === item.title}
+                          onClick={() => setActiveItem(item.title)}
+                        >
+                          <a href={item.url} className="flex items-center">
+                            {item.icon && <item.icon className="w-4 h-4 mr-2" />}
+                            <span>{item.title}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        ))}
       </SidebarContent>
-      <div className="p-4">
-        <button
-          className="w-full px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
-          onClick={() => logout()}
-        >
+
+      <SidebarFooter className="mt-auto border-t border-border p-4">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <User className="w-4 h-4" />
+          </div>
+          <div className="ml-2">
+            <p className="text-sm font-medium">{username || "Admin User"}</p>
+            <p className="text-xs text-muted-foreground">Administrator</p>
+          </div>
+        </div>
+
+        <Button variant="destructive" className="w-full justify-start" onClick={() => logout()}>
+          <LogOut className="w-4 h-4 mr-2" />
           Logout
-        </button>
-      </div>
+        </Button>
+      </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }
+
