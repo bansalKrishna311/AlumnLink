@@ -40,6 +40,17 @@ const LoginPage = () => {
     navigate("/forgot-password");
   };
 
+  const handleLinkedin = () => {
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
+      redirect_uri: 'http://localhost:4000/api/v1/auth/linkedinCallback',
+      scope: "openid email profile",
+    
+    })
+    window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+  }
+
   return (
     <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[52vw] m-auto my-4 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white ">
       <div className="flex flex-col lg:flex-row w-full h-full max-w-4xl overflow-hidden ">
@@ -131,6 +142,15 @@ const LoginPage = () => {
                   "Forgot Password?"
                 )}
               </button>
+            </div>
+
+            
+            <div className="mt-4 lg:mt-6 text-center">
+
+              <button onClick={handleLinkedin} className="text-sm lg:text-md text-gray-600 border-2 border-opacity-20 p-2 lg:p-3 rounded-full border-slate-500">
+               Continue With Linkedin
+              </button>
+          
             </div>
 
             <div className="mt-4 lg:mt-6 text-center">

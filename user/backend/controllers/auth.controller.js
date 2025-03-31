@@ -200,3 +200,62 @@
 		}
 	};
 
+export const getAccessToken = async(code) => {
+	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: new URLSearchParams({
+			grant_type: 'authorization_code',
+			code : code,
+			redirect_uri: `http://localhost:4000/api/v1/auth/linkedinCallback`,
+			client_id: process.env.LINKEDIN_CLIENT_ID,
+			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+		}),
+	});
+	if(!response.ok) {
+		throw new Error(response.statusText);
+	}
+	const accessToken = await response.json();
+	return accessToken
+}
+
+export const linkedInCallback = async (req, res) => {
+	try {
+		const { code } = req.query;
+
+		if (!code) {
+			return res.status(400).json({ message: "Authorization code is required" });
+		}
+
+		// get access token 
+		const accessToken = await getAccessToken(code);
+
+		// get user using access token
+		const userdata = await getLinkedInUserData(accessToken.access_token);
+
+		res.status(200).json({ message: 'LinkedIn callback successful', accessToken, userdata });
+
+	} catch (error) {
+		console.error("LinkedIn callback error:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+
+
+		const getLinkedInUserData = async (accessToken) => {
+			const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+				method: 'get',
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			});
+			if (!response.ok) {
+				throw new Error(response.statusText);
+			}
+			const userData = await response.json();
+			return userData;
+
+		}
