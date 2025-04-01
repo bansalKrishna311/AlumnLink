@@ -247,7 +247,7 @@ export const linkedInCallback = async (req, res) => {
                 email: userdata.email,
                 username: userdata.email.split("@")[0], // Use email prefix as username
                 role: "user",
-                profilePicture: userdata.profilePicture,
+                profilePicture: userdata.picture,
             });
             await user.save();
         }
