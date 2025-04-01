@@ -9,7 +9,7 @@ import {
   Send,
   Share2,
   ThumbsUp,
-  Trash2,
+  MoreHorizontal, // More options icon
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -21,6 +21,7 @@ const Post = ({ post }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState(post.comments || []);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false); // State to control the options menu visibility
   const isOwner = authUser._id === post.author._id;
   const isLiked = post.likes.includes(authUser._id);
   const queryClient = useQueryClient();
@@ -32,6 +33,7 @@ const Post = ({ post }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast.success("Post deleted successfully");
+      setShowOptionsMenu(false); // Close the options menu after deletion
     },
     onError: (error) => {
       toast.error(error.message);
@@ -121,16 +123,28 @@ const Post = ({ post }) => {
             </div>
           </div>
           {isOwner && (
-            <button
-              onClick={handleDeletePost}
-              className="text-red-500 hover:text-red-700"
-            >
-              {isDeletingPost ? (
-                <Loader size={18} className="animate-spin" />
-              ) : (
-                <Trash2 size={18} />
+            <div className="relative">
+              <button
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <MoreHorizontal size={18} />
+              </button>
+              {showOptionsMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-10">
+                  <button
+                    onClick={handleDeletePost}
+                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                  >
+                    {isDeletingPost ? (
+                      <Loader size={18} className="animate-spin" />
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
+                </div>
               )}
-            </button>
+            </div>
           )}
         </div>
         <p className="mb-4">{post.content}</p>
@@ -138,7 +152,7 @@ const Post = ({ post }) => {
           <img
             src={post.image}
             alt="Post content"
-            className="rounded-lg w-full mb-4"
+            className=" w-full mb-4"
           />
         )}
 

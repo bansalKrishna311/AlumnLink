@@ -162,15 +162,13 @@ const JoinNetwork = () => {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-30" />
           <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <Dialog.Title className="text-lg font-bold">Join Network</Dialog.Title>
-            <Dialog.Description className="text-gray-500 mt-2 mb-4">
-              Select your preferred network and enter your details.
-            </Dialog.Description>
+           
             <Card className="w-full">
               <CardHeader>
-                <CardTitle>Enter Details</CardTitle>
-                <CardDescription>Fill in the required information to join a network.</CardDescription>
+                <CardTitle>Join Network</CardTitle>
+                <CardDescription> Select your preferred network and enter your details.</CardDescription>
               </CardHeader>
+              
               <CardContent>
                 <form onSubmit={handleSubmit}>
                   <div className="grid w-full items-center gap-4">
