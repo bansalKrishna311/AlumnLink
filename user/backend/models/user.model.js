@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
 		},
 		username: { type: String, required: true, unique: true },
 		email: { type: String, required: true, unique: true },
-		password: { type: String, required: true },
+		password: { type: String },
 		resetPasswordToken: String,
 		resetPasswordExpires: Date,
 		profilePicture: {
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
 		location: {
 			
 				type: String,
-				required: [true, "Current Location is required"],
+				
 				enum: ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai","Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur",]
 		
 		},
