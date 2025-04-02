@@ -173,40 +173,37 @@ export const reactToPost = async (req, res) => {
         const postId = req.params.id;
         const { reactionType } = req.body; // e.g., "like", "love", "sad", etc.
 
-        // Validate the reaction type
-        const validReactions = ["like", "love", "sad", "wow", "angry"];
-        if (!validReactions.includes(reactionType)) {
-            return res.status(400).json({ message: "Invalid reaction type" });
-        }
-
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
 
-        // Check if the user has already reacted
+        // Find existing reaction by user
         const existingReactionIndex = post.reactions.findIndex(
             (reaction) => reaction.user.toString() === req.user._id.toString()
         );
 
-        if (existingReactionIndex !== -1) {
-            // If the reaction exists, update it with the new type
-            post.reactions[existingReactionIndex].type = reactionType;
-        } else {
-            // Add a new reaction if the user hasn't reacted before
-            post.reactions.push({ user: req.user._id, type: reactionType });
+        if (reactionType === null) {
+            // If reactionType is null, remove the user's reaction
+            if (existingReactionIndex !== -1) {
+                post.reactions.splice(existingReactionIndex, 1);
+                await post.save();
+            }
+            return res.status(200).json(post);
         }
 
-        // Create a notification if the post owner is not the user who reacted
-        if (post.author.toString() !== req.user._id.toString()) {
-            const newNotification = new Notification({
-                recipient: post.author,
-                type: "reaction",
-                relatedUser: req.user._id,
-                relatedPost: postId,
-                reactionType,
-            });
-            await newNotification.save();
+        // Ensure reactionType is valid
+        const validReactions = ["like", "love", "sad", "wow", "angry"];
+        if (!validReactions.includes(reactionType.toLowerCase())) {
+            return res.status(400).json({ message: "Invalid reaction type" });
+        }
+
+        if (existingReactionIndex !== -1) {
+            // If the user has already reacted, update their reaction
+            post.reactions[existingReactionIndex].type = reactionType;
+        } else {
+            // Add new reaction
+            post.reactions.push({ user: req.user._id, type: reactionType });
         }
 
         await post.save();
@@ -216,6 +213,7 @@ export const reactToPost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 
 

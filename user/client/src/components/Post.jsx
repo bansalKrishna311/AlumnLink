@@ -1,7 +1,6 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState, useRef, useEffect } from "react"
-import { axiosInstance } from "../lib/axios"
+import { axiosInstance } from "@/lib/axios"
 import toast from "react-hot-toast"
 import { Link, useParams } from "react-router-dom"
 import {
@@ -19,6 +18,8 @@ import {
   Building,
   Globe,
   Lock,
+  X,
+  Users,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
@@ -31,8 +32,11 @@ const Post = ({ post }) => {
   const [comments, setComments] = useState(post.comments || [])
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [showReactionPicker, setShowReactionPicker] = useState(false)
+  const [showReactionsModal, setShowReactionsModal] = useState(false)
+  const [activeReactionTab, setActiveReactionTab] = useState("all")
   const optionsMenuRef = useRef(null)
   const reactionPickerRef = useRef(null)
+  const reactionsModalRef = useRef(null)
   const isOwner = authUser?._id === post.author?._id
   const queryClient = useQueryClient()
   const reactionTimeout = useRef(null)
@@ -65,7 +69,17 @@ const Post = ({ post }) => {
   // Total reactions count
   const totalReactions = post.reactions?.length || 0
 
-  // Close options menu and reaction picker when clicking outside
+  // Group reactions by type for the modal
+  const reactionsByType =
+    post.reactions?.reduce((groups, reaction) => {
+      if (!groups[reaction.type]) {
+        groups[reaction.type] = []
+      }
+      groups[reaction.type].push(reaction)
+      return groups
+    }, {}) || {}
+
+  // Close options menu, reaction picker, and reactions modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) {
@@ -74,10 +88,25 @@ const Post = ({ post }) => {
       if (reactionPickerRef.current && !reactionPickerRef.current.contains(event.target)) {
         setShowReactionPicker(false)
       }
+      if (reactionsModalRef.current && !reactionsModalRef.current.contains(event.target)) {
+        setShowReactionsModal(false)
+      }
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  // Prevent scrolling when modal is open
+  useEffect(() => {
+    if (showReactionsModal) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+    return () => {
+      document.body.style.overflow = "auto"
+    }
+  }, [showReactionsModal])
 
   const { mutate: deletePost, isPending: isDeletingPost } = useMutation({
     mutationFn: async () => {
@@ -138,11 +167,19 @@ const Post = ({ post }) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return
     deletePost()
   }
-
   const handleReactToPost = (reactionType) => {
-    if (isReacting) return
-    reactToPost({ postId: post._id, reactionType })
-  }
+    if (isReacting) return;
+
+    // If user clicks the same reaction again, send null to remove it
+    if (userReaction === reactionType) {
+        reactToPost({ postId: post._id, reactionType: null }); // Sending null instead of "none"
+        return;
+    }
+
+    // Otherwise, add/update reaction
+    reactToPost({ postId: post._id, reactionType });
+};
+
 
   const handleBookmarkPost = () => {
     if (isBookmarking) return
@@ -245,6 +282,14 @@ const Post = ({ post }) => {
       default:
         return <Globe className="w-3 h-3 mr-1" />
     }
+  }
+
+  // Filter reactions based on active tab
+  const getFilteredReactions = () => {
+    if (activeReactionTab === "all") {
+      return post.reactions || []
+    }
+    return reactionsByType[activeReactionTab] || []
   }
 
   return (
@@ -461,7 +506,12 @@ const Post = ({ post }) => {
             className="flex items-center space-x-3"
           >
             {totalReactions > 0 && (
-              <div className="flex items-center">
+              <motion.div
+                className="flex items-center cursor-pointer"
+                onClick={() => setShowReactionsModal(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <div className="flex -space-x-1 mr-1.5">
                   {Object.keys(reactionCounts)
                     .slice(0, 3)
@@ -476,13 +526,13 @@ const Post = ({ post }) => {
                     ))}
                 </div>
                 <span className="text-gray-600 font-medium">{totalReactions}</span>
-              </div>
+              </motion.div>
             )}
-            <div className="flex items-center cursor-pointer"             onClick={() => setShowComments(!showComments)} >
+            <div className="flex items-center cursor-pointer" onClick={() => setShowComments(!showComments)}>
               <MessageCircle size={14} className="text-gray-600 mr-1.5" />
               <span className="text-gray-600">{comments.length}</span>
             </div>
-         
+            <span className="text-gray-500">{post.views || 0} views</span>
           </motion.div>
         </div>
 
@@ -516,6 +566,7 @@ const Post = ({ post }) => {
                   : "text-gray-700 hover:bg-gray-100"
               }`}
               disabled={isReacting}
+              onClick={() => userReaction && handleReactToPost(userReaction)}
             >
               {userReaction ? (
                 <>
@@ -541,7 +592,7 @@ const Post = ({ post }) => {
                   className="absolute left-0 -top-12 bg-white border border-gray-200 rounded-full shadow-lg z-10 flex items-center p-1 space-x-1"
                 >
                   <motion.button
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("like")}
                     className={`p-2 rounded-full hover:bg-blue-100 ${userReaction === "like" ? "bg-blue-50" : ""}`}
@@ -550,7 +601,7 @@ const Post = ({ post }) => {
                     <span className="text-lg">👍</span>
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("love")}
                     className={`p-2 rounded-full hover:bg-red-100 ${userReaction === "love" ? "bg-red-50" : ""}`}
@@ -559,7 +610,7 @@ const Post = ({ post }) => {
                     <span className="text-lg">❤️</span>
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("sad")}
                     className={`p-2 rounded-full hover:bg-yellow-100 ${userReaction === "sad" ? "bg-yellow-50" : ""}`}
@@ -568,7 +619,7 @@ const Post = ({ post }) => {
                     <span className="text-lg">😢</span>
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("wow")}
                     className={`p-2 rounded-full hover:bg-purple-100 ${userReaction === "wow" ? "bg-purple-50" : ""}`}
@@ -577,7 +628,7 @@ const Post = ({ post }) => {
                     <span className="text-lg">😮</span>
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("angry")}
                     className={`p-2 rounded-full hover:bg-orange-100 ${userReaction === "angry" ? "bg-orange-50" : ""}`}
@@ -585,6 +636,17 @@ const Post = ({ post }) => {
                   >
                     <span className="text-lg">😠</span>
                   </motion.button>
+                  {userReaction && (
+                    <motion.button
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleReactToPost(userReaction)}
+                      className="p-2 rounded-full hover:bg-gray-100"
+                      title="Remove reaction"
+                    >
+                      <X size={16} className="text-gray-600" />
+                    </motion.button>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -707,6 +769,135 @@ const Post = ({ post }) => {
                 </motion.button>
               </div>
             </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reactions Modal */}
+      <AnimatePresence>
+        {showReactionsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
+              ref={reactionsModalRef}
+            >
+              <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center">
+                  <Users size={18} className="mr-2 text-gray-600" />
+                  <h3 className="font-semibold text-lg">Reactions</h3>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowReactionsModal(false)}
+                  className="p-1 rounded-full hover:bg-gray-100"
+                >
+                  <X size={18} className="text-gray-500" />
+                </motion.button>
+              </div>
+
+              <div className="p-2">
+                {/* Reaction type tabs */}
+                <div className="flex border-b mb-2 overflow-x-auto">
+                  <button
+                    className={`px-4 py-2 text-sm font-medium ${activeReactionTab === "all" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600 hover:text-gray-900"}`}
+                    onClick={() => setActiveReactionTab("all")}
+                  >
+                    All ({totalReactions})
+                  </button>
+                  {Object.keys(reactionsByType).map((type) => (
+                    <button
+                      key={type}
+                      className={`px-4 py-2 text-sm font-medium ${activeReactionTab === type ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600 hover:text-gray-900"}`}
+                      onClick={() => setActiveReactionTab(type)}
+                    >
+                      <span className="mr-1">{getReactionEmoji(type)}</span>
+                      {reactionsByType[type].length}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Reactions list */}
+                <div className="overflow-y-auto max-h-[50vh]">
+                  {activeReactionTab === "all" ? (
+                    Object.entries(reactionsByType).map(([type, reactions]) => (
+                      <div key={type} className="mb-4">
+                        <div className="flex items-center mb-2 px-2">
+                          <span className="text-base mr-2">{getReactionEmoji(type)}</span>
+                          <h4 className={`font-medium text-sm ${getReactionColor(type)}`}>
+                            {getReactionText(type)} ({reactions.length})
+                          </h4>
+                        </div>
+                        {reactions.map((reaction) => (
+                          <motion.div
+                            key={reaction._id || reaction.user}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center p-2 hover:bg-gray-50 rounded-md"
+                          >
+                            <img
+                              src={reaction.userDetails?.profilePicture || "/avatar.png"}
+                              alt={reaction.userDetails?.name || "User"}
+                              className="w-8 h-8 rounded-full mr-3 border border-gray-200"
+                            />
+                            <div>
+                              <p className="font-medium text-sm">
+                                {reaction.userDetails?.name || "User"}
+                                {reaction.user === authUser?._id && (
+                                  <span className="ml-1 text-xs text-gray-500">(You)</span>
+                                )}
+                              </p>
+                              <p className="text-xs text-gray-500">{reaction.userDetails?.headline || ""}</p>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mb-4">
+                      <div className="flex items-center mb-2 px-2">
+                        <span className="text-base mr-2">{getReactionEmoji(activeReactionTab)}</span>
+                        <h4 className={`font-medium text-sm ${getReactionColor(activeReactionTab)}`}>
+                          {getReactionText(activeReactionTab)} ({reactionsByType[activeReactionTab]?.length || 0})
+                        </h4>
+                      </div>
+                      {reactionsByType[activeReactionTab]?.map((reaction) => (
+                        <motion.div
+                          key={reaction._id || reaction.user}
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-center p-2 hover:bg-gray-50 rounded-md"
+                        >
+                          <img
+                            src={reaction.userDetails?.profilePicture || "/avatar.png"}
+                            alt={reaction.userDetails?.name || "User"}
+                            className="w-8 h-8 rounded-full mr-3 border border-gray-200"
+                          />
+                          <div>
+                            <p className="font-medium text-sm">
+                              {reaction.userDetails?.name || "User"}
+                              {reaction.user === authUser?._id && (
+                                <span className="ml-1 text-xs text-gray-500">(You)</span>
+                              )}
+                            </p>
+                            <p className="text-xs text-gray-500">{reaction.userDetails?.headline || ""}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
