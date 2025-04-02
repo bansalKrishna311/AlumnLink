@@ -35,15 +35,37 @@ const Post = ({ post }) => {
   const reactionPickerRef = useRef(null);
   const isOwner = authUser?._id === post.author?._id;
   const queryClient = useQueryClient();
+  const reactionTimeout = useRef(null);
+
+  const handleMouseEnter = () => {
+    if (reactionTimeout.current) {
+      clearTimeout(reactionTimeout.current);
+    }
+    setShowReactionPicker(true);
+  };
+
+  const handleMouseLeave = (event) => {
+    if (
+      reactionPickerRef.current &&
+      !reactionPickerRef.current.contains(event.relatedTarget)
+    ) {
+      reactionTimeout.current = setTimeout(() => {
+        setShowReactionPicker(false);
+      }, 300); 
+    }
+  };
 
   // Get user's current reaction if any
-  const userReaction = post.reactions?.find(reaction => reaction.user === authUser?._id)?.type;
+  const userReaction = post.reactions?.find(
+    (reaction) => reaction.user === authUser?._id
+  )?.type;
 
   // Count of each reaction type
-  const reactionCounts = post.reactions?.reduce((counts, reaction) => {
-    counts[reaction.type] = (counts[reaction.type] || 0) + 1;
-    return counts;
-  }, {}) || {};
+  const reactionCounts =
+    post.reactions?.reduce((counts, reaction) => {
+      counts[reaction.type] = (counts[reaction.type] || 0) + 1;
+      return counts;
+    }, {}) || {};
 
   // Total reactions count
   const totalReactions = post.reactions?.length || 0;
@@ -51,10 +73,16 @@ const Post = ({ post }) => {
   // Close options menu and reaction picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) {
+      if (
+        optionsMenuRef.current &&
+        !optionsMenuRef.current.contains(event.target)
+      ) {
         setShowOptionsMenu(false);
       }
-      if (reactionPickerRef.current && !reactionPickerRef.current.contains(event.target)) {
+      if (
+        reactionPickerRef.current &&
+        !reactionPickerRef.current.contains(event.target)
+      ) {
         setShowReactionPicker(false);
       }
     };
@@ -156,15 +184,50 @@ const Post = ({ post }) => {
   const getReactionIcon = (type, size = 14, className = "mr-1.5") => {
     switch (type) {
       case "like":
-        return <ThumbsUp size={size} className={`${className} ${userReaction === "like" ? "fill-blue-600 text-blue-600" : ""}`} />;
+        return (
+          <ThumbsUp
+            size={size}
+            className={`${className} ${
+              userReaction === "like" ? "fill-blue-600 text-blue-600" : ""
+            }`}
+          />
+        );
       case "love":
-        return <Heart size={size} className={`${className} ${userReaction === "love" ? "fill-red-600 text-red-600" : ""}`} />;
+        return (
+          <Heart
+            size={size}
+            className={`${className} ${
+              userReaction === "love" ? "fill-red-600 text-red-600" : ""
+            }`}
+          />
+        );
       case "sad":
-        return <Frown size={size} className={`${className} ${userReaction === "sad" ? "fill-yellow-600 text-yellow-600" : ""}`} />;
+        return (
+          <Frown
+            size={size}
+            className={`${className} ${
+              userReaction === "sad" ? "fill-yellow-600 text-yellow-600" : ""
+            }`}
+          />
+        );
       case "wow":
-        return <AlertCircle size={size} className={`${className} ${userReaction === "wow" ? "fill-purple-600 text-purple-600" : ""}`} />;
+        return (
+          <AlertCircle
+            size={size}
+            className={`${className} ${
+              userReaction === "wow" ? "fill-purple-600 text-purple-600" : ""
+            }`}
+          />
+        );
       case "angry":
-        return <Smile size={size} className={`${className} ${userReaction === "angry" ? "fill-orange-600 text-orange-600" : ""}`} />;
+        return (
+          <Smile
+            size={size}
+            className={`${className} ${
+              userReaction === "angry" ? "fill-orange-600 text-orange-600" : ""
+            }`}
+          />
+        );
       default:
         return <ThumbsUp size={size} className={className} />;
     }
@@ -232,7 +295,10 @@ const Post = ({ post }) => {
         {/* Author section - more compact */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
-            <Link to={`/profile/${post?.author?.username}`} className="relative mr-2">
+            <Link
+              to={`/profile/${post?.author?.username}`}
+              className="relative mr-2"
+            >
               <img
                 src={post.author?.profilePicture || "/avatar.png"}
                 alt={post.author?.name}
@@ -243,9 +309,15 @@ const Post = ({ post }) => {
             <div>
               <div className="flex items-center">
                 <Link to={`/profile/${post?.author?.username}`}>
-                  <h3 className="font-medium text-gray-800 hover:text-blue-600 transition-colors text-sm">{post.author?.name}</h3>
+                  <h3 className="font-medium text-gray-800 hover:text-blue-600 transition-colors text-sm">
+                    {post.author?.name}
+                  </h3>
                 </Link>
-                <span className={`ml-2 text-xs py-0.5 px-1.5 rounded-full flex items-center ${getPostTypeBadgeColor(post.type)}`}>
+                <span
+                  className={`ml-2 text-xs py-0.5 px-1.5 rounded-full flex items-center ${getPostTypeBadgeColor(
+                    post.type
+                  )}`}
+                >
                   {getPostTypeIcon(post.type)}
                   {post.type}
                 </span>
@@ -261,7 +333,7 @@ const Post = ({ post }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="relative" ref={optionsMenuRef}>
             <button
               onClick={() => setShowOptionsMenu(!showOptionsMenu)}
@@ -269,7 +341,7 @@ const Post = ({ post }) => {
             >
               <MoreHorizontal size={16} />
             </button>
-            
+
             {showOptionsMenu && (
               <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                 <button
@@ -279,7 +351,7 @@ const Post = ({ post }) => {
                   <Bookmark size={14} className="mr-2" />
                   {isBookmarking ? "Saving..." : "Save post"}
                 </button>
-                
+
                 {isOwner && (
                   <button
                     onClick={handleDeletePost}
@@ -288,7 +360,10 @@ const Post = ({ post }) => {
                     {isDeletingPost ? (
                       <Loader size={14} className="mr-2 animate-spin" />
                     ) : (
-                      <><Loader size={14} className="mr-2" />Delete</>
+                      <>
+                        <Loader size={14} className="mr-2" />
+                        Delete
+                      </>
                     )}
                   </button>
                 )}
@@ -296,20 +371,18 @@ const Post = ({ post }) => {
             )}
           </div>
         </div>
-        
+
         {/* Post content - more concise */}
         <div className="mb-3">
-          <p className="text-gray-800 text-sm leading-relaxed">{post.content}</p>
+          <p className="text-gray-800 text-sm leading-relaxed">
+            {post.content}
+          </p>
         </div>
-        
+
         {/* Post image - FIXED to show original size */}
         {post.image && (
           <div className="mb-3 -mx-3">
-            <img
-              src={post.image}
-              alt="Post content"
-              className="w-full"
-            />
+            <img src={post.image} alt="Post content" className="w-full" />
           </div>
         )}
 
@@ -318,26 +391,35 @@ const Post = ({ post }) => {
           <div className="bg-purple-50 p-2 rounded-md mb-3 border border-purple-100">
             <div className="flex items-center mb-1">
               <Building size={14} className="text-purple-600 mr-1" />
-              <h4 className="font-medium text-purple-700 text-xs">Internship Opportunity</h4>
+              <h4 className="font-medium text-purple-700 text-xs">
+                Internship Opportunity
+              </h4>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center text-gray-700">
                 <Building size={12} className="mr-1 text-purple-500" />
-                <span><strong>Company:</strong> {post.internshipDetails.companyName}</span>
+                <span>
+                  <strong>Company:</strong> {post.internshipDetails.companyName}
+                </span>
               </div>
               <div className="flex items-center text-gray-700">
                 <Clock size={12} className="mr-1 text-purple-500" />
-                <span><strong>Duration:</strong> {post.internshipDetails.internshipDuration}</span>
+                <span>
+                  <strong>Duration:</strong>{" "}
+                  {post.internshipDetails.internshipDuration}
+                </span>
               </div>
             </div>
           </div>
         )}
-        
+
         {post.type === "job" && post.jobDetails && (
           <div className="bg-blue-50 p-2 rounded-md mb-3 border border-blue-100">
             <div className="flex items-center mb-1">
               <Briefcase size={14} className="text-blue-600 mr-1" />
-              <h4 className="font-medium text-blue-700 text-xs">Job Opportunity</h4>
+              <h4 className="font-medium text-blue-700 text-xs">
+                Job Opportunity
+              </h4>
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="flex items-center text-gray-700">
@@ -360,7 +442,9 @@ const Post = ({ post }) => {
           <div className="bg-orange-50 p-2 rounded-md mb-3 border border-orange-100">
             <div className="flex items-center mb-1">
               <Calendar size={14} className="text-orange-600 mr-1" />
-              <h4 className="font-medium text-orange-700 text-xs">Upcoming Event</h4>
+              <h4 className="font-medium text-orange-700 text-xs">
+                Upcoming Event
+              </h4>
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="flex items-center text-gray-700">
@@ -369,7 +453,9 @@ const Post = ({ post }) => {
               </div>
               <div className="flex items-center text-gray-700">
                 <Clock size={12} className="mr-1 text-orange-500" />
-                <span>{new Date(post.eventDetails.eventDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(post.eventDetails.eventDate).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center text-gray-700">
                 <MapPin size={12} className="mr-1 text-orange-500" />
@@ -385,11 +471,18 @@ const Post = ({ post }) => {
             {totalReactions > 0 && (
               <div className="flex items-center">
                 <div className="flex -space-x-1 mr-1">
-                  {Object.keys(reactionCounts).slice(0, 3).map((type) => (
-                    <div key={type} className={`flex items-center justify-center w-4 h-4 rounded-full bg-white border ${getReactionColor(type)} border-white`}>
-                      {getReactionIcon(type, 8, "")}
-                    </div>
-                  ))}
+                  {Object.keys(reactionCounts)
+                    .slice(0, 3)
+                    .map((type) => (
+                      <div
+                        key={type}
+                        className={`flex items-center justify-center w-4 h-4 rounded-full bg-white border ${getReactionColor(
+                          type
+                        )} border-white`}
+                      >
+                        {getReactionIcon(type, 8, "")}
+                      </div>
+                    ))}
                 </div>
                 <span className="text-gray-600">{totalReactions}</span>
               </div>
@@ -403,90 +496,96 @@ const Post = ({ post }) => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-100 my-2"></div>
+        <div className="border-t-2 border-gray-200 my-2"></div>
 
         {/* Action buttons - with reaction picker */}
         <div className="flex justify-between items-center">
-          <div className="relative" ref={reactionPickerRef}>
-            <button
-              onClick={() => setShowReactionPicker(!showReactionPicker)}
-              className={`flex items-center justify-center py-1.5 px-3 text-xs font-medium rounded-md transition-colors ${
-                userReaction 
-                  ? `${getReactionColor(userReaction)} ${getReactionBgColor(userReaction)}`
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-              disabled={isReacting}
-            >
-              {userReaction ? (
-                <>
-                  {getReactionIcon(userReaction)}
-                  {getReactionText(userReaction)}
-                </>
-              ) : (
-                <>
-                  <ThumbsUp size={14} className="mr-1.5" />
-                  React
-                </>
-              )}
-            </button>
-            
-            {/* Reaction picker popup */}
-            {showReactionPicker && (
-              <div className="absolute left-0 -top-12 bg-white border border-gray-200 rounded-full shadow-lg z-10 flex items-center p-1 space-x-1">
-                <button 
-                  onClick={() => handleReactToPost("like")}
-                  className={`p-2 rounded-full hover:bg-blue-100 ${userReaction === "like" ? "bg-blue-50" : ""}`}
-                  title="Like"
-                >
-                  <ThumbsUp size={16} className={userReaction === "like" ? "fill-blue-600 text-blue-600" : "text-blue-600"} />
-                </button>
-                <button 
-                  onClick={() => handleReactToPost("love")}
-                  className={`p-2 rounded-full hover:bg-red-100 ${userReaction === "love" ? "bg-red-50" : ""}`}
-                  title="Love"
-                >
-                  <Heart size={16} className={userReaction === "love" ? "fill-red-600 text-red-600" : "text-red-600"} />
-                </button>
-                <button 
-                  onClick={() => handleReactToPost("sad")}
-                  className={`p-2 rounded-full hover:bg-yellow-100 ${userReaction === "sad" ? "bg-yellow-50" : ""}`}
-                  title="Sad"
-                >
-                  <Frown size={16} className={userReaction === "sad" ? "fill-yellow-600 text-yellow-600" : "text-yellow-600"} />
-                </button>
-                <button 
-                  onClick={() => handleReactToPost("wow")}
-                  className={`p-2 rounded-full hover:bg-purple-100 ${userReaction === "wow" ? "bg-purple-50" : ""}`}
-                  title="Wow"
-                >
-                  <AlertCircle size={16} className={userReaction === "wow" ? "fill-purple-600 text-purple-600" : "text-purple-600"} />
-                </button>
-                <button 
-                  onClick={() => handleReactToPost("angry")}
-                  className={`p-2 rounded-full hover:bg-orange-100 ${userReaction === "angry" ? "bg-orange-50" : ""}`}
-                  title="Haha"
-                >
-                  <Smile size={16} className={userReaction === "angry" ? "fill-orange-600 text-orange-600" : "text-orange-600"} />
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <button
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center justify-center py-1.5 px-3 text-xs font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+    <div 
+      className="relative" 
+      ref={reactionPickerRef} 
+      onMouseEnter={handleMouseEnter} 
+      onMouseLeave={handleMouseLeave}
+    >
+      <button
+        className={`flex items-center justify-center py-1.5 px-3 text-xs font-medium rounded-md transition-colors ${
+          userReaction 
+            ? `${getReactionColor(userReaction)} ${getReactionBgColor(userReaction)}`
+            : "text-gray-700 hover:bg-gray-100"
+        }`}
+        disabled={isReacting}
+      >
+        {userReaction ? (
+          <>
+            {getReactionIcon(userReaction)}
+            {getReactionText(userReaction)}
+          </>
+        ) : (
+          <>
+            <ThumbsUp size={14} className="mr-1.5" />
+            React
+          </>
+        )}
+      </button>
+      
+      {/* Reaction picker popup */}
+      {showReactionPicker && (
+        <div 
+          className="absolute left-0 -top-12 bg-white border border-gray-200 rounded-full shadow-lg z-10 flex items-center p-1 space-x-1"
+        >
+          <button 
+            onClick={() => handleReactToPost("like")}
+            className={`p-2 rounded-full hover:bg-blue-100 ${userReaction === "like" ? "bg-blue-50" : ""}`}
+            title="Like"
           >
-            <MessageCircle size={14} className="mr-1.5" />
-            Comment
+            <ThumbsUp size={16} className={userReaction === "like" ? "fill-blue-600 text-blue-600" : "text-blue-600"} />
           </button>
-          
-          <button
-            className="flex items-center justify-center py-1.5 px-3 text-xs font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+          <button 
+            onClick={() => handleReactToPost("love")}
+            className={`p-2 rounded-full hover:bg-red-100 ${userReaction === "love" ? "bg-red-50" : ""}`}
+            title="Love"
           >
-            <Share2 size={14} className="mr-1.5" />
-            Share
+            <Heart size={16} className={userReaction === "love" ? "fill-red-600 text-red-600" : "text-red-600"} />
+          </button>
+          <button 
+            onClick={() => handleReactToPost("sad")}
+            className={`p-2 rounded-full hover:bg-yellow-100 ${userReaction === "sad" ? "bg-yellow-50" : ""}`}
+            title="Sad"
+          >
+            <Frown size={16} className={userReaction === "sad" ? "fill-yellow-600 text-yellow-600" : "text-yellow-600"} />
+          </button>
+          <button 
+            onClick={() => handleReactToPost("wow")}
+            className={`p-2 rounded-full hover:bg-purple-100 ${userReaction === "wow" ? "bg-purple-50" : ""}`}
+            title="Wow"
+          >
+            <AlertCircle size={16} className={userReaction === "wow" ? "fill-purple-600 text-purple-600" : "text-purple-600"} />
+          </button>
+          <button 
+            onClick={() => handleReactToPost("angry")}
+            className={`p-2 rounded-full hover:bg-orange-100 ${userReaction === "angry" ? "bg-orange-50" : ""}`}
+            title="Angry"
+          >
+            <Smile size={16} className={userReaction === "angry" ? "fill-orange-600 text-orange-600" : "text-orange-600"} />
           </button>
         </div>
+      )}
+    </div>
+    
+    <button
+      onClick={() => setShowComments(!showComments)}
+      className="flex items-center justify-center py-1.5 px-3 text-xs font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+    >
+      <MessageCircle size={14} className="mr-1.5" />
+      Comment
+    </button>
+    
+    <button
+      className="flex items-center justify-center py-1.5 px-3 text-xs font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+    >
+      <Share2 size={14} className="mr-1.5" />
+      Share
+    </button>
+  </div>
       </div>
 
       {/* Comments section - more compact */}
@@ -495,8 +594,13 @@ const Post = ({ post }) => {
           <div className="mb-3 max-h-60 overflow-y-auto">
             {comments.length === 0 ? (
               <div className="text-center py-4 text-gray-500">
-                <MessageCircle size={20} className="mx-auto mb-1 text-gray-400" />
-                <p className="text-xs">No comments yet. Be the first to comment!</p>
+                <MessageCircle
+                  size={20}
+                  className="mx-auto mb-1 text-gray-400"
+                />
+                <p className="text-xs">
+                  No comments yet. Be the first to comment!
+                </p>
               </div>
             ) : (
               comments.map((comment, index) => (
