@@ -200,3 +200,97 @@
 		}
 	};
 
+export const getAccessToken = async(code) => {
+	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: new URLSearchParams({
+			grant_type: 'authorization_code',
+			code : code,
+			redirect_uri: `http://localhost:4000/api/v1/auth/linkedinCallback`,
+			client_id: process.env.LINKEDIN_CLIENT_ID,
+			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+		}),
+	});
+	if(!response.ok) {
+		throw new Error(response.statusText);
+	}
+	const accessToken = await response.json();
+	return accessToken
+}
+
+export const linkedInCallback = async (req, res) => {
+    try {
+        const { code } = req.query;
+
+        if (!code) {
+            return res.status(400).json({ message: "Authorization code is required" });
+        }
+
+        // Get access token from LinkedIn
+        const accessToken = await getAccessToken(code);
+        const userdata = await getLinkedInUserData(accessToken.access_token);
+
+        if (!userdata || !userdata.email) {
+            return res.status(400).json({ message: "Failed to fetch user data from LinkedIn" });
+        }
+
+        // Check if the user already exists
+        let user = await User.findOne({ email: userdata.email });
+
+        if (!user) {
+            // If user does not exist, create a new one
+            user = new User({
+                name: userdata.name,
+                email: userdata.email,
+                username: userdata.email.split("@")[0], // Use email prefix as username
+                role: "user",
+                profilePicture: userdata.picture,
+            });
+            await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
+
+        // Save session in the database
+        await Session.create({ userId: user._id, token });
+
+        // Set cookie
+        res.cookie("jwt-AlumnLink", token, {
+            httpOnly: true,
+            maxAge: 3 * 24 * 60 * 60 * 1000,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+        });
+
+        // 🚀 Instead of sending both redirect & JSON, choose only one
+        return res.redirect('http://localhost:5173/'); // Redirect to frontend
+
+    } catch (error) {
+        console.error("LinkedIn callback error:", error);
+
+        // Ensure response is sent only once
+        if (!res.headersSent) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+};
+
+
+		const getLinkedInUserData = async (accessToken) => {
+			const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+				method: 'get',
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			});
+			if (!response.ok) {
+				throw new Error(response.statusText);
+			}
+			const userData = await response.json();
+			return userData;
+
+		}
