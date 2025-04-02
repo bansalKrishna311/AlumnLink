@@ -168,33 +168,45 @@ export const createComment = async (req, res) => {
     }
 };
 
-// Like or unlike a post
-export const likePost = async (req, res) => {
+export const reactToPost = async (req, res) => {
     try {
         const postId = req.params.id;
-        const userId = req.user._id;
+        const { reactionType } = req.body;  // e.g., "like", "love", "sad", etc.
+
+        // Validate the reaction type
+        const validReactions = ["like", "love", "sad", "wow", "angry"];
+        if (!validReactions.includes(reactionType)) {
+            return res.status(400).json({ message: "Invalid reaction type" });
+        }
 
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
 
-        if (post.likes.includes(userId)) {
-            // Unlike the post
-            post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
+        // Check if the user has already reacted with the same reaction type
+        const existingReaction = post.reactions.find(
+            (reaction) => reaction.user.toString() === req.user._id.toString() && reaction.type === reactionType
+        );
+
+        if (existingReaction) {
+            // If the reaction exists, remove it (to "unreact")
+            post.reactions = post.reactions.filter(
+                (reaction) => !(reaction.user.toString() === req.user._id.toString() && reaction.type === reactionType)
+            );
         } else {
-            // Like the post
-            post.likes.push(userId);
-            
-            // Create a notification if the post owner is not the user who liked
-            if (post.author.toString() !== userId.toString()) {
+            // Add the new reaction
+            post.reactions.push({ user: req.user._id, type: reactionType });
+
+            // Create a notification if the post owner is not the user who reacted
+            if (post.author.toString() !== req.user._id.toString()) {
                 const newNotification = new Notification({
                     recipient: post.author,
-                    type: "like",
-                    relatedUser: userId,
+                    type: "reaction",
+                    relatedUser: req.user._id,
                     relatedPost: postId,
+                    reactionType,
                 });
-
                 await newNotification.save();
             }
         }
@@ -202,11 +214,10 @@ export const likePost = async (req, res) => {
         await post.save();
         res.status(200).json(post);
     } catch (error) {
-        console.error("Error in likePost controller:", error);
+        console.error("Error in reactToPost controller:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
-
 
 
 

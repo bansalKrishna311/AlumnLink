@@ -6,7 +6,14 @@ const postSchema = new mongoose.Schema(
         author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         content: { type: String },
         image: { type: String },
-        likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        reactions: [{
+            user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            type: {
+                type: String,
+                enum: ["like", "love", "sad", "wow", "angry"],  // Added new reactions
+                required: true
+            }
+        }],
         comments: [{
             content: { type: String },
             user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -43,7 +50,6 @@ const postSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
-
 
 const Post = mongoose.model("Post", postSchema);
 

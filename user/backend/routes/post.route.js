@@ -6,7 +6,7 @@ import {
     deletePost,
     getPostById,
     createComment,
-    likePost,
+    reactToPost,
     getPendingPosts,
     reviewPost,
     createAdminPost,
@@ -26,7 +26,7 @@ router.post("/createAdminPost", protectRoute, createAdminPost);
 router.delete("/delete/:id", protectRoute, deletePost);
 router.get("/:id", protectRoute, getPostById);
 router.post("/:id/comment", protectRoute, createComment);
-router.post("/:id/like", protectRoute, likePost);
+// router.post("/:id/like", protectRoute, likePost);
 
 // New admin routes
 router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
@@ -35,7 +35,7 @@ router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 router.patch('/admin/:postId/status', updatePostStatus);
 
 
-
+router.post("/:id/react", protectRoute, reactToPost);  
 
 router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
 
