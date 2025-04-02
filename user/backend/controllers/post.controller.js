@@ -171,7 +171,7 @@ export const createComment = async (req, res) => {
 export const reactToPost = async (req, res) => {
     try {
         const postId = req.params.id;
-        const { reactionType } = req.body;  // e.g., "like", "love", "sad", etc.
+        const { reactionType } = req.body; // e.g., "like", "love", "sad", etc.
 
         // Validate the reaction type
         const validReactions = ["like", "love", "sad", "wow", "angry"];
@@ -184,31 +184,29 @@ export const reactToPost = async (req, res) => {
             return res.status(404).json({ message: "Post not found" });
         }
 
-        // Check if the user has already reacted with the same reaction type
-        const existingReaction = post.reactions.find(
-            (reaction) => reaction.user.toString() === req.user._id.toString() && reaction.type === reactionType
+        // Check if the user has already reacted
+        const existingReactionIndex = post.reactions.findIndex(
+            (reaction) => reaction.user.toString() === req.user._id.toString()
         );
 
-        if (existingReaction) {
-            // If the reaction exists, remove it (to "unreact")
-            post.reactions = post.reactions.filter(
-                (reaction) => !(reaction.user.toString() === req.user._id.toString() && reaction.type === reactionType)
-            );
+        if (existingReactionIndex !== -1) {
+            // If the reaction exists, update it with the new type
+            post.reactions[existingReactionIndex].type = reactionType;
         } else {
-            // Add the new reaction
+            // Add a new reaction if the user hasn't reacted before
             post.reactions.push({ user: req.user._id, type: reactionType });
+        }
 
-            // Create a notification if the post owner is not the user who reacted
-            if (post.author.toString() !== req.user._id.toString()) {
-                const newNotification = new Notification({
-                    recipient: post.author,
-                    type: "reaction",
-                    relatedUser: req.user._id,
-                    relatedPost: postId,
-                    reactionType,
-                });
-                await newNotification.save();
-            }
+        // Create a notification if the post owner is not the user who reacted
+        if (post.author.toString() !== req.user._id.toString()) {
+            const newNotification = new Notification({
+                recipient: post.author,
+                type: "reaction",
+                relatedUser: req.user._id,
+                relatedPost: postId,
+                reactionType,
+            });
+            await newNotification.save();
         }
 
         await post.save();
@@ -218,6 +216,7 @@ export const reactToPost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 
 
