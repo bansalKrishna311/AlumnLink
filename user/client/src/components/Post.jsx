@@ -532,7 +532,6 @@ const Post = ({ post }) => {
               <MessageCircle size={14} className="text-gray-600 mr-1.5" />
               <span className="text-gray-600">{comments.length}</span>
             </div>
-            <span className="text-gray-500">{post.views || 0} views</span>
           </motion.div>
         </div>
 
@@ -574,10 +573,13 @@ const Post = ({ post }) => {
                   {getReactionText(userReaction)}
                 </>
               ) : (
-                <>
-                  <ThumbsUp size={16} className="mr-1.5" />
+                <div className="flex items-center"
+                onClick={() => handleReactToPost("like")}
+                >
+                  <ThumbsUp size={16} className="mr-1.5"  />
+                  
                   React
-                </>
+                </div>
               )}
             </motion.button>
 
