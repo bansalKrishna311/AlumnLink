@@ -41,8 +41,9 @@ app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-    res.json({ message: "Hello, World!" });
+    res.send("Hello, World!");
 });
+
 
 
 
