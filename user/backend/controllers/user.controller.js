@@ -34,8 +34,6 @@ export const getSuggestedLinks = async (req, res) => {
     }
 };
 
-
-
 export const getPublicProfile = async (req, res) => {
 	try {
 		const user = await User.findOne({ username: req.params.username }).select("-password");

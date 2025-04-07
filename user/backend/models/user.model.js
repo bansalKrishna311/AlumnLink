@@ -46,12 +46,16 @@ const userSchema = new mongoose.Schema(
 		],
 		education: [
 			{
-				school: String,
-				fieldOfStudy: String,
-				startYear: Number,
-				endYear: Number,
-			},
-		],
+			  school: String,
+			  degree: String,
+			  fieldOfStudy: String,
+			  startDate: Date,
+			  endDate: Date,
+			  isCurrentlyStudying: Boolean,
+			  description: String,
+			  _id: String
+			}
+		  ],
 		Links: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
