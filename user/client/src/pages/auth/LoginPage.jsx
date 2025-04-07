@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
-import { Loader, Eye, EyeOff, User, Lock,Linkedin  } from "lucide-react";
+import { Loader, Eye, EyeOff, User, Lock, Linkedin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Login from "/Login.png";
 import icon from "/login-icon.webp";
@@ -44,12 +44,11 @@ const LoginPage = () => {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
-      redirect_uri: 'http://localhost:4000/api/v1/auth/linkedinCallback',
+      redirect_uri: "http://localhost:4000/api/v1/auth/linkedinCallback",
       scope: "openid email profile",
-    
-    })
+    });
     window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
-  }
+  };
 
   return (
     <div className="flex items-center justify-center h-screen lg:h-[95vh] p-2 w-full lg:w-[52vw] m-auto my-4 lg:ps-2 rounded-bl-[110px] rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] shadow-lg bg-white ">
@@ -99,24 +98,27 @@ const LoginPage = () => {
                 required
               />
 
-<div className="relative">
-  <Input
-    icon={Lock}
-    type={showPassword ? "text" : "password"}
-    placeholder="Password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    required
-  />
-  <button
-    type="button"
-    onClick={togglePasswordVisibility}
-    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-  >
-    {showPassword ? <EyeOff className="w-5 h-5" color="#CF9400" /> : <Eye className="w-5 h-5" color="#CF9400" />}
-  </button>
-</div>
-
+              <div className="relative">
+                <Input
+                  icon={Lock}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" color="#CF9400" />
+                  ) : (
+                    <Eye className="w-5 h-5" color="#CF9400" />
+                  )}
+                </button>
+              </div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -148,15 +150,14 @@ const LoginPage = () => {
             </div>
 
             <div className="flex justify-center mt-6 mb-2">
-              <span className="bg-gray-200 h-px w-full my-auto"></span>
+              <span className="bg-gray-400 h-px w-full my-auto"></span>
               <span className="px-4 text-sm text-gray-500">or</span>
-              <span className="bg-gray-200 h-px w-full my-auto"></span>
+              <span className="bg-gray-400 h-px w-full my-auto"></span>
             </div>
 
-            
             <div className="mt-4 flex justify-center">
-              <motion.button 
-                onClick={handleLinkedin} 
+              <motion.button
+                onClick={handleLinkedin}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-2 w-full py-2 lg:py-3 px-4 bg-[#0A66C2] text-white font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#CF9400] transition duration-200 shadow-md"
