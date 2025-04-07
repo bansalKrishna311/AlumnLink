@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
-import { Loader, Eye, EyeOff, User, Lock } from "lucide-react";
+import { Loader, Eye, EyeOff, User, Lock,Linkedin  } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Login from "/Login.png";
 import icon from "/login-icon.webp";
@@ -99,21 +99,24 @@ const LoginPage = () => {
                 required
               />
 
-              <Input
-                icon={Lock}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-10 bottom-10 flex items-center text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" color="#CF9400" /> : <Eye className="w-5 h-5" color="#CF9400" />}
-              </button>
+<div className="relative">
+  <Input
+    icon={Lock}
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+  />
+  <button
+    type="button"
+    onClick={togglePasswordVisibility}
+    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+  >
+    {showPassword ? <EyeOff className="w-5 h-5" color="#CF9400" /> : <Eye className="w-5 h-5" color="#CF9400" />}
+  </button>
+</div>
+
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -144,13 +147,23 @@ const LoginPage = () => {
               </button>
             </div>
 
-            
-            <div className="mt-4 lg:mt-6 text-center">
+            <div className="flex justify-center mt-6 mb-2">
+              <span className="bg-gray-200 h-px w-full my-auto"></span>
+              <span className="px-4 text-sm text-gray-500">or</span>
+              <span className="bg-gray-200 h-px w-full my-auto"></span>
+            </div>
 
-              <button onClick={handleLinkedin} className="text-sm lg:text-md text-gray-600 border-2 border-opacity-20 p-2 lg:p-3 rounded-full border-slate-500">
-               Continue With Linkedin
-              </button>
-          
+            
+            <div className="mt-4 flex justify-center">
+              <motion.button 
+                onClick={handleLinkedin} 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center justify-center gap-2 w-full py-2 lg:py-3 px-4 bg-[#0A66C2] text-white font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#CF9400] transition duration-200 shadow-md"
+              >
+                <Linkedin className="w-5 h-5" />
+                <span>Continue with LinkedIn</span>
+              </motion.button>
             </div>
 
             <div className="mt-4 lg:mt-6 text-center">
