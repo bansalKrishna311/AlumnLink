@@ -1,152 +1,351 @@
-import { Briefcase, X } from "lucide-react";
-import { useState } from "react";
-import { formatDate } from "../utils/dateUtils";
+import { useState, useEffect } from "react";
+import { Briefcase, X, Plus, Calendar, Pencil, Building, Save, ChevronDown, ChevronUp } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
-	const [isEditing, setIsEditing] = useState(false);
-	const [experiences, setExperiences] = useState(userData.experience || []);
-	const [newExperience, setNewExperience] = useState({
-		title: "",
-		company: "",
-		startDate: "",
-		endDate: "",
-		description: "",
-		currentlyWorking: false,
-	});
+  const [isEditing, setIsEditing] = useState(false);
+  const [experiences, setExperiences] = useState(userData.experience || []);
+  const [editingExperience, setEditingExperience] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-	const handleAddExperience = () => {
-		if (newExperience.title && newExperience.company && newExperience.startDate) {
-			setExperiences([...experiences, newExperience]);
+  // Reset experiences when userData changes
+  useEffect(() => {
+    setExperiences(userData.experience || []);
+  }, [userData]);
 
-			setNewExperience({
-				title: "",
-				company: "",
-				startDate: "",
-				endDate: "",
-				description: "",
-				currentlyWorking: false,
-			});
-		}
-	};
+  const emptyExperience = {
+    title: "",
+    company: "",
+    startDate: null,
+    endDate: null,
+    description: ""
+  };
 
-	const handleDeleteExperience = (id) => {
-		setExperiences(experiences.filter((exp) => exp._id !== id));
-	};
+  const handleAddExperience = () => {
+    if (editingExperience.title && editingExperience.company && editingExperience.startDate) {
+      if (editingExperience._id) {
+        // Update existing experience
+        setExperiences(experiences.map(exp => 
+          exp._id === editingExperience._id ? editingExperience : exp
+        ));
+      } else {
+        // Add new experience with a unique ID
+        setExperiences([...experiences, { 
+          ...editingExperience, 
+          _id: Date.now().toString() + Math.random().toString(36).substr(2, 5) 
+        }]);
+      }
+      setEditingExperience(null);
+      setShowAddForm(false);
+    }
+  };
 
-	const handleSave = () => {
-		onSave({ experience: experiences });
-		setIsEditing(false);
-	};
+  const handleEditExperience = (exp) => {
+    // Create a deep copy to avoid reference issues
+    setEditingExperience({...exp});
+    setShowAddForm(true);
+  };
 
-	const handleCurrentlyWorkingChange = (e) => {
-		setNewExperience({
-			...newExperience,
-			currentlyWorking: e.target.checked,
-			endDate: e.target.checked ? "" : newExperience.endDate,
-		});
-	};
+  const handleDeleteExperience = (id) => {
+    setExperiences(experiences.filter((exp) => exp._id !== id));
+    if (editingExperience && editingExperience._id === id) {
+      setEditingExperience(null);
+      setShowAddForm(false);
+    }
+  };
 
-	return (
-		<div className='bg-white shadow rounded-lg p-6 mb-6'>
-			<h2 className='text-xl font-semibold mb-4'>Experience</h2>
-			{experiences.map((exp) => (
-				<div key={exp._id} className='mb-4 flex justify-between items-start'>
-					<div className='flex items-start'>
-						<Briefcase size={20} className='mr-2 mt-1' />
-						<div>
-							<h3 className='font-semibold'>{exp.title}</h3>
-							<p className='text-gray-600'>{exp.company}</p>
-							<p className='text-gray-500 text-sm'>
-								{formatDate(exp.startDate)} - {exp.endDate ? formatDate(exp.endDate) : "Present"}
-							</p>
-							<p className='text-gray-700'>{exp.description}</p>
-						</div>
-					</div>
-					{isEditing && (
-						<button onClick={() => handleDeleteExperience(exp._id)} className='text-red-500'>
-							<X size={20} />
-						</button>
-					)}
-				</div>
-			))}
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Format experiences to match the database model before saving
+      const formattedExperiences = experiences.map(exp => ({
+        _id: exp._id, // Keep ID for reference
+        title: exp.title,
+        company: exp.company,
+        startDate: exp.startDate,
+        endDate: exp.endDate,
+        description: exp.description,
+      }));
+      
+      // Call the onSave function with the formatted experiences
+      await onSave({ experience: formattedExperiences });
+      
+      setIsEditing(false);
+      setShowAddForm(false);
+      setEditingExperience(null);
+    } catch (error) {
+      console.error("Error saving experiences:", error);
+      // Could add error handling UI here
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-			{isEditing && (
-				<div className='mt-4'>
-					<input
-						type='text'
-						placeholder='Title'
-						value={newExperience.title}
-						onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
-						className='w-full p-2 border rounded mb-2'
-					/>
-					<input
-						type='text'
-						placeholder='Company'
-						value={newExperience.company}
-						onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
-						className='w-full p-2 border rounded mb-2'
-					/>
-					<input
-						type='date'
-						placeholder='Start Date'
-						value={newExperience.startDate}
-						onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
-						className='w-full p-2 border rounded mb-2'
-					/>
-					<div className='flex items-center mb-2'>
-						<input
-							type='checkbox'
-							id='currentlyWorking'
-							checked={newExperience.currentlyWorking}
-							onChange={handleCurrentlyWorkingChange}
-							className='mr-2'
-						/>
-						<label htmlFor='currentlyWorking'>I currently work here</label>
-					</div>
-					{!newExperience.currentlyWorking && (
-						<input
-							type='date'
-							placeholder='End Date'
-							value={newExperience.endDate}
-							onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
-							className='w-full p-2 border rounded mb-2'
-						/>
-					)}
-					<textarea
-						placeholder='Description'
-						value={newExperience.description}
-						onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
-						className='w-full p-2 border rounded mb-2'
-					/>
-					<button
-						onClick={handleAddExperience}
-						className='bg-primary text-white py-2 px-4 rounded hover:bg-primary-dark transition duration-300'
-					>
-						Add Experience
-					</button>
-				</div>
-			)}
+  const toggleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
 
-			{isOwnProfile && (
-				<>
-					{isEditing ? (
-						<button
-							onClick={handleSave}
-							className='mt-4 bg-primary text-white py-2 px-4 rounded hover:bg-primary-dark transition duration-300'
-						>
-							Save Changes
-						</button>
-					) : (
-						<button
-							onClick={() => setIsEditing(true)}
-							className='mt-4 text-primary hover:text-primary-dark transition duration-300'
-						>
-							Edit Experiences
-						</button>
-					)}
-				</>
-			)}
-		</div>
-	);
+  const formatDate = (date) => {
+    if (!date) return "";
+    const dateObj = new Date(date);
+    return dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  const cancelEditing = () => {
+    setEditingExperience(null);
+    setShowAddForm(false);
+  };
+
+  return (
+    <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <Briefcase className="mr-2 text-gray-600" size={22} />
+            Experience
+          </h2>
+          {isOwnProfile && !isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition"
+            >
+              <Pencil size={16} className="mr-1" />
+              Edit
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4">
+        {experiences.length === 0 && !showAddForm && (
+          <div className="text-center py-6 text-gray-500">
+            <Briefcase size={32} className="mx-auto mb-3 text-gray-400" />
+            <p>No work experience added yet</p>
+            {isEditing && (
+              <button
+                onClick={() => {
+                  setEditingExperience(emptyExperience);
+                  setShowAddForm(true);
+                }}
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+              >
+                <Plus size={16} className="mr-2" />
+                Add Experience
+              </button>
+            )}
+          </div>
+        )}
+
+        {experiences.length > 0 && (
+          <div className="space-y-5">
+            {experiences.map((exp) => (
+              <div
+                key={exp._id}
+                className={`bg-white rounded-lg ${
+                  isEditing ? "border border-gray-200 shadow-sm" : ""
+                }`}
+              >
+                <div className="p-4 flex justify-between">
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center mr-4">
+                      <Building className="text-blue-600" size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{exp.title}</h3>
+                      <p className="text-gray-800">{exp.company}</p>
+                      
+                      <div className="text-gray-500 text-sm flex items-center mt-1">
+                        <Calendar size={14} className="mr-1" />
+                        {formatDate(exp.startDate)} - {exp.endDate ? formatDate(exp.endDate) : "Present"}
+                      </div>
+                      
+                      {exp.description && (
+                        <div>
+                          <button 
+                            onClick={() => toggleExpand(exp._id)} 
+                            className="text-blue-600 text-sm font-medium flex items-center mt-2 hover:text-blue-800 transition"
+                          >
+                            {expandedId === exp._id ? (
+                              <>Less <ChevronUp size={14} className="ml-1" /></>
+                            ) : (
+                              <>More <ChevronDown size={14} className="ml-1" /></>
+                            )}
+                          </button>
+                          
+                          {expandedId === exp._id && (
+                            <p className="text-gray-600 text-sm mt-2 pr-4 whitespace-pre-line">{exp.description}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {isEditing && (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEditExperience(exp)}
+                        className="text-gray-500 hover:text-blue-600 transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                        aria-label="Edit experience"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExperience(exp._id)}
+                        className="text-gray-500 hover:text-red-600 transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                        aria-label="Delete experience"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showAddForm && (
+          <div className="mt-6 border border-gray-200 rounded-lg p-5 bg-gray-50">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+              {editingExperience && editingExperience._id ? (
+                <>
+                  <Pencil size={18} className="mr-2" />
+                  Edit Experience
+                </>
+              ) : (
+                <>
+                  <Plus size={18} className="mr-2" />
+                  Add Experience
+                </>
+              )}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Software Engineer"
+                  value={editingExperience?.title || ""}
+                  onChange={(e) => setEditingExperience({ ...editingExperience, title: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Google"
+                  value={editingExperience?.company || ""}
+                  onChange={(e) => setEditingExperience({ ...editingExperience, company: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <DatePicker
+                  selected={editingExperience?.startDate ? new Date(editingExperience.startDate) : null}
+                  onChange={(date) => setEditingExperience({ ...editingExperience, startDate: date })}
+                  dateFormat="MMM yyyy"
+                  showMonthYearPicker
+                  placeholderText="Select start date"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <DatePicker
+                  selected={editingExperience?.endDate ? new Date(editingExperience.endDate) : null}
+                  onChange={(date) => setEditingExperience({ ...editingExperience, endDate: date })}
+                  dateFormat="MMM yyyy"
+                  showMonthYearPicker
+                  placeholderText="Select end date or leave blank for current position"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  placeholder="Describe your responsibilities, achievements, and skills used in this role"
+                  value={editingExperience?.description || ""}
+                  onChange={(e) => setEditingExperience({ ...editingExperience, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  rows={4}
+                />
+              </div>
+            </div>
+            
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleAddExperience}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                disabled={!(editingExperience?.title && editingExperience?.company && editingExperience?.startDate)}
+              >
+                <Save size={16} className="mr-2" />
+                {editingExperience && editingExperience._id ? "Update" : "Add"}
+              </button>
+              <button
+                onClick={cancelEditing}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              >
+                <X size={16} className="mr-2" />
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isEditing && !showAddForm && experiences.length > 0 && (
+          <div className="mt-4 flex justify-between">
+            <button
+              onClick={() => {
+                setEditingExperience(emptyExperience);
+                setShowAddForm(true);
+              }}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+            >
+              <Plus size={16} className="mr-2" />
+              Add Another
+            </button>
+          </div>
+        )}
+
+        {isEditing && (
+          <div className="mt-6 border-t border-gray-200 pt-4 flex justify-end">
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                setEditingExperience(null);
+                setShowAddForm(false);
+                // Reset to original data if canceled
+                setExperiences(userData.experience || []);
+              }}
+              className="mr-3 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:bg-blue-400 disabled:cursor-not-allowed"
+              disabled={isSaving}
+            >
+              <Save size={16} className="mr-2" />
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
+
 export default ExperienceSection;
