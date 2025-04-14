@@ -67,7 +67,19 @@ export const updateProfile = async (req, res) => {
 		const updatedData = {};
 
 		for (const field of allowedFields) {
-			if (req.body[field]) {
+			// Special handling for experience array
+			if (field === 'experience' && Array.isArray(req.body[field])) {
+				updatedData[field] = req.body[field].map(exp => ({
+					_id: exp._id,
+					title: exp.title,
+					company: exp.company,
+					startDate: exp.startDate,
+					endDate: exp.endDate,
+					description: exp.description
+				}));
+			}
+			// Handle other fields normally
+			else if (req.body[field]) {
 				updatedData[field] = req.body[field];
 			}
 		} 

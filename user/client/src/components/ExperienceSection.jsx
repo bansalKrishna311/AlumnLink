@@ -26,17 +26,21 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
 
   const handleAddExperience = () => {
     if (editingExperience.title && editingExperience.company && editingExperience.startDate) {
+      const formattedExperience = {
+        ...editingExperience,
+        startDate: editingExperience.startDate instanceof Date ? editingExperience.startDate.toISOString() : editingExperience.startDate,
+        endDate: editingExperience.endDate instanceof Date ? editingExperience.endDate.toISOString() : editingExperience.endDate,
+        _id: editingExperience._id || Date.now().toString() + Math.random().toString(36).substr(2, 5)
+      };
+
       if (editingExperience._id) {
         // Update existing experience
         setExperiences(experiences.map(exp => 
-          exp._id === editingExperience._id ? editingExperience : exp
+          exp._id === editingExperience._id ? formattedExperience : exp
         ));
       } else {
-        // Add new experience with a unique ID
-        setExperiences([...experiences, { 
-          ...editingExperience, 
-          _id: Date.now().toString() + Math.random().toString(36).substr(2, 5) 
-        }]);
+        // Add new experience
+        setExperiences([...experiences, formattedExperience]);
       }
       setEditingExperience(null);
       setShowAddForm(false);
@@ -63,23 +67,27 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
       
       // Format experiences to match the database model before saving
       const formattedExperiences = experiences.map(exp => ({
-        _id: exp._id, // Keep ID for reference
+        _id: exp._id,
         title: exp.title,
         company: exp.company,
-        startDate: exp.startDate,
-        endDate: exp.endDate,
+        startDate: exp.startDate instanceof Date ? exp.startDate.toISOString() : exp.startDate,
+        endDate: exp.endDate instanceof Date ? exp.endDate.toISOString() : exp.endDate,
         description: exp.description,
       }));
       
       // Call the onSave function with the formatted experiences
-      await onSave({ experience: formattedExperiences });
+      const updatedUser = await onSave({ experience: formattedExperiences });
+      
+      // Update local state with the server response if available
+      if (updatedUser?.experience) {
+        setExperiences(updatedUser.experience);
+      }
       
       setIsEditing(false);
       setShowAddForm(false);
       setEditingExperience(null);
     } catch (error) {
       console.error("Error saving experiences:", error);
-      // Could add error handling UI here
     } finally {
       setIsSaving(false);
     }
