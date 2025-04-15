@@ -3,24 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { axiosInstance } from "@/lib/axios"
 import toast from "react-hot-toast"
 import { Link, useParams } from "react-router-dom"
-import {
-  Loader,
-  MessageCircle,
-  Send,
-  Share2,
-  ThumbsUp,
-  MoreHorizontal,
-  Bookmark,
-  Calendar,
-  MapPin,
-  Briefcase,
-  Clock,
-  Building,
-  Globe,
-  Lock,
-  X,
-  Users,
-} from "lucide-react"
+import {Loader,MessageCircle,Send,Share2,ThumbsUp,MoreHorizontal,Bookmark,Calendar,MapPin,Briefcase,Clock,Building,Globe,Lock,X,Users,} from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
 
