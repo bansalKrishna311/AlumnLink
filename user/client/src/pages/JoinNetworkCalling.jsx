@@ -125,10 +125,17 @@ const JoinNetworkCalling = () => {
 
       {/* Heading with improved gradient */}
       <motion.p
-        className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-black via-gray-800 to-blue-700 bg-clip-text text-transparent mb-4 px-4"
+        className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-black via-gray-800 to-blue-700 bg-clip-text text-transparent mb-2 px-4"
         variants={paragraphVariants}
       >
         Stay connected with your alumni network
+      </motion.p>
+{/* Subtext with adjusted spacing */}
+<motion.p
+        className="text-base text-gray-700 text-center  max-w-xl px-4 font-medium"
+        variants={paragraphVariants}
+      >
+        Build meaningful connections with alumni, mentors, and peers from your institution.
       </motion.p>
 
       {/* Button with reduced spacing */}
@@ -155,14 +162,7 @@ const JoinNetworkCalling = () => {
         </motion.div>
       </motion.div>
 
-      {/* Subtext with adjusted spacing */}
-      <motion.p
-        className="text-base text-gray-700 text-center mb-8 max-w-xl px-4 font-medium"
-        variants={paragraphVariants}
-      >
-        Build meaningful connections with alumni, mentors, and peers from your institution.
-      </motion.p>
-
+      
       {/* Image Slider with smooth entrance */}
       <motion.div
         className="w-full max-w-4xl mx-auto"
