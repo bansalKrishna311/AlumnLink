@@ -80,7 +80,7 @@ const JoinNetworkCalling = () => {
 
   return (
     <motion.div 
-      className="min-h-screen flex flex-col justify-start items-center pt-0 relative overflow-hidden bg-gradient-to-b from-white to-blue-50"
+      className="w-full h-full flex flex-col justify-start items-center pt-0 relative bg-transparent"
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
       ref={ref}
@@ -90,12 +90,15 @@ const JoinNetworkCalling = () => {
         <motion.div
           key={particle.id}
           className="absolute rounded-full bg-blue-500"
-          initial={{ 
-            left: `${particle.x}%`, 
+          style={{
+            position: 'fixed',
+            pointerEvents: 'none',
+            left: `${particle.x}%`,
             top: `${particle.y}%`,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
-            opacity: particle.opacity
+            opacity: particle.opacity,
+            zIndex: -1
           }}
           animate={{ 
             top: [`${particle.y}%`, `${(particle.y + 10) % 100}%`],
