@@ -201,14 +201,14 @@ const JoinNetwork = () => {
         
         <Dialog.Portal>
           <Dialog.Overlay 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-all duration-300"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-all duration-300 z-[999]"
             as={motion.div}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
           <Dialog.Content 
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 transition-all duration-300"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 transition-all duration-300 z-[1000]"
             as={motion.div}
             initial={{ opacity: 0, scale: 0.95, y: '60%' }}
             animate={{ opacity: 1, scale: 1, y: '-50%' }}
@@ -293,7 +293,11 @@ const JoinNetwork = () => {
                               <SelectTrigger className="w-full rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <SelectValue placeholder="Choose your network" />
                               </SelectTrigger>
-                              <SelectContent className="overflow-hidden bg-white dark:bg-slate-900">
+                              <SelectContent 
+                                className="overflow-hidden bg-white dark:bg-slate-900 z-[1001]" 
+                                position="popper"
+                                sideOffset={5}
+                              >
                                 <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-gray-800 p-2">
                                   <div className="relative">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
