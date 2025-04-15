@@ -14,13 +14,18 @@ const JoinNetworkCalling = () => {
   const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    const newParticles = Array.from({ length: 15 }, (_, i) => ({
+    // Create more particles with enhanced properties
+    const newParticles = Array.from({ length: 35 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 3 + 1, // Smaller size range
-      speed: Math.random() * 0.8 + 0.3, // Slower speed
-      opacity: Math.random() * 0.2 + 0.05 // More subtle opacity
+      size: Math.random() * 5 + 2,
+      speed: Math.random() * 1.5 + 0.5,
+      opacity: Math.random() * 0.35 + 0.05,
+      color: ['blue', 'purple', 'indigo'][Math.floor(Math.random() * 3)],
+      delay: Math.random() * 2,
+      rotation: Math.random() * 360,
+      movePattern: Math.random() > 0.5 ? 'circular' : 'wave'
     }));
     setParticles(newParticles);
   }, []);
@@ -63,7 +68,13 @@ const JoinNetworkCalling = () => {
       {particles.map(particle => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full bg-blue-400/30"
+          className={`absolute rounded-full ${
+            particle.color === 'blue' 
+              ? 'bg-blue-400/30' 
+              : particle.color === 'purple' 
+                ? 'bg-purple-400/30'
+                : 'bg-indigo-400/30'
+          }`}
           style={{
             position: 'fixed',
             pointerEvents: 'none',
@@ -72,18 +83,42 @@ const JoinNetworkCalling = () => {
             width: `${particle.size}px`,
             height: `${particle.size}px`,
             opacity: particle.opacity,
-            zIndex: -1
+            zIndex: -1,
+            rotate: `${particle.rotation}deg`
           }}
           animate={{
-            top: [`${particle.y}%`, `${(particle.y + 8) % 100}%`],
-            left: [`${particle.x}%`, `${(particle.x + 4) % 100}%`],
-            opacity: [particle.opacity, particle.opacity * 0.6, particle.opacity]
+            top: particle.movePattern === 'circular' 
+              ? [
+                  `${particle.y}%`,
+                  `${(particle.y + 10) % 100}%`,
+                  `${particle.y}%`
+                ]
+              : [
+                  `${particle.y}%`,
+                  `${(particle.y + 15) % 100}%`,
+                  `${particle.y}%`
+                ],
+            left: particle.movePattern === 'circular'
+              ? [
+                  `${particle.x}%`,
+                  `${(particle.x + 10) % 100}%`,
+                  `${particle.x}%`
+                ]
+              : [
+                  `${particle.x}%`,
+                  `${(particle.x + 8) % 100}%`,
+                  `${particle.x}%`
+                ],
+            opacity: [particle.opacity, particle.opacity * 0.5, particle.opacity],
+            scale: [1, 1.3, 1],
+            rotate: [`${particle.rotation}deg`, `${particle.rotation + 180}deg`, `${particle.rotation + 360}deg`]
           }}
           transition={{
-            duration: 12 / particle.speed,
+            duration: 10 / particle.speed,
             repeat: Infinity,
             repeatType: "reverse",
-            ease: "easeInOut"
+            ease: particle.movePattern === 'circular' ? "circIn" : "easeInOut",
+            delay: particle.delay
           }}
         />
       ))}
