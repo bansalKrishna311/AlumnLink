@@ -11,6 +11,7 @@ import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
 
 import UserLinksPage from "@/components/UserLinksModal";
+import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -67,7 +68,7 @@ const ProtectedRoute = ({ children }) => {
         element: (
             <Layout>
                 <PageTitle title="Network | AlumnLink" />
-                <NetworkPage />
+                <JoinNetworkCalling /> 
             </Layout>
         ),
     },

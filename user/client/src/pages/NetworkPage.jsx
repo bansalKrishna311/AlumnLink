@@ -3,7 +3,9 @@ import JoinNetworkCalling from './JoinNetworkCalling'
 
 const NetworkPage = () => {
   return (
-<JoinNetworkCalling/>
+    <div className="w-full h-full">
+      <JoinNetworkCalling />
+    </div>
   )
 }
 
