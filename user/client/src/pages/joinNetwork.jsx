@@ -293,8 +293,8 @@ const JoinNetwork = () => {
                               <SelectTrigger className="w-full rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <SelectValue placeholder="Choose your network" />
                               </SelectTrigger>
-                              <SelectContent position="popper" className="max-h-60">
-                                <div className="sticky top-0 p-2 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-gray-800">
+                              <SelectContent className="overflow-hidden bg-white dark:bg-slate-900">
+                                <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-gray-800 p-2">
                                   <div className="relative">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                                     <Input
@@ -305,22 +305,22 @@ const JoinNetwork = () => {
                                     />
                                   </div>
                                 </div>
-                                <div className="py-2">
-                                  {filteredNetworks.length > 0 ? filteredNetworks.map((network) => (
-                                    <SelectItem 
-                                      key={network.id} 
-                                      value={network.id}
-                                      className="flex items-center gap-2 cursor-pointer"
-                                    >
-                                      <div className="flex items-center gap-2">
+                                <div className="overflow-y-auto max-h-[200px] py-2">
+                                  {filteredNetworks.length > 0 ? (
+                                    filteredNetworks.map((network) => (
+                                      <SelectItem
+                                        key={network.id}
+                                        value={network.id}
+                                        className="flex items-center space-x-2 px-2 py-1.5"
+                                      >
                                         <NetworkTypeIcon type={network.type} />
                                         <span>{network.name}</span>
-                                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                        <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                                           {network.type}
                                         </span>
-                                      </div>
-                                    </SelectItem>
-                                  )) : (
+                                      </SelectItem>
+                                    ))
+                                  ) : (
                                     <div className="px-2 py-4 text-center text-gray-500 dark:text-gray-400">
                                       No networks found matching "{searchQuery}"
                                     </div>
