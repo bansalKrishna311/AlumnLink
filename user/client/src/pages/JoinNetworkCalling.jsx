@@ -22,10 +22,10 @@ const JoinNetworkCalling = () => {
       size: Math.random() * 5 + 2,
       speed: Math.random() * 1.5 + 0.5,
       opacity: Math.random() * 0.35 + 0.05,
-      color: ['blue', 'purple', 'indigo'][Math.floor(Math.random() * 3)],
+      color: ["blue", "purple", "indigo"][Math.floor(Math.random() * 3)],
       delay: Math.random() * 2,
       rotation: Math.random() * 360,
-      movePattern: Math.random() > 0.5 ? 'circular' : 'wave'
+      movePattern: Math.random() > 0.5 ? "circular" : "wave",
     }));
     setParticles(newParticles);
   }, []);
@@ -35,8 +35,13 @@ const JoinNetworkCalling = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, delay: 0.2, ease: "easeOut" }
-    }
+      transition: { 
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
+        delay: 0.2 
+      },
+    },
   };
 
   const buttonContainerVariants = {
@@ -44,8 +49,13 @@ const JoinNetworkCalling = () => {
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.6, delay: 0.4, ease: "easeOut" }
-    }
+      transition: { 
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+        delay: 0.4 
+      },
+    },
   };
 
   const sliderVariants = {
@@ -53,8 +63,13 @@ const JoinNetworkCalling = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1, delay: 0.6, ease: "easeOut" }
-    }
+      transition: { 
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        delay: 0.6 
+      },
+    },
   };
 
   return (
@@ -65,60 +80,70 @@ const JoinNetworkCalling = () => {
       ref={ref}
     >
       {/* Background particles with improved animation */}
-      {particles.map(particle => (
+      {particles.map((particle) => (
         <motion.div
           key={particle.id}
           className={`absolute rounded-full ${
-            particle.color === 'blue' 
-              ? 'bg-blue-400/30' 
-              : particle.color === 'purple' 
-                ? 'bg-purple-400/30'
-                : 'bg-indigo-400/30'
+            particle.color === "blue"
+              ? "bg-blue-400/30"
+              : particle.color === "purple"
+              ? "bg-purple-400/30"
+              : "bg-indigo-400/30"
           }`}
           style={{
-            position: 'fixed',
-            pointerEvents: 'none',
+            position: "fixed",
+            pointerEvents: "none",
             left: `${particle.x}%`,
             top: `${particle.y}%`,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
             opacity: particle.opacity,
             zIndex: -1,
-            rotate: `${particle.rotation}deg`
+            rotate: `${particle.rotation}deg`,
           }}
           animate={{
-            top: particle.movePattern === 'circular' 
-              ? [
-                  `${particle.y}%`,
-                  `${(particle.y + 10) % 100}%`,
-                  `${particle.y}%`
-                ]
-              : [
-                  `${particle.y}%`,
-                  `${(particle.y + 15) % 100}%`,
-                  `${particle.y}%`
-                ],
-            left: particle.movePattern === 'circular'
-              ? [
-                  `${particle.x}%`,
-                  `${(particle.x + 10) % 100}%`,
-                  `${particle.x}%`
-                ]
-              : [
-                  `${particle.x}%`,
-                  `${(particle.x + 8) % 100}%`,
-                  `${particle.x}%`
-                ],
-            opacity: [particle.opacity, particle.opacity * 0.5, particle.opacity],
+            top:
+              particle.movePattern === "circular"
+                ? [
+                    `${particle.y}%`,
+                    `${(particle.y + 10) % 100}%`,
+                    `${particle.y}%`,
+                  ]
+                : [
+                    `${particle.y}%`,
+                    `${(particle.y + 15) % 100}%`,
+                    `${particle.y}%`,
+                  ],
+            left:
+              particle.movePattern === "circular"
+                ? [
+                    `${particle.x}%`,
+                    `${(particle.x + 10) % 100}%`,
+                    `${particle.x}%`,
+                  ]
+                : [
+                    `${particle.x}%`,
+                    `${(particle.x + 8) % 100}%`,
+                    `${particle.x}%`,
+                  ],
+            opacity: [
+              particle.opacity,
+              particle.opacity * 0.5,
+              particle.opacity,
+            ],
             scale: [1, 1.3, 1],
-            rotate: [`${particle.rotation}deg`, `${particle.rotation + 180}deg`, `${particle.rotation + 360}deg`]
+            rotate: [
+              `${particle.rotation}deg`,
+              `${particle.rotation + 180}deg`,
+              `${particle.rotation + 360}deg`,
+            ],
           }}
           transition={{
             duration: 10 / particle.speed,
             repeat: Infinity,
             repeatType: "reverse",
-            ease: particle.movePattern === 'circular' ? "circIn" : "easeInOut",
-            delay: particle.delay
+            ease: particle.movePattern === "circular" ? "circIn" : "easeInOut",
+            delay: particle.delay,
           }}
         />
       ))}
@@ -130,12 +155,13 @@ const JoinNetworkCalling = () => {
       >
         Stay connected with your alumni network
       </motion.p>
-{/* Subtext with adjusted spacing */}
-<motion.p
+      {/* Subtext with adjusted spacing */}
+      <motion.p
         className="text-base text-gray-700 text-center  max-w-xl px-4 font-medium"
         variants={paragraphVariants}
       >
-        Build meaningful connections with alumni, mentors, and peers from your institution.
+        Build meaningful connections with alumni, mentors, and peers from your
+        institution.
       </motion.p>
 
       {/* Button with reduced spacing */}
@@ -147,26 +173,56 @@ const JoinNetworkCalling = () => {
       >
         <motion.div
           className="relative"
-          whileHover={{ scale: 1.03, transition: { duration: 0.4 } }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ 
+            scale: 1.03,
+            transition: { 
+              type: "spring",
+              stiffness: 400,
+              damping: 10 
+            }
+          }}
+          whileTap={{ 
+            scale: 0.97,
+            transition: { 
+              type: "spring",
+              stiffness: 300,
+              damping: 10 
+            }
+          }}
         >
           <motion.div
             className="absolute inset-0 bg-blue-400/40 rounded-lg blur-md -z-10"
             animate={{
               opacity: isHovered ? 0.7 : 0,
-              scale: isHovered ? 1.08 : 1
+              scale: isHovered ? 1.08 : 1,
             }}
-            transition={{ duration: 0.4 }}
+            transition={{ 
+              duration: 0.3,
+              type: "spring",
+              stiffness: 200,
+              damping: 10
+            }}
           />
           <JoinNetwork />
         </motion.div>
       </motion.div>
 
-      
       {/* Image Slider with smooth entrance */}
       <motion.div
-        className="w-full max-w-4xl mx-auto"
+        className="w-full max-w-4xl mx-auto relative overflow-x-hidden"
         variants={sliderVariants}
+        initial="hidden"
+        animate="visible"
+        whileInView={{ 
+          opacity: 1,
+          y: 0,
+          transition: {
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }
+        }}
+        viewport={{ once: false, amount: 0.3 }}
       >
         <JNImageSlider />
       </motion.div>
@@ -182,7 +238,7 @@ const JoinNetworkCalling = () => {
           duration: 6,
           repeat: Infinity,
           repeatType: "reverse",
-          ease: "easeInOut"
+          ease: "easeInOut",
         }}
       />
 
@@ -197,7 +253,7 @@ const JoinNetworkCalling = () => {
           repeat: Infinity,
           repeatType: "reverse",
           ease: "easeInOut",
-          delay: 0.5
+          delay: 0.5,
         }}
       />
     </motion.div>
