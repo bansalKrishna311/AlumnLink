@@ -4,6 +4,7 @@
 	import Session from "../models/session.model.js";
 	import { sendResetPasswordEmail, sendWelcomeEmail } from "../emails/emailHandlers.js";
 	import crypto from "crypto";
+import cloudinary from '../lib/cloudinary.js';
 
 	export const signup = async (req, res) => {
 		try {
@@ -222,61 +223,85 @@ export const getAccessToken = async(code) => {
 }
 
 export const linkedInCallback = async (req, res) => {
-    try {
-        const { code } = req.query;
+	try {
+		const { code } = req.query;
 
-        if (!code) {
-            return res.status(400).json({ message: "Authorization code is required" });
-        }
+		if (!code) {
+			return res.status(400).json({ message: "Authorization code is required" });
+		}
 
-        // Get access token from LinkedIn
-        const accessToken = await getAccessToken(code);
-        const userdata = await getLinkedInUserData(accessToken.access_token);
+		// Step 1: Get access token from LinkedIn
+		const accessToken = await getAccessToken(code);
 
-        if (!userdata || !userdata.email) {
-            return res.status(400).json({ message: "Failed to fetch user data from LinkedIn" });
-        }
+		// Step 2: Get LinkedIn user data
+		const userdata = await getLinkedInUserData(accessToken.access_token);
 
-        // Check if the user already exists
-        let user = await User.findOne({ email: userdata.email });
+		if (!userdata || !userdata.email) {
+			return res.status(400).json({ message: "Failed to fetch user data from LinkedIn" });
+		}
 
-        if (!user) {
-            // If user does not exist, create a new one
-            user = new User({
-                name: userdata.name,
-                email: userdata.email,
-                username: userdata.email.split("@")[0], // Use email prefix as username
-                role: "user",
-                profilePicture: userdata.picture,
-            });
-            await user.save();
-        }
+		// Step 3: Upload profile picture to Cloudinary (if it exists)
+		let profilePictureUrl = '';
+		if (userdata.picture) {
+			try {
+				const imageRes = await fetch(userdata.picture);
+				const buffer = await imageRes.arrayBuffer();
 
-        // Generate JWT token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
+				const uploadResult = await new Promise((resolve, reject) => {
+					const stream = cloudinary.uploader.upload_stream(
+						{
+							folder: 'alumnlink/linkedin-profiles',
+							resource_type: 'image',
+						},
+						(error, result) => {
+							if (error) return reject(error);
+							resolve(result);
+						}
+					);
+					stream.end(Buffer.from(buffer));
+				});
 
-        // Save session in the database
-        await Session.create({ userId: user._id, token });
+				profilePictureUrl = uploadResult.secure_url;
+			} catch (err) {
+				console.error("Cloudinary upload failed:", err.message);
+				profilePictureUrl = ''; // fallback if upload fails
+			}
+		}
 
-        // Set cookie
-        res.cookie("jwt-AlumnLink", token, {
-            httpOnly: true,
-            maxAge: 3 * 24 * 60 * 60 * 1000,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-        });
+		// Step 4: Check if user already exists
+		let user = await User.findOne({ email: userdata.email });
 
-        // 🚀 Instead of sending both redirect & JSON, choose only one
-        return res.redirect('http://localhost:5173/'); // Redirect to frontend
+		if (!user) {
+			user = new User({
+				name: userdata.name,
+				email: userdata.email,
+				username: userdata.email.split("@")[0],
+				role: "user",
+				profilePicture: profilePictureUrl,
+			});
+			await user.save();
+		}
 
-    } catch (error) {
-        console.error("LinkedIn callback error:", error);
+		// Step 5: Generate token & store session
+		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
+		await Session.create({ userId: user._id, token });
 
-        // Ensure response is sent only once
-        if (!res.headersSent) {
-            return res.status(500).json({ message: "Internal server error" });
-        }
-    }
+		// Step 6: Set cookie
+		res.cookie("jwt-AlumnLink", token, {
+			httpOnly: true,
+			maxAge: 3 * 24 * 60 * 60 * 1000,
+			sameSite: "strict",
+			secure: process.env.NODE_ENV === "production",
+		});
+
+		return res.redirect('http://localhost:5173/');
+	} catch (error) {
+		console.error("LinkedIn callback error:", error);
+
+		if (!res.headersSent) {
+			return res.status(500).json({ message: "Internal server error" });
+		}
+	}
 };
 
 
