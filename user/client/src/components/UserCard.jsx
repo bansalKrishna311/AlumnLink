@@ -13,9 +13,17 @@ function UserCard({ user, isLink }) {
 			</Link>
 			<p className='text-gray-600 text-center'>{user.headline}</p>
 			<p className='text-sm text-gray-500 mt-2'>{user.Links?.length} Links</p>
-			<button className='mt-4 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors w-full'>
-				{isLink ? "Linked" : "Link"}
-			</button>
+z			<div className='w-full space-y-2 mt-4'>
+				<button className='w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors'>
+					{isLink ? "Linked" : "Link"}
+				</button>
+				<Link 
+					to={`/links/${user._id}`}
+					className='block w-full text-center bg-white text-primary border border-primary px-4 py-2 rounded-md hover:bg-primary hover:text-white transition-colors'
+				>
+					Explore Networks
+				</Link>
+			</div>
 		</div>
 	);
 }

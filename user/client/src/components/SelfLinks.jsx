@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"; 
-import { Search, UserCircle2, MapPin, Loader2, GraduationCap } from "lucide-react";
+import { Search, UserCircle2, MapPin, Loader2, GraduationCap, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -145,6 +145,18 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                                 )}
                               </div>
                             </div>
+                          </div>
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              className="flex items-center space-x-1 text-xs text-primary/70 hover:text-primary transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/links/${link.user._id}`);
+                              }}
+                            >
+                              <span>Explore Networks</span>
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         </CardContent>
                       </Card>
