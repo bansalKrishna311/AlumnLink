@@ -1,18 +1,18 @@
 import { useEffect, useState, useCallback } from "react"; 
-import { Search, UserCircle2, MapPin, Loader2 } from "lucide-react";
+import { Search, UserCircle2, MapPin, Loader2, GraduationCap, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { axiosInstance } from "@/lib/axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredLinks, setFilteredLinks] = useState([]);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -38,111 +38,159 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
 
   const handleOpenUserAccount = useCallback(
     (username) => {
-      navigate(`/profile/${username}`); // Navigate to the profile page
+      navigate(`/profile/${username}`);
     },
-    [navigate] // Ensure navigate is included as a dependency
+    [navigate]
   );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="relative">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <motion.div
+            className="absolute inset-0 rounded-full bg-primary/20"
+            animate={{ scale: [1, 1.5, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-lg sticky top-16 w-96">
+    <Card className="max-w-4xl mx-auto shadow-xl sticky top-16 w-96 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-opacity-50">
       <CardContent className="p-6">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Header Section */}
           <div className="flex flex-col space-y-4">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              My Alma Matters
-            </h2>
-            <div className="relative">
-              <Search color="red" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center space-x-2">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                My Alma Matters
+              </h2>
+            </div>
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
               <Input
                 type="text"
                 placeholder="Search Alma Matters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-background"
+                className="pl-10 bg-background/50 backdrop-blur-sm border-opacity-50 transition-all duration-300 focus:bg-background focus:shadow-lg focus:border-primary/50"
               />
             </div>
           </div>
 
           {/* Alma Matters List */}
           <ScrollArea className="max-h-[450px] pr-4">
-            {filteredLinks.length > 0 ? (
-              <div className="space-y-4">
-                {filteredLinks.map((link) => (
-                  <Card
-                    key={link._id}
-                    className="group hover:shadow-md transition-all duration-200 cursor-pointer"
-                    onClick={() => handleOpenUserAccount(link.user.username)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-4">
-                        <div className="relative flex-shrink-0">
-                          {link.user.profilePicture ? (
-                            <img
-                              src={link.user.profilePicture}
-                              alt={link.user.name || "Unknown User"}
-                              className="w-12 h-12 rounded-full object-cover border-2 border-background"
-                            />
-                          ) : (
-                            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                              <UserCircle2 color="grey" className="w-10 h-10 text-muted-foreground" />
+            <AnimatePresence mode="popLayout">
+              {filteredLinks.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredLinks.map((link, index) => (
+                    <motion.div
+                      key={link._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                    >
+                      <Card
+                        className="group hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden bg-gradient-to-r hover:from-primary/5 hover:to-background"
+                        onClick={() => handleOpenUserAccount(link.user.username)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start space-x-4">
+                            <div className="relative flex-shrink-0">
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                              >
+                                {link.user.profilePicture ? (
+                                  <img
+                                    src={link.user.profilePicture}
+                                    alt={link.user.name || "Unknown User"}
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-background shadow-md"
+                                  />
+                                ) : (
+                                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                                    <UserCircle2 className="w-10 h-10 text-primary/70" />
+                                  </div>
+                                )}
+                                {link.user.isOnline && (
+                                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background shadow-sm" />
+                                )}
+                              </motion.div>
                             </div>
-                          )}
-                          {link.user.isOnline && (
-                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                          )}
-                        </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-md group-hover:text-primary transition-colors break-words">
-                              {link.user.name || "Unknown User"}
-                            </h3>
-                          </div>
-
-                          <div className="flex items-center justify-between mt-3">
-                            <p className="text-sm text-muted-foreground break-words">
-                              @{link.user.username || "unknown"}
-                            </p>
-
-                            {link.user.location && (
-                              <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                                <MapPin className="h-4 w-4 text-red-600" />
-                                <span className="break-words">
-                                  {link.user.location}
-                                </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-md group-hover:text-primary transition-colors break-words">
+                                  {link.user.name || "Unknown User"}
+                                </h3>
                               </div>
-                            )}
+
+                              <div className="flex items-center justify-between mt-3">
+                                <p className="text-sm text-muted-foreground/80 break-words font-medium">
+                                  @{link.user.username || "unknown"}
+                                </p>
+
+                                {link.user.location && (
+                                  <div className="flex items-center space-x-1.5 text-sm text-muted-foreground/80 bg-primary/5 px-2 py-0.5 rounded-full">
+                                    <MapPin className="h-3.5 w-3.5 text-primary/70" />
+                                    <span className="break-words">
+                                      {link.user.location}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              className="flex items-center space-x-1 text-xs text-primary/70 hover:text-primary transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/links/${link.user._id}`);
+                              }}
+                            >
+                              <span>Explore Networks</span>
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="bg-gradient-to-br from-background to-primary/5">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <UserCircle2 className="h-12 w-12 text-primary/50 mb-4" />
+                      </motion.div>
+                      <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                        {searchQuery ? "No matches found" : "No Alma Matters yet"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-2 text-center max-w-sm">
+                        {searchQuery
+                          ? "Try adjusting your search terms or clearing the search."
+                          : "Start connecting with other users to build your network."}
+                      </p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-muted/50">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <UserCircle2 className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">
-                    {searchQuery ? "No matches found" : "No Alma Matters yet"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-2 text-center max-w-sm">
-                    {searchQuery
-                      ? "Try adjusting your search terms or clearing the search."
-                      : "Start connecting with other users to build your network."}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </ScrollArea>
         </div>
       </CardContent>
