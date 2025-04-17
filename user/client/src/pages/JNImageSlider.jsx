@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 // College-related images data
 const images = [
@@ -51,51 +52,83 @@ const images = [
 
 const JNImageSlider = () => {
   return (
-    <div className="relative overflow-hidden w-full py-8">
-      {/* Wrapper for continuous scrolling effect */}
-      <div
-        className="flex"
+    <div className="relative w-full py-8 overflow-hidden">
+      <motion.div
+        className="flex gap-8"
         style={{
-          animation: "scrollLeft 40s linear infinite",
-          whiteSpace: "nowrap",
+          width: `calc(300px * ${images.length * 2 + 2})`,
+        }}
+        animate={{
+          x: [`0%`, `-${(images.length * 300) + (images.length * 32)}px`]
+        }}
+        transition={{
+          duration: 40,
+          ease: "linear",
+          repeat: Infinity,
+          repeatType: "loop"
+        }}
+        whileHover={{ 
+          animationPlayState: "paused"
         }}
       >
-        {/* Duplicate images to create the loop */}
         {[...images, ...images].map((image, index) => (
-          <div
+          <motion.div
             key={index}
-            className="flex flex-col items-center justify-between border border-gray-200 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700 mx-4"
+            className="group flex flex-col items-center justify-between border border-gray-200 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
             style={{ width: "300px", height: "300px", flexShrink: 0 }}
+            whileHover={{ 
+              scale: 1.05,
+              transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+              }
+            }}
           >
-            {/* Image */}
-            <div className="w-full h-3/4 overflow-hidden">
-              <img
-                src={image.url} // The image URL from the array
+            {/* Image container with enhanced hover effect */}
+            <motion.div className="w-full h-3/4 overflow-hidden rounded-t-md">
+              <motion.img
+                src={image.url}
                 className="w-full h-full object-cover"
-                alt={image.alt} // The alt text from the array
+                alt={image.alt}
+                loading="lazy"
+                whileHover={{ 
+                  scale: 1.1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20
+                  }
+                }}
               />
-            </div>
-            {/* Caption */}
-            <div className="w-full h-1/4 flex items-center justify-center">
-              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 truncate text-center">
-                {image.caption} {/* The caption from the array */}
-              </p>
-            </div>
-          </div>
+            </motion.div>
+            
+            {/* Caption with fade-in effect */}
+            <motion.div 
+              className="w-full h-1/4 flex items-center justify-center p-2 bg-opacity-90 backdrop-blur-sm"
+              initial={{ opacity: 0.8 }}
+              whileHover={{ 
+                opacity: 1,
+                transition: {
+                  duration: 0.2
+                }
+              }}
+            >
+              <motion.p 
+                className="text-lg font-semibold text-gray-700 dark:text-gray-300 text-center"
+                whileHover={{
+                  scale: 1.02,
+                  transition: {
+                    duration: 0.2
+                  }
+                }}
+              >
+                {image.caption}
+              </motion.p>
+            </motion.div>
+          </motion.div>
         ))}
-      </div>
-
-      {/* Keyframe animation for smooth and continuous scrolling */}
-      <style jsx>{`
-        @keyframes scrollLeft {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(calc(-300px * ${images.length}));
-          }
-        }
-      `}</style>
+      </motion.div>
     </div>
   );
 };

@@ -1,35 +1,138 @@
-import React from "react";
+import React, { useState, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import JoinNetwork from "./joinNetwork";
 import JNImageSlider from "./JNImageSlider";
-import { useQueryClient } from "@tanstack/react-query";
 
 const JoinNetworkCalling = () => {
-  const queryClient = useQueryClient();
+  const [isHovered, setIsHovered] = useState(false);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: false, amount: 0.3 });
+
+  const paragraphVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
+        delay: 0.2,
+      },
+    },
+  };
+
+  const buttonContainerVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+        delay: 0.4,
+      },
+    },
+  };
+
+  const sliderVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        delay: 0.6,
+      },
+    },
+  };
 
   return (
-    <div className="min-h-screen flex flex-col justify-start items-center pt-0">
-      <h1 className="text-4xl font-bold text-center text-gradient bg-clip-text text-transparent bg-gradient-to-r from-purple-800 via-purple-400 to-blue-600 mt-6 mb-4">
-        Want to be a part of Alumlink?
-      </h1>
+    <motion.div
+      className="w-full h-full flex flex-col justify-start items-center pt-8 pb-16 relative bg-transparent overflow-hidden"
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      ref={ref}
+    >
+      <motion.p
+        className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-black via-gray-800 to-blue-700 bg-clip-text text-transparent mb-2 px-4"
+        variants={paragraphVariants}
+      >
+        Stay connected with your alumni network
+      </motion.p>
 
-      <p className="text-lg text-gray-700 text-center mb-1">
-        Join a growing network of alumni, professionals, and students. Expand
-        your connections and opportunities through the Alumlink community.
-      </p>
+      <motion.p
+        className="text-base text-gray-700 text-center max-w-xl px-4 font-medium mb-4"
+        variants={paragraphVariants}
+      >
+        Build meaningful connections with alumni, mentors, and peers from your
+        institution.
+      </motion.p>
 
-      <JNImageSlider />
-
-      <p className="text-3xl font-bold text-center text-gradient bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-400 to-gray-700 mt-4 mb-4">
-        Join Now and be part of your Alma Mater
-      </p>
-
-      {/* Buttons Container */}
-      <div className="flex flex-row gap-4 justify-center items-center mt-4">
-        <div className="relative">
+      <motion.div
+        className="flex flex-row gap-4 justify-center items-center mb-6"
+        variants={buttonContainerVariants}
+        onHoverStart={() => setIsHovered(true)}
+        onHoverEnd={() => setIsHovered(false)}
+      >
+        <motion.div
+          className="relative"
+          whileHover={{
+            scale: 1.03,
+            transition: {
+              type: "spring",
+              stiffness: 400,
+              damping: 10,
+            },
+          }}
+          whileTap={{
+            scale: 0.97,
+            transition: {
+              type: "spring",
+              stiffness: 300,
+              damping: 10,
+            },
+          }}
+        >
+          <motion.div
+            className="absolute inset-0 bg-blue-400/40 rounded-lg blur-md -z-10"
+            animate={{
+              opacity: isHovered ? 0.7 : 0,
+              scale: isHovered ? 1.08 : 1,
+            }}
+            transition={{
+              duration: 0.3,
+              type: "spring",
+              stiffness: 200,
+              damping: 10,
+            }}
+          />
           <JoinNetwork />
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="w-full max-w-4xl mx-auto relative overflow-x-hidden"
+        variants={sliderVariants}
+        initial="hidden"
+        animate="visible"
+        whileInView={{
+          opacity: 1,
+          y: 0,
+          transition: {
+            type: "spring",
+            stiffness: 100,
+            damping: 15,
+          },
+        }}
+        viewport={{ once: false, amount: 0.3 }}
+      >
+        <JNImageSlider />
+      </motion.div>
+    </motion.div>
   );
 };
 

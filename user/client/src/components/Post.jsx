@@ -3,24 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { axiosInstance } from "@/lib/axios"
 import toast from "react-hot-toast"
 import { Link, useParams } from "react-router-dom"
-import {
-  Loader,
-  MessageCircle,
-  Send,
-  Share2,
-  ThumbsUp,
-  MoreHorizontal,
-  Bookmark,
-  Calendar,
-  MapPin,
-  Briefcase,
-  Clock,
-  Building,
-  Globe,
-  Lock,
-  X,
-  Users,
-} from "lucide-react"
+import {Loader,MessageCircle,Send,Share2,ThumbsUp,MoreHorizontal,Bookmark,Calendar,MapPin,Briefcase,Clock,Building,Globe,Lock,X,Users,} from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -34,6 +17,7 @@ const Post = ({ post }) => {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [showReactionsModal, setShowReactionsModal] = useState(false)
   const [activeReactionTab, setActiveReactionTab] = useState("all")
+  const [showPostDetails, setShowPostDetails] = useState(false)
   const optionsMenuRef = useRef(null)
   const reactionPickerRef = useRef(null)
   const reactionsModalRef = useRef(null)
@@ -55,6 +39,24 @@ const Post = ({ post }) => {
       }, 300)
     }
   }
+
+  const handleSharePost = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${post.author?.name}'s post`,
+          text: post.content,
+          url: window.location.href
+        });
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   // Get user's current reaction if any
   const userReaction = post.reactions?.find((reaction) => reaction.user === authUser?._id)?.type
@@ -98,7 +100,7 @@ const Post = ({ post }) => {
 
   // Prevent scrolling when modal is open
   useEffect(() => {
-    if (showReactionsModal) {
+    if (showReactionsModal || showPostDetails) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "auto"
@@ -106,7 +108,7 @@ const Post = ({ post }) => {
     return () => {
       document.body.style.overflow = "auto"
     }
-  }, [showReactionsModal])
+  }, [showReactionsModal, showPostDetails])
 
   const { mutate: deletePost, isPending: isDeletingPost } = useMutation({
     mutationFn: async () => {
@@ -362,31 +364,32 @@ const Post = ({ post }) => {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                  className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 overflow-hidden"
                 >
                   <motion.button
                     whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}
-                    onClick={handleBookmarkPost}
-                    className="w-full text-left px-3 py-2 flex items-center text-sm text-gray-700 rounded-t-md"
+                    onClick={() => {
+                      setShowPostDetails(true);
+                      setShowOptionsMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 flex items-center text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <Bookmark size={14} className="mr-2" />
-                    {isBookmarking ? "Saving..." : "Save post"}
+                    <Globe size={15} className="mr-2.5 text-gray-500" />
+                    View Post Details
                   </motion.button>
 
                   {isOwner && (
                     <motion.button
                       whileHover={{ backgroundColor: "rgba(254, 226, 226, 1)" }}
                       onClick={handleDeletePost}
-                      className="w-full text-left px-3 py-2 flex items-center text-sm text-red-600 rounded-b-md"
+                      className="w-full text-left px-4 py-2.5 flex items-center text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
                     >
                       {isDeletingPost ? (
-                        <Loader size={14} className="mr-2 animate-spin" />
+                        <Loader size={15} className="mr-2.5 animate-spin" />
                       ) : (
-                        <>
-                          <Loader size={14} className="mr-2" />
-                          Delete
-                        </>
+                        <X size={15} className="mr-2.5" />
                       )}
+                      Delete Post
                     </motion.button>
                   )}
                 </motion.div>
@@ -667,6 +670,7 @@ const Post = ({ post }) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleSharePost}
             className="flex items-center justify-center py-1.5 px-3 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
           >
             <Share2 size={16} className="mr-1.5" />
@@ -898,6 +902,208 @@ const Post = ({ post }) => {
                     </div>
                   )}
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Post Details Modal */}
+      <AnimatePresence>
+        {showPostDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowPostDetails(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-end p-6">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowPostDetails(false)}
+                  className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                >
+                  <X size={18} className="text-white" />
+                </motion.button>
+                <div className="relative flex items-end">
+                  <motion.img
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    src={post.author?.profilePicture || "/avatar.png"}
+                    alt={post.author?.name}
+                    className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg object-cover"
+                  />
+                  <div className="ml-4 mb-1 text-white">
+                    <motion.h3 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="font-semibold text-xl"
+                    >
+                      {post.author?.name}
+                    </motion.h3>
+                    <motion.p
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="text-white/80 text-sm"
+                    >
+                      {post.author?.headline}
+                    </motion.p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(85vh-8rem)]">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}  
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                      {getPostTypeIcon(post.type)}
+                      <span className="ml-2">Type</span>
+                    </h4>
+                    <p className="text-gray-600 capitalize">{post.type}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <h4 className="font-medium text-gray-900 mb-2">Posted</h4>
+                    <p className="text-gray-600">
+                      {new Date(post.createdAt).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </motion.div>
+
+                {(post.type === "job" && post.jobDetails) && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="bg-blue-50 p-4 rounded-xl space-y-3"
+                  >
+                    <h4 className="font-medium text-blue-900 flex items-center">
+                      <Briefcase size={16} className="mr-2" />
+                      Job Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <p className="text-sm text-blue-700 font-medium">Company</p>
+                        <p className="text-gray-600">{post.jobDetails.companyName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-blue-700 font-medium">Title</p>
+                        <p className="text-gray-600">{post.jobDetails.jobTitle}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-sm text-blue-700 font-medium">Location</p>
+                        <p className="text-gray-600">{post.jobDetails.jobLocation}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {(post.type === "event" && post.eventDetails) && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="bg-orange-50 p-4 rounded-xl space-y-3"
+                  >
+                    <h4 className="font-medium text-orange-900 flex items-center">
+                      <Calendar size={16} className="mr-2" />
+                      Event Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div className="col-span-2">
+                        <p className="text-sm text-orange-700 font-medium">Event Name</p>
+                        <p className="text-gray-600">{post.eventDetails.eventName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-orange-700 font-medium">Date</p>
+                        <p className="text-gray-600">
+                          {new Date(post.eventDetails.eventDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-orange-700 font-medium">Location</p>
+                        <p className="text-gray-600">{post.eventDetails.eventLocation}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {(post.type === "internship" && post.internshipDetails) && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="bg-purple-50 p-4 rounded-xl space-y-3"
+                  >
+                    <h4 className="font-medium text-purple-900 flex items-center">
+                      <Clock size={16} className="mr-2" />
+                      Internship Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <p className="text-sm text-purple-700 font-medium">Company</p>
+                        <p className="text-gray-600">{post.internshipDetails.companyName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-purple-700 font-medium">Duration</p>
+                        <p className="text-gray-600">{post.internshipDetails.internshipDuration}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="bg-gray-50 p-4 rounded-xl"
+                >
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <Users size={16} className="mr-2" />
+                    Engagement
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <ThumbsUp size={16} className="text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Reactions</p>
+                        <p className="font-medium text-gray-900">{totalReactions}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <MessageCircle size={16} className="text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Comments</p>
+                        <p className="font-medium text-gray-900">{comments.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </motion.div>
           </motion.div>
