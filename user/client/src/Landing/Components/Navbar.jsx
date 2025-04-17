@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,6 +17,14 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleSignUp = () => {
+    navigate('/signup');
+  };
 
   return (
     <nav 
@@ -36,28 +49,31 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/features" className={`text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600`}>
+            <Link to="/features" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
               Features
             </Link>
-            <Link to="/pricing" className={`text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600`}>
+            <Link to="/pricing" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
               Pricing
             </Link>
-            <Link to="/contact" className={`text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600`}>
+            <Link to="/Request-Demo" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
               Contact
             </Link>
           </div>
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className="text-sm font-medium px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
+            <button
+              onClick={handleLogin}
+              className="text-sm font-medium px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600"
+            >
               Login
-            </Link>
-            <Link
-              to="/signup"
+            </button>
+            <button
+              onClick={handleSignUp}
               className="text-sm font-medium px-4 py-2 rounded-lg bg-[#0A66C2] text-white hover:bg-[#085091] transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
               Sign Up
-            </Link>
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -113,23 +129,23 @@ const Navbar = () => {
               Pricing
             </Link>
             <Link
-              to="/contact"
+              to="/Request-Demo"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
             >
               Contact
             </Link>
-            <Link
-              to="/login"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
+            <button
+              onClick={handleLogin}
+              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
             >
               Login
-            </Link>
-            <Link
-              to="/signup"
-              className="block px-3 py-2 rounded-md text-base font-medium bg-[#0A66C2] text-white hover:bg-[#085091] transition-colors duration-300"
+            </button>
+            <button
+              onClick={handleSignUp}
+              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-[#0A66C2] text-white hover:bg-[#085091] transition-colors duration-300"
             >
               Sign Up
-            </Link>
+            </button>
           </div>
         </div>
       </div>
