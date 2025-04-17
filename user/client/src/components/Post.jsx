@@ -81,6 +81,15 @@ const Post = ({ post }) => {
       return groups
     }, {}) || {}
 
+  // Helper function to get user details from reaction
+  const getUserDetailsFromReaction = (reaction) => {
+    if (post.comments?.some(comment => comment.user._id === reaction.user)) {
+      const userComment = post.comments.find(comment => comment.user._id === reaction.user);
+      return userComment.user;
+    }
+    return post.author?._id === reaction.user ? post.author : { name: "User", profilePicture: "/avatar.png" };
+  };
+
   // Close options menu, reaction picker, and reactions modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -843,62 +852,62 @@ const Post = ({ post }) => {
                             {getReactionText(type)} ({reactions.length})
                           </h4>
                         </div>
-                        {reactions.map((reaction) => (
+                        {reactions.map((reaction) => {
+                          const userDetails = getUserDetailsFromReaction(reaction);
+                          return (
+                            <motion.div
+                              key={reaction._id}
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="flex items-center p-2 hover:bg-gray-50 rounded-md"
+                            >
+                              <img
+                                src={userDetails.profilePicture || "/avatar.png"}
+                                alt={userDetails.name}
+                                className="w-8 h-8 rounded-full mr-3 border border-gray-200"
+                              />
+                              <div>
+                                <p className="font-medium text-sm">
+                                  {userDetails.name}
+                                  {reaction.user === authUser?._id && (
+                                    <span className="ml-1 text-xs text-gray-500">(You)</span>
+                                  )}
+                                </p>
+                                <p className="text-xs text-gray-500">{userDetails.headline || ""}</p>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mb-4">
+                      {reactionsByType[activeReactionTab]?.map((reaction) => {
+                        const userDetails = getUserDetailsFromReaction(reaction);
+                        return (
                           <motion.div
-                            key={reaction._id || reaction.user}
+                            key={reaction._id}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="flex items-center p-2 hover:bg-gray-50 rounded-md"
                           >
                             <img
-                              src={reaction.userDetails?.profilePicture || "/avatar.png"}
-                              alt={reaction.userDetails?.name || "User"}
+                              src={userDetails.profilePicture || "/avatar.png"}
+                              alt={userDetails.name}
                               className="w-8 h-8 rounded-full mr-3 border border-gray-200"
                             />
                             <div>
                               <p className="font-medium text-sm">
-                                {reaction.userDetails?.name || "User"}
+                                {userDetails.name}
                                 {reaction.user === authUser?._id && (
                                   <span className="ml-1 text-xs text-gray-500">(You)</span>
                                 )}
                               </p>
-                              <p className="text-xs text-gray-500">{reaction.userDetails?.headline || ""}</p>
+                              <p className="text-xs text-gray-500">{userDetails.headline || ""}</p>
                             </div>
                           </motion.div>
-                        ))}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="mb-4">
-                      <div className="flex items-center mb-2 px-2">
-                        <span className="text-base mr-2">{getReactionEmoji(activeReactionTab)}</span>
-                        <h4 className={`font-medium text-sm ${getReactionColor(activeReactionTab)}`}>
-                          {getReactionText(activeReactionTab)} ({reactionsByType[activeReactionTab]?.length || 0})
-                        </h4>
-                      </div>
-                      {reactionsByType[activeReactionTab]?.map((reaction) => (
-                        <motion.div
-                          key={reaction._id || reaction.user}
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center p-2 hover:bg-gray-50 rounded-md"
-                        >
-                          <img
-                            src={reaction.userDetails?.profilePicture || "/avatar.png"}
-                            alt={reaction.userDetails?.name || "User"}
-                            className="w-8 h-8 rounded-full mr-3 border border-gray-200"
-                          />
-                          <div>
-                            <p className="font-medium text-sm">
-                              {reaction.userDetails?.name || "User"}
-                              {reaction.user === authUser?._id && (
-                                <span className="ml-1 text-xs text-gray-500">(You)</span>
-                              )}
-                            </p>
-                            <p className="text-xs text-gray-500">{reaction.userDetails?.headline || ""}</p>
-                          </div>
-                        </motion.div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
