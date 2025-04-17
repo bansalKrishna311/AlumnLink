@@ -49,13 +49,13 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/features" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
+            <Link to="/features" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
               Features
             </Link>
-            <Link to="/pricing" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
+            <Link to="/pricing" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
               Pricing
             </Link>
-            <Link to="/Request-Demo" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600">
+            <Link to="/Request-Demo" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
               Contact
             </Link>
           </div>
@@ -64,13 +64,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={handleLogin}
-              className="text-sm font-medium px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 hover:scale-105 hover:text-primary-600"
+              className="text-sm font-medium px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]"
             >
               Login
             </button>
             <button
               onClick={handleSignUp}
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-[#0A66C2] text-white hover:bg-[#085091] transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              className="text-sm font-medium px-4 py-2 rounded-lg bg-[#fe6019] text-white hover:bg-[#e54d07] transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
               Sign Up
             </button>
@@ -118,31 +118,31 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
               to="/features"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
             >
               Features
             </Link>
             <Link
               to="/pricing"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
             >
               Pricing
             </Link>
             <Link
               to="/Request-Demo"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
             >
               Contact
             </Link>
             <button
               onClick={handleLogin}
-              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-300"
+              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
             >
               Login
             </button>
             <button
               onClick={handleSignUp}
-              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-[#0A66C2] text-white hover:bg-[#085091] transition-colors duration-300"
+              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-[#fe6019] text-white hover:bg-[#e54d07] transition-colors duration-300"
             >
               Sign Up
             </button>
