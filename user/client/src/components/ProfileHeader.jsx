@@ -122,17 +122,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
         );
       default:
         return (
-          <button
-            onClick={() => sendLinkRequest(userData._id)}
-            className={`px-4 py-2 rounded-full font-semibold ${
-              isLinked
-                ? "bg-gray-200 text-gray-800"
-                : "bg-[#fe6019] text-white hover:bg-[#fe6019]/90"
-            }`}
-          >
-            <UserPlus size={20} className="mr-2" />
-            Link
-          </button>
+         <></>
         );
     }
   };
