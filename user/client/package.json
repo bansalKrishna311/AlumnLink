@@ -42,6 +42,7 @@
     "react-router-dom": "^6.27.0",
     "react-select": "^5.9.0",
     "react-toastify": "^10.0.6",
+    "react-virtuoso": "^4.12.6",
     "recharts": "^2.15.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

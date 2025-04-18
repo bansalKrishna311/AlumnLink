@@ -201,6 +201,13 @@ export const getPendingRequests = async (req, res) => {
 export const getUserLinks = async (req, res) => {
     try {
         const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const sortBy = req.query.sortBy || 'createdAt';
+        const sortOrder = req.query.sortOrder || 'desc';
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
         // Check if user exists
         const user = await User.findById(userId);
@@ -208,37 +215,83 @@ export const getUserLinks = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Fetch all accepted link requests involving the user
-        const linkRequests = await LinkRequest.find({
+        // Construct a filter to count total items (for pagination)
+        const countQuery = {
             $or: [{ sender: userId }, { recipient: userId }],
             status: "accepted",
-        })
-            .populate("sender", "name username location profilePicture headline")
-            .populate("recipient", "name username location profilePicture headline")
-            .sort({ createdAt: -1 });
+        };
+        
+        // Get total count for pagination headers
+        const totalCount = await LinkRequest.countDocuments(countQuery);
+        
+        // Fetch all accepted link requests with pagination
+        const linkRequests = await LinkRequest.find(countQuery)
+            .populate("sender", "name username location profilePicture headline skills experience education")
+            .populate("recipient", "name username location profilePicture headline skills experience education")
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limit);
 
         if (!linkRequests || linkRequests.length === 0) {
-            return res.status(404).json({ success: false, message: "No links found" });
+            return res.status(404).json({ 
+                success: false, 
+                message: "No links found",
+                pagination: {
+                    totalCount: 0,
+                    totalPages: 0,
+                    currentPage: page,
+                    pageSize: limit
+                }
+            });
         }
 
         // Transform data
         const transformedLinks = linkRequests
             .filter((request) => request.sender && request.recipient) // Ensure sender and recipient exist
-            .map((request) => ({
-                _id: request._id,
-                connection: request.sender._id.equals(userId) ? "sent" : "received",
-                user: request.sender._id.equals(userId) ? request.recipient : request.sender,
-                rollNumber: request.rollNumber,
-                batch: request.batch,
-                courseName: request.courseName,
-                status: request.status,
-                createdAt: request.createdAt,
-                updatedAt: request.updatedAt,
-            }));
+            .map((request) => {
+                const otherUser = request.sender._id.equals(userId) 
+                  ? request.recipient 
+                  : request.sender;
+                
+                return {
+                    _id: request._id,
+                    connection: request.sender._id.equals(userId) ? "sent" : "received",
+                    user: otherUser,
+                    name: otherUser.name,
+                    username: otherUser.username,
+                    location: otherUser.location,
+                    profilePicture: otherUser.profilePicture,
+                    headline: otherUser.headline,
+                    skills: otherUser.skills,
+                    experience: otherUser.experience,
+                    education: otherUser.education,
+                    rollNumber: request.rollNumber,
+                    batch: request.batch,
+                    courseName: request.courseName,
+                    status: request.status,
+                    createdAt: request.createdAt,
+                    updatedAt: request.updatedAt,
+                };
+            });
 
         if (transformedLinks.length === 0) {
-            return res.status(404).json({ success: false, message: "No valid links found" });
+            return res.status(404).json({ 
+                success: false, 
+                message: "No valid links found",
+                pagination: {
+                    totalCount: 0,
+                    totalPages: 0,
+                    currentPage: page,
+                    pageSize: limit
+                }
+            });
         }
+
+        // Set pagination headers
+        res.set('X-Total-Count', totalCount.toString());
+        res.set('X-Total-Pages', Math.ceil(totalCount / limit).toString());
+        res.set('X-Current-Page', page.toString());
+        res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
 
         res.json(transformedLinks);
     } catch (error) {
@@ -339,22 +392,45 @@ export const getLinkstatus = async (req, res) => {
 };
 export const getUsersLinks = async (req, res) => {
   try {
-    const userId = req.params.userId; // Validate this parameter
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortBy = req.query.sortBy || 'name';
+    const sortOrder = req.query.sortOrder || 'asc';
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId" });
     }
 
-    const user = await User.findById(userId).populate({
-      path: "Links",
-      select: "name username profilePicture location", // Added 'location'
-    });
-
+    // Count total connections for pagination
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+    
+    const totalCount = user.Links.length;
 
-    res.json(user.Links);
+    // Fetch user links with pagination and sorting
+    const populatedUser = await User.findById(userId).populate({
+      path: "Links",
+      select: "name username profilePicture location skills experience education batch courseName",
+      options: {
+        sort: sortOptions,
+        skip: skip,
+        limit: limit
+      }
+    });
+
+    // Set pagination headers
+    res.set('X-Total-Count', totalCount.toString());
+    res.set('X-Total-Pages', Math.ceil(totalCount / limit).toString());
+    res.set('X-Current-Page', page.toString());
+    res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
+
+    res.json(populatedUser.Links);
   } catch (error) {
     console.error("Error fetching user links:", error);
     res.status(500).json({

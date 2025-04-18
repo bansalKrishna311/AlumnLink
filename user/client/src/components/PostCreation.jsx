@@ -224,31 +224,15 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   };
 
   const getButtonGradient = () => {
-    const gradients = {
-      discussion: "from-orange-400 to-yellow-400",
-      job: "from-indigo-400 to-purple-400",
-      internship: "from-green-600 to-green-300",
-      event: "from-blue-400 to-blue-200",
-      personal: "from-pink-500 to-pink-300",
-      other: "from-blue-500 to-blue-300"
-    };
-    return `bg-gradient-to-r ${gradients[type] || ""}`;
+    return `bg-[#fe6019] hover:bg-[#fe6019]/90 text-white`;
   };
 
   const getInputBackground = () => {
-    const backgrounds = {
-      discussion: "bg-yellow-100",
-      job: "bg-purple-100",
-      internship: "bg-green-100",
-      event: "bg-blue-100",
-      personal: "bg-pink-100",
-      other: "bg-blue-200"
-    };
-    return `${backgrounds[type] || ""} opacity-80`;
+    return `bg-[#fe6019]/5 border-[#fe6019]/20 border focus:border-[#fe6019]/50`;
   };
 
   const getStatusBadge = () => (
-    <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded-lg text-sm text-yellow-700">
+    <div className="mb-4 p-2 bg-[#fe6019]/10 border border-[#fe6019]/30 rounded-lg text-sm text-[#fe6019]">
       Note: Your post will be reviewed by an admin before being published.
     </div>
   );
@@ -278,11 +262,11 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               <img
                 src={user.profilePicture || "/avatar.png"}
                 alt={user.name}
-                className="w-10 h-10 rounded-full"
+                className="w-10 h-10 rounded-full border-2 border-[#fe6019]/50"
               />
               <textarea
                 placeholder="What's on your mind?"
-                className={`w-full p-3 rounded-lg bg-opacity-80 focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
+                className={`w-full p-3 rounded-lg focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
@@ -293,7 +277,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 <img
                   src={imagePreview}
                   alt="Selected"
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-lg border border-[#fe6019]/20"
                 />
               </div>
             )}
@@ -308,9 +292,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
 
             <button
               onClick={handleFileButtonClick}
-              className="flex items-center space-x-2 mb-4 p-2 rounded-lg"
+              className="flex items-center space-x-2 mb-4 p-2 rounded-lg text-[#fe6019] hover:bg-[#fe6019]/10 transition-colors"
             >
-              <Image size={20} color="red" />
+              <Image size={20} className="text-[#fe6019]" />
               <span>Upload Photo</span>
             </button>
 

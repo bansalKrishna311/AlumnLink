@@ -35,9 +35,9 @@ export default {
         themes: [
             {
                 AlumnLink: {
-                    primary: "#0A66C2", // AlumnLink Blue
+                    primary: "#fe6019", // AlumnLink Orange
                     secondary: "#FFFFFF", // White
-                    accent: "#7FC15E", // AlumnLink Green (for accents)
+                    accent: "#fd8e5e", // Lighter orange for accents
                     neutral: "#000000", // Black (for text)
                     "base-100": "#F3F2EF", // Light Gray (background)
                     info: "#5E5E5E", // Dark Gray (for secondary text)

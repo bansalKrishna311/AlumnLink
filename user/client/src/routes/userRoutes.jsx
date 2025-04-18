@@ -9,6 +9,7 @@ import NotificationsPage from "../pages/NotificationsPage";
 import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
+import MyLinksPage from "../pages/MyLinksPage";
 
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
@@ -96,6 +97,15 @@ const ProtectedRoute = ({ children }) => {
         ),
     },
     {
+        path: "/my-links",
+        element: (
+            <ProtectedRoute>
+                <PageTitle title="My Links | AlumnLink" />
+                <MyLinksPage />
+            </ProtectedRoute>
+        ),
+    },
+    {
         path: "/links/:userId",
         element: (
             <ProtectedRoute>
@@ -107,6 +117,7 @@ const ProtectedRoute = ({ children }) => {
         ),
     },
     {
+<<<<<<< HEAD
         path: "/ComingSoon",
         element: (
             // <ProtectedRoute>
@@ -115,6 +126,16 @@ const ProtectedRoute = ({ children }) => {
                     <ComingSoon/>
                 </Layout>
             // </ProtectedRoute>
+=======
+        path: "/comingsoon",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Coming Soon | AlumnLink" />
+                    <ComingSoon/>
+                </Layout>
+            </ProtectedRoute>
+>>>>>>> 7ff9283c9061634d9048e407cff1096ec49ea2f7
         ),
     },
 ];

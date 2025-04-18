@@ -7,21 +7,21 @@
   ;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 18 99% 55%; /* Fe6019 in HSL */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-accent: 18 99% 95%; /* Lighter version for accent */
+    --sidebar-accent-foreground: 18 99% 35%; /* Darker version for text on accent */
+    --sidebar-border: 18 99% 85%; /* Light orange border */
+    --sidebar-ring: 18 99% 65%} /* Medium orange for focus rings */
   .dark {
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 18 99% 55%; /* Fe6019 in HSL */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 18 99% 25%; /* Darker orange accent for dark mode */
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-border: 18 99% 35%; /* Dark orange border */
+    --sidebar-ring: 18 99% 65%} /* Medium orange for focus rings */
 }
 
 /* Remove scrollbars */
@@ -37,4 +37,31 @@
 /* For IE and Edge */
 * {
   -ms-overflow-style: none;
+}
+
+/* Custom scrollbar only for comment sections */
+.custom-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #fe6019;
+  opacity: 0.7;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d14d15;
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #fe6019 #f1f1f1;
 }

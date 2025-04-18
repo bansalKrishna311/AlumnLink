@@ -64,7 +64,7 @@ const HomePage = () => {
         </motion.div>
 
         <motion.div 
-          className="flex space-x-2 mb-4 overflow-x-hidden scrollbar-hide py-2"
+          className="flex space-x-2 mb-4 overflow-x-auto py-2 scrollbar-hide"
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
