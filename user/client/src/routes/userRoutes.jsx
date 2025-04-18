@@ -12,6 +12,7 @@ import ProfilePage from "../pages/ProfilePage";
 
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
+import ComingSoon from "@/pages/ComingSoon";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -103,6 +104,17 @@ const ProtectedRoute = ({ children }) => {
                     <UserLinksPage/>
                 </Layout>
             </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/ComingSoon",
+        element: (
+            // <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="UserLinks | AlumnLink" />
+                    <ComingSoon/>
+                </Layout>
+            // </ProtectedRoute>
         ),
     },
 ];
