@@ -91,11 +91,11 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-screen ">
-      <div className="col-span-1 lg:col-span-1">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 min-h-screen px-2 sm:px-4 md:px-6">
+      <div className="col-span-1 lg:col-span-1 hidden lg:block">
         <Sidebar user={authUser} />
       </div>
-      <div className="col-span-1 lg:col-span-3 py-6 px-4 md:px-6">
+      <div className="col-span-1 lg:col-span-3 py-4 sm:py-6">
         <motion.div
           initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
           animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
@@ -103,16 +103,16 @@ const NotificationsPage = () => {
           className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
         >
           <div className="p-4 md:p-6 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <motion.div 
                   whileHover={prefersReducedMotion ? {} : { rotate: 15, scale: 1.1 }} 
                   transition={{ type: "spring", stiffness: 400 }}
                   style={{ color: THEME_COLOR }}
                 >
-                  <Bell className="h-6 w-6" />
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
                 </motion.div>
-                <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Notifications</h1>
                 {unreadCount > 0 && (
                   <motion.div
                     initial={prefersReducedMotion ? { scale: 1 } : { scale: 0 }}
@@ -125,7 +125,7 @@ const NotificationsPage = () => {
                         backgroundColor: THEME_COLOR_LIGHT, 
                         color: THEME_COLOR 
                       }} 
-                      className="hover:bg-opacity-80 transition-all"
+                      className="hover:bg-opacity-80 transition-all text-xs"
                     >
                       {unreadCount} unread
                     </Badge>
@@ -152,10 +152,10 @@ const NotificationsPage = () => {
             </div>
 
             <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto md:inline-flex gap-1`}>
+              <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto md:inline-flex gap-1 w-full overflow-x-auto scrollbar-hide`}>
                 <TabsTrigger 
                   value="all" 
-                  className="text-sm data-[state=active]:bg-opacity-10"
+                  className="text-xs sm:text-sm data-[state=active]:bg-opacity-10 px-2 sm:px-4"
                   style={{ 
                     "--tab-accent": THEME_COLOR,
                     color: activeTab === "all" ? THEME_COLOR : "inherit"
@@ -165,7 +165,7 @@ const NotificationsPage = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="unread" 
-                  className="text-sm data-[state=active]:bg-opacity-10"
+                  className="text-xs sm:text-sm data-[state=active]:bg-opacity-10 px-2 sm:px-4"
                   style={{ 
                     "--tab-accent": THEME_COLOR,
                     color: activeTab === "unread" ? THEME_COLOR : "inherit"
@@ -175,7 +175,7 @@ const NotificationsPage = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="like" 
-                  className="text-sm data-[state=active]:bg-opacity-10"
+                  className="text-xs sm:text-sm data-[state=active]:bg-opacity-10 px-2 sm:px-4"
                   style={{ 
                     "--tab-accent": THEME_COLOR,
                     color: activeTab === "like" ? THEME_COLOR : "inherit"
@@ -185,7 +185,7 @@ const NotificationsPage = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="comment" 
-                  className="text-sm data-[state=active]:bg-opacity-10"
+                  className="text-xs sm:text-sm data-[state=active]:bg-opacity-10 px-2 sm:px-4"
                   style={{ 
                     "--tab-accent": THEME_COLOR,
                     color: activeTab === "comment" ? THEME_COLOR : "inherit"
@@ -309,19 +309,19 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
     return (
       <Link
         to={`/post/${relatedPost._id}`}
-        className="mt-3 p-3 bg-gray-50 rounded-lg flex flex-col sm:flex-row items-start sm:items-center gap-3 hover:bg-gray-100 transition-all group"
+        className="mt-3 p-2 sm:p-3 bg-gray-50 rounded-lg flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 hover:bg-gray-100 transition-all group"
       >
         {relatedPost.image && (
           <img
             src={relatedPost.image || "/placeholder.svg"}
             alt="Post preview"
-            className="w-12 h-12 object-cover rounded-md"
+            className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-md"
           />
         )}
         <div className="flex-1 overflow-hidden">
-          <p className="text-sm text-gray-600 line-clamp-2">{relatedPost.content}</p>
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{relatedPost.content}</p>
         </div>
-        <ExternalLink size={16} className="text-gray-400 group-hover:text-[#fe6019] transition-colors" />
+        <ExternalLink size={14} className="text-gray-400 group-hover:text-[#fe6019] transition-colors hidden sm:block" />
       </Link>
     )
   }
@@ -333,19 +333,19 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
       initial="hidden"
       animate="visible"
       exit="exit"
-      className={`bg-white border rounded-xl p-4 md:p-5 transition-all hover:shadow-md ${
+      className={`bg-white border rounded-xl p-3 sm:p-4 md:p-5 transition-all hover:shadow-md ${
         !notification.read 
           ? "border-[#fe6019] bg-[rgba(254,96,25,0.05)]" 
           : "border-gray-200"
       }`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
         <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
           <Link to={`/profile/${notification.relatedUser.username}`}>
             <img
               src={notification.relatedUser.profilePicture || "/avatar.png"}
               alt={notification.relatedUser.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
             />
           </Link>
         </motion.div>
@@ -395,18 +395,18 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
 
 const NotificationSkeleton = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex flex-col sm:flex-row items-start gap-4 p-4 border border-gray-200 rounded-xl">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="space-y-2 flex-1">
-            <Skeleton className="h-4 w-full sm:w-3/4" />
-            <Skeleton className="h-3 w-1/3 sm:w-1/4" />
-            <Skeleton className="h-16 w-full mt-2" />
+        <div key={i} className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-xl">
+          <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
+          <div className="space-y-2 flex-1 w-full">
+            <Skeleton className="h-3 sm:h-4 w-full sm:w-3/4" />
+            <Skeleton className="h-2 sm:h-3 w-1/3 sm:w-1/4" />
+            <Skeleton className="h-12 sm:h-16 w-full mt-2" />
           </div>
-          <div className="flex gap-2 mt-3 sm:mt-0">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="flex gap-2 mt-2 sm:mt-0 self-start">
+            <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full" />
+            <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full" />
           </div>
         </div>
       ))}
@@ -430,19 +430,19 @@ const EmptyState = ({ type, prefersReducedMotion }) => {
       initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }} 
       animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1 }} 
       transition={{ duration: 0.5 }}
-      className="text-center py-8 md:py-12"
+      className="text-center py-6 sm:py-8 md:py-12 px-4"
     >
       <motion.div
         initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.8 }}
         animate={prefersReducedMotion ? { scale: 1 } : { scale: 1 }}
         transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-        className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+        className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full mb-3 sm:mb-4"
         style={{ backgroundColor: "rgba(254, 96, 25, 0.1)" }}
       >
-        <Bell className="h-8 w-8" style={{ color: "#fe6019" }} />
+        <Bell className="h-6 w-6 sm:h-8 sm:w-8" style={{ color: "#fe6019" }} />
       </motion.div>
-      <h3 className="text-lg font-medium mb-1" style={{ color: "#fe6019" }}>{message}</h3>
-      <p className="text-gray-500 max-w-sm mx-auto">When you receive new notifications, they'll appear here</p>
+      <h3 className="text-base sm:text-lg font-medium mb-1" style={{ color: "#fe6019" }}>{message}</h3>
+      <p className="text-xs sm:text-sm text-gray-500 max-w-xs sm:max-w-sm mx-auto">When you receive new notifications, they'll appear here</p>
     </motion.div>
   )
 }
