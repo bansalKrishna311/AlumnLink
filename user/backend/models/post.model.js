@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 
 const replySchema = new mongoose.Schema({
     content: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    user: {
+        type: mongoose.Schema.Types.Mixed,
+        required: true,
+        // This can now be either an ObjectId reference or an embedded user object
+    },
     createdAt: { type: Date, default: Date.now },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });

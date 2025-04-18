@@ -1,9 +1,87 @@
-import { useState, memo, useEffect } from "react";
+import { useState, memo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, Send, Loader, CornerDownRight, X, Heart } from "lucide-react";
 import { Virtuoso } from 'react-virtuoso';
-import { useNavigate } from "react-router-dom"; // Import for navigation
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import MentionDropdown from "./MentionDropdown";
+
+// Function to render mentions with highlighted styling
+const renderContentWithMentions = (content, navigateToProfile) => {
+  if (!content) return null;
+
+  // First handle the formatted mentions with @[username](userId) pattern
+  const formattedMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  // Also handle simple @username pattern
+  const simpleMentionPattern = /@(\w+)/g;
+  
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  let processedContent = content;
+
+  // Process formatted mentions first
+  while ((match = formattedMentionPattern.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(content.substring(lastIndex, match.index));
+    }
+
+    const [, username, userId] = match;
+    parts.push(
+      <span
+        key={`formatted-${userId}-${match.index}`}
+        className="inline-block font-medium text-[#fe6019] cursor-pointer hover:underline"
+        onClick={() => navigateToProfile(username)}
+      >
+        @{username}
+      </span>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Handle remaining text and check for simple @username mentions
+  if (lastIndex < content.length) {
+    const remainingText = content.substring(lastIndex);
+    let simpleParts = [];
+    let simpleLastIndex = 0;
+    
+    // Reset the lastIndex of the regex
+    simpleMentionPattern.lastIndex = 0;
+    
+    // Process simple @username mentions in the remaining text
+    while ((match = simpleMentionPattern.exec(remainingText)) !== null) {
+      if (match.index > simpleLastIndex) {
+        simpleParts.push(remainingText.substring(simpleLastIndex, match.index));
+      }
+
+      const username = match[1]; // Just the username without the @
+      simpleParts.push(
+        <span
+          key={`simple-${username}-${match.index}`}
+          className="inline-block font-medium text-[#fe6019] cursor-pointer hover:underline"
+          onClick={() => navigateToProfile(username)}
+        >
+          @{username}
+        </span>
+      );
+
+      simpleLastIndex = match.index + match[0].length;
+    }
+
+    // Add any remaining text after the last simple mention
+    if (simpleLastIndex < remainingText.length) {
+      simpleParts.push(remainingText.substring(simpleLastIndex));
+    }
+
+    // Add all processed simple parts to the main parts array
+    parts.push(...simpleParts);
+  }
+
+  return parts.length > 0 ? parts : content;
+};
 
 // Use memo to prevent unnecessary re-renders
 const Comment = memo(({ 
@@ -21,10 +99,81 @@ const Comment = memo(({
   isLikingComment,
   isLikingReply,
   totalCommentsCount,
-  navigateToProfile // New prop for navigation
+  navigateToProfile
 }) => {
   const hasLiked = comment.likes?.some(id => id.toString() === authUser?._id?.toString());
   const likeCount = comment.likes?.length || 0;
+
+  const [mentionDropdownVisible, setMentionDropdownVisible] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [cursorPosition, setCursorPosition] = useState(null);
+  const replyInputRef = useRef(null);
+
+  const handleReplyChange = (e) => {
+    const value = e.target.value;
+    setReplyContent(value);
+
+    const cursorPos = e.target.selectionStart;
+
+    let mentionStart = -1;
+    for (let i = cursorPos - 1; i >= 0; i--) {
+      if (value[i] === '@') {
+        mentionStart = i;
+        break;
+      } else if (value[i] === ' ' || value[i] === '\n') {
+        break;
+      }
+    }
+
+    if (mentionStart !== -1) {
+      const mentionText = value.substring(mentionStart + 1, cursorPos);
+      setMentionQuery(mentionText);
+      setMentionDropdownVisible(true);
+
+      if (replyInputRef.current) {
+        const { top, left, height } = replyInputRef.current.getBoundingClientRect();
+        setCursorPosition({ top: height + 5, left: 10 });
+      }
+    } else {
+      setMentionDropdownVisible(false);
+    }
+  };
+
+  const handleReplyMentionSelect = (user) => {
+    if (!user) {
+      setMentionDropdownVisible(false);
+      return;
+    }
+
+    const cursorPos = replyInputRef.current.selectionStart;
+    const text = replyContent;
+    let mentionStart = -1;
+
+    for (let i = cursorPos - 1; i >= 0; i--) {
+      if (text[i] === '@') {
+        mentionStart = i;
+        break;
+      } else if (text[i] === ' ' || text[i] === '\n') {
+        break;
+      }
+    }
+
+    if (mentionStart !== -1) {
+      const newText = text.substring(0, mentionStart) + 
+                      `@[${user.username || user.name}](${user._id})` + 
+                      text.substring(cursorPos);
+
+      setReplyContent(newText);
+
+      setTimeout(() => {
+        const newCursorPos = mentionStart + `@[${user.username || user.name}](${user._id})`.length;
+        replyInputRef.current.focus();
+        replyInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }, 0);
+    }
+
+    setMentionDropdownVisible(false);
+  };
 
   return (
     <motion.div
@@ -53,7 +202,9 @@ const Comment = memo(({
               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
             </span>
           </div>
-          <p className="text-gray-700 text-sm mt-1 whitespace-pre-wrap break-words">{comment.content}</p>
+          <div className="text-gray-700 text-sm mt-1 whitespace-pre-wrap break-words">
+            {renderContentWithMentions(comment.content, navigateToProfile)}
+          </div>
           
           <div className="flex items-center mt-2 space-x-3">
             <button
@@ -76,29 +227,24 @@ const Comment = memo(({
             </button>
           </div>
           
-          {/* Replies section */}
           {comment.replies && comment.replies.length > 0 && (
             <div className="ml-4 mt-3 border-l-2 border-gray-100 pl-3 space-y-2">
               {comment.replies.map((reply, replyIndex) => {
                 const hasLikedReply = reply.likes?.some(id => id.toString() === authUser?._id?.toString());
                 const replyLikeCount = reply.likes?.length || 0;
-                
-                // Get the correct profile picture for the reply
-                const replyUserPicture = typeof reply.user === 'object' && reply.user?.profilePicture ? 
-                  reply.user.profilePicture : 
+
+                // Use object destructuring to safely access the user properties
+                const replyUser = typeof reply.user === 'object' ? reply.user : null;
+                const replyUserPicture = replyUser?.profilePicture || 
                   (reply.user === authUser?._id ? authUser?.profilePicture : "/avatar.png");
-                
-                // Get the correct name for the reply
-                const replyUserName = typeof reply.user === 'object' && reply.user?.name ? 
-                  reply.user.name : 
-                  (reply.user === authUser?._id ? authUser?.name : "User");
-                
-                // Get username for profile navigation
-                const replyUsername = typeof reply.user === 'object' && reply.user?.username ? 
-                  reply.user.username : 
-                  (typeof reply.user === 'object' && reply.user?.name ? reply.user.name : 
-                  (reply.user === authUser?._id ? authUser?.username || authUser?.name : "User"));
-                
+
+                const replyUserName = replyUser?.name || 
+                  (reply.user === authUser?._id ? authUser?.name : "Unknown User");
+
+                const replyUsername = replyUser?.username || 
+                  (replyUser?.name ? replyUser.name : 
+                  (reply.user === authUser?._id ? authUser?.username || authUser?.name : "unknown"));
+
                 return (
                   <div key={reply._id || replyIndex} className="bg-gray-50 rounded-md p-2">
                     <div className="flex items-start">
@@ -120,7 +266,9 @@ const Comment = memo(({
                             {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
                           </span>
                         </div>
-                        <p className="text-gray-700 text-xs mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
+                        <div className="text-gray-700 text-xs mt-0.5 whitespace-pre-wrap break-words">
+                          {renderContentWithMentions(reply.content, navigateToProfile)}
+                        </div>
                         
                         <button
                           onClick={() => handleLikeReply(comment._id, reply._id)}
@@ -141,7 +289,6 @@ const Comment = memo(({
             </div>
           )}
           
-          {/* Reply form */}
           {replyingTo === comment._id && (
             <motion.form
               initial={{ opacity: 0, y: 5 }}
@@ -161,10 +308,11 @@ const Comment = memo(({
                   <input
                     type="text"
                     value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
+                    onChange={handleReplyChange}
                     placeholder={`Reply to ${comment.user?.name || "this comment"}...`}
                     className="w-full pl-2 pr-10 py-1 text-xs rounded-full bg-gray-50 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#fe6019] focus:border-transparent"
                     autoFocus
+                    ref={replyInputRef}
                   />
                   <button
                     type="button"
@@ -183,6 +331,17 @@ const Comment = memo(({
                 >
                   {isAddingReply ? <Loader size={10} className="animate-spin" /> : <Send size={10} />}
                 </motion.button>
+
+                <AnimatePresence>
+                  {mentionDropdownVisible && (
+                    <MentionDropdown
+                      query={mentionQuery}
+                      visible={mentionDropdownVisible}
+                      onSelect={handleReplyMentionSelect}
+                      position={cursorPosition}
+                    />
+                  )}
+                </AnimatePresence>
               </div>
             </motion.form>
           )}
@@ -231,10 +390,22 @@ const PostComments = ({
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
   const [isLoadingComments, setIsLoadingComments] = useState(true);
-  const navigate = useNavigate(); // For navigation to profile pages
+  const navigate = useNavigate();
+
+  const [mentionDropdownVisible, setMentionDropdownVisible] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [cursorPosition, setCursorPosition] = useState(null);
+  const commentInputRef = useRef(null);
+
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['mentionUsers'],
+    queryFn: async () => {
+      const response = await axiosInstance.get("/users/mention-suggestions");
+      return response.data;
+    }
+  });
 
   useEffect(() => {
-    // Simulate loading comments (remove this in production and use real loading state)
     if (showComments) {
       setIsLoadingComments(true);
       const timer = setTimeout(() => {
@@ -245,17 +416,17 @@ const PostComments = ({
     }
   }, [showComments]);
 
-  const handleReplyClick = (commentId) => {
+  const handleReplyClick = useCallback((commentId) => {
     setReplyingTo(commentId);
     setReplyContent("");
-  };
+  }, []);
 
-  const cancelReply = () => {
+  const cancelReply = useCallback(() => {
     setReplyingTo(null);
     setReplyContent("");
-  };
+  }, []);
 
-  const submitReply = async (e, commentId) => {
+  const submitReply = useCallback(async (e, commentId) => {
     e.preventDefault();
     if (!replyContent.trim() || isAddingReply) return;
 
@@ -264,15 +435,80 @@ const PostComments = ({
       setReplyContent("");
       setReplyingTo(null);
     }
-  };
-  
-  // Function to navigate to a user's profile
-  const navigateToProfile = (username) => {
+  }, [replyContent, isAddingReply, handleAddReply]);
+
+  const navigateToProfile = useCallback((username) => {
     if (username) {
       navigate(`/profile/${username}`);
     }
-  };
-  
+  }, [navigate]);
+
+  const handleCommentChange = useCallback((e) => {
+    const value = e.target.value;
+    setNewComment(value);
+
+    const cursorPos = e.target.selectionStart;
+
+    let mentionStart = -1;
+    for (let i = cursorPos - 1; i >= 0; i--) {
+      if (value[i] === '@') {
+        mentionStart = i;
+        break;
+      } else if (value[i] === ' ' || value[i] === '\n') {
+        break;
+      }
+    }
+
+    if (mentionStart !== -1) {
+      const mentionText = value.substring(mentionStart + 1, cursorPos);
+      setMentionQuery(mentionText);
+      setMentionDropdownVisible(true);
+
+      if (commentInputRef.current) {
+        const { top, left, height } = commentInputRef.current.getBoundingClientRect();
+        setCursorPosition({ top: height + 5, left: 10 });
+      }
+    } else {
+      setMentionDropdownVisible(false);
+    }
+  }, [setNewComment]);
+
+  const handleMentionSelect = useCallback((user) => {
+    if (!user) {
+      setMentionDropdownVisible(false);
+      return;
+    }
+
+    const cursorPos = commentInputRef.current.selectionStart;
+    const text = newComment;
+    let mentionStart = -1;
+
+    for (let i = cursorPos - 1; i >= 0; i--) {
+      if (text[i] === '@') {
+        mentionStart = i;
+        break;
+      } else if (text[i] === ' ' || text[i] === '\n') {
+        break;
+      }
+    }
+
+    if (mentionStart !== -1) {
+      const newText = text.substring(0, mentionStart) + 
+                      `@[${user.username || user.name}](${user._id})` + 
+                      text.substring(cursorPos);
+
+      setNewComment(newText);
+
+      setTimeout(() => {
+        const newCursorPos = mentionStart + `@[${user.username || user.name}](${user._id})`.length;
+        commentInputRef.current.focus();
+        commentInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }, 0);
+    }
+
+    setMentionDropdownVisible(false);
+  }, [newComment, setNewComment]);
+
   return (
     <AnimatePresence>
       {showComments && (
@@ -288,11 +524,7 @@ const PostComments = ({
               {totalCommentsCount > 0 ? (
                 <>
                   {totalCommentsCount} {totalCommentsCount === 1 ? 'comment' : 'comments'} 
-                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) && (
-                    <span className="text-xs ml-1 text-gray-500">
-                      ({comments.length} {comments.length === 1 ? 'parent comment' : 'parent comments'})
-                    </span>
-                  )}
+                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) }
                 </>
               ) : (
                 "Comments"
@@ -392,9 +624,10 @@ const PostComments = ({
               <input
                 type="text"
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
+                onChange={handleCommentChange}
+                placeholder="Add a comment... (Use @ to mention)"
                 className="w-full pl-3 pr-10 py-2 text-sm rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#fe6019] focus:border-transparent shadow-sm"
+                ref={commentInputRef}
               />
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -405,6 +638,19 @@ const PostComments = ({
               >
                 {isAddingComment ? <Loader size={14} className="animate-spin" /> : <Send size={14} />}
               </motion.button>
+
+              <AnimatePresence>
+                {mentionDropdownVisible && (
+                  <MentionDropdown
+                    query={mentionQuery}
+                    users={users}
+                    loading={isLoadingUsers}
+                    onSelect={handleMentionSelect}
+                    visible={mentionDropdownVisible}
+                    position={cursorPosition}
+                  />
+                )}
+              </AnimatePresence>
             </div>
           </motion.form>
         </motion.div>

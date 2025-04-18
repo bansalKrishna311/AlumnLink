@@ -6,6 +6,23 @@ import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 import mongoose from "mongoose";
 
+// Helper function to extract mentions from content
+const extractMentions = (content) => {
+  const mentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+  const mentions = [];
+  
+  while ((match = mentionPattern.exec(content)) !== null) {
+    const [, username, userId] = match;
+    mentions.push({
+      username,
+      userId
+    });
+  }
+  
+  return mentions;
+};
+
 // Fetch posts for the user's feed
 // Modify getFeedPosts to only show approved posts
 export const getFeedPosts = async (req, res) => {
@@ -161,9 +178,12 @@ export const createComment = async (req, res) => {
             .populate("comments.replies.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline");
 
-        // Try to create a notification, but don't fail if it doesn't work
+        // Extract mentions from the comment
+        const mentions = extractMentions(content);
+
+        // Create notifications
         try {
-            // Create a notification if the comment owner is not the post owner
+            // First create notification for post author (if not the commenter)
             if (existingPost.author.toString() !== req.user._id.toString()) {
                 const newNotification = new Notification({
                     recipient: existingPost.author,
@@ -188,6 +208,25 @@ export const createComment = async (req, res) => {
                     // Continue execution even if email fails
                 }
             }
+            
+            // Create notifications for mentioned users
+            if (mentions.length > 0) {
+                for (const mention of mentions) {
+                    // Skip if mentioned user is the commenter
+                    if (mention.userId === req.user._id.toString()) continue;
+                    
+                    const mentionNotification = new Notification({
+                        recipient: mention.userId,
+                        type: "mention",
+                        relatedUser: req.user._id,
+                        relatedPost: postId,
+                    });
+                    await mentionNotification.save();
+                    
+                    // TODO: Add email notification for mentions
+                }
+            }
+            
         } catch (notificationError) {
             console.error("Error creating notification:", notificationError);
             // Continue execution even if notification fails
@@ -229,9 +268,15 @@ export const replyToComment = async (req, res) => {
             comment.replies = [];
         }
 
-        // Add the reply to the comment
+        // Add the reply to the comment with user details
         comment.replies.push({
-            user: req.user._id,
+            user: {
+                _id: req.user._id,
+                name: req.user.name,
+                username: req.user.username,
+                profilePicture: req.user.profilePicture,
+                headline: req.user.headline
+            },
             content: content,
             createdAt: new Date()
         });
@@ -245,8 +290,11 @@ export const replyToComment = async (req, res) => {
             .populate("comments.user", "name profilePicture username headline")
             .populate("comments.replies.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline");
+            
+        // Extract mentions from reply
+        const mentions = extractMentions(content);
 
-        // Try to create a notification, but don't let it fail the entire request
+        // Try to create notifications, but don't let it fail the entire request
         try {
             // Create a notification for the comment owner (if it's not the same user)
             if (comment.user.toString() !== req.user._id.toString()) {
@@ -260,6 +308,27 @@ export const replyToComment = async (req, res) => {
                 
                 // TODO: Send notification email for reply (similar to comment notification)
             }
+            
+            // Create notifications for mentioned users
+            if (mentions.length > 0) {
+                for (const mention of mentions) {
+                    // Skip if mentioned user is the replier
+                    if (mention.userId === req.user._id.toString()) continue;
+                    // Skip if mentioned user is the comment owner (already notified as a reply)
+                    if (mention.userId === comment.user.toString()) continue;
+                    
+                    const mentionNotification = new Notification({
+                        recipient: mention.userId,
+                        type: "mention",
+                        relatedUser: req.user._id,
+                        relatedPost: postId,
+                    });
+                    await mentionNotification.save();
+                    
+                    // TODO: Add email notification for mentions
+                }
+            }
+            
         } catch (notificationError) {
             console.error("Error creating reply notification:", notificationError);
             // Continue execution even if notification fails

@@ -80,11 +80,7 @@ const PostActions = ({
               {totalCommentsCount > 0 && (
                 <>
                   {totalCommentsCount} {totalCommentsCount === 1 ? 'comment' : 'comments'}
-                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) && (
-                    <span className="text-xs ml-1">
-                      ({comments.length} {comments.length === 1 ? 'thread' : 'threads'})
-                    </span>
-                  )}
+                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) }
                 </>
               )}
               {totalCommentsCount === 0 && "Comment"}

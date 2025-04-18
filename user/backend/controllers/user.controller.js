@@ -104,3 +104,36 @@ export const updateProfile = async (req, res) => {
 		res.status(500).json({ message: "Server error" });
 	}
 };
+
+// Get users for mention suggestions
+export const getMentionSuggestions = async (req, res) => {
+  try {
+    // Get search query from request
+    const search = req.query.search || "";
+    
+    // Create search filter if search query is provided
+    const searchFilter = search 
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } }, // Case-insensitive name search
+            { username: { $regex: search, $options: "i" } } // Case-insensitive username search
+          ]
+        } 
+      : {};
+    
+    // Get all users for mentions with optional search filter
+    const mentionUsers = await User.find({
+      // Skip deleted users if applicable
+      isDeleted: { $ne: true },
+      // Apply search filter if present
+      ...searchFilter
+    })
+    .select("name username profilePicture")
+    .limit(50);
+    
+    res.json(mentionUsers);
+  } catch (error) {
+    console.error("Error in getMentionSuggestions controller:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
