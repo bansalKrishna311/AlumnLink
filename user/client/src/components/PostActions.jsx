@@ -15,7 +15,8 @@ const PostActions = ({
   getReactionEmoji, 
   getReactionText, 
   getReactionColor, 
-  getReactionBgColor 
+  getReactionBgColor,
+  setShowReactionsModal // Add this prop
 }) => {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const reactionPickerRef = useRef(null);
@@ -51,6 +52,7 @@ const PostActions = ({
               className="flex items-center cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => setShowReactionsModal(true)}
             >
               <div className="flex -space-x-1 mr-1.5">
                 {Object.keys(post.reactions?.reduce((counts, reaction) => {

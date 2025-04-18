@@ -47,10 +47,21 @@ const Post = ({ post }) => {
 
   // Helper function to get user details from reaction
   const getUserDetailsFromReaction = (reaction) => {
-    if (post.comments?.some(comment => comment.user._id === reaction.user)) {
-      const userComment = post.comments.find(comment => comment.user._id === reaction.user);
+    if (!reaction || !reaction.user) {
+      return { name: "Unknown", profilePicture: "/avatar.png" };
+    }
+    
+    // Now we can directly use the populated user data from reaction
+    if (typeof reaction.user === 'object' && reaction.user !== null) {
+      return reaction.user;
+    }
+    
+    // Fallback to previous logic for backward compatibility
+    if (post.comments?.some(comment => comment.user && comment.user._id === reaction.user)) {
+      const userComment = post.comments.find(comment => comment.user && comment.user._id === reaction.user);
       return userComment.user;
     }
+    
     return post.author?._id === reaction.user ? post.author : { name: "User", profilePicture: "/avatar.png" };
   };
 
@@ -288,6 +299,7 @@ const Post = ({ post }) => {
           getReactionText={getReactionText}
           getReactionColor={getReactionColor}
           getReactionBgColor={getReactionBgColor}
+          setShowReactionsModal={setShowReactionsModal}
         />
       </div>
 

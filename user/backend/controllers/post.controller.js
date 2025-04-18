@@ -22,7 +22,8 @@ export const getFeedPosts = async (req, res) => {
             status: "approved" // Only show approved posts
         })
             .populate("author", "name username profilePicture headline")
-            .populate("comments.user", "name profilePicture")
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline") // Populate reaction user info
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -116,7 +117,8 @@ export const getPostById = async (req, res) => {
         const postId = req.params.id;
         const post = await Post.findById(postId)
             .populate("author", "name username profilePicture headline")
-            .populate("comments.user", "name profilePicture username headline");
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline"); // Add this line
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
