@@ -36,22 +36,6 @@ const Navbar = () => {
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
-	// Handle showing SelfLinks as a stack screen instead of a sheet on mobile
-	const handleSelfLinksClick = () => {
-		if (window.innerWidth >= 1024) {
-			// On large screens, do nothing special as the component is already visible
-			return;
-		}
-		
-		// On small screens, navigate to SelfLinks page instead of opening a sheet
-		navigate('/my-links');
-		
-		// Close the sheet if it's open
-		if (selfLinksOpen) {
-			setSelfLinksOpen(false);
-		}
-	};
-
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
 			<div className='max-w-7xl mx-auto px-4'>
@@ -113,16 +97,15 @@ const Navbar = () => {
 									<span className='text-xs hidden md:block'>Me</span>
 								</Link>
 
-
-								{/* Keep Sheet for large screens for consistency */}
-								<Sheet open={selfLinksOpen} onOpenChange={setSelfLinksOpen} className="hidden lg:block">
+								{/* Link toggle visible only on smaller screens */}
+								<Sheet open={selfLinksOpen} onOpenChange={setSelfLinksOpen}>
 									<SheetTrigger asChild>
-										<button className="text-neutral flex flex-col items-center" aria-label="My Alma Matters">
+											<button className="text-neutral flex flex-col items-center lg:hidden" aria-label="My Alma Matters">
 											<Link2 size={20} />
-											<span className='text-xs hidden md:block'>Links</span>
+											<span className='text-xs hidden md:block lg:hidden'>Links</span>
 										</button>
 									</SheetTrigger>
-									<SheetContent side="right" className="p-0 ">
+									<SheetContent side="right" className="p-0 lg:hidden">
 										<div className="h-full overflow-auto">
 											<SelfLinks />
 										</div>
