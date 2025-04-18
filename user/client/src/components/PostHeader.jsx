@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { X, Globe } from "lucide-react";
 
+
+
 const PostHeader = ({ 
   post, 
   authUser, 
