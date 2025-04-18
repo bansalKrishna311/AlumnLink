@@ -121,6 +121,22 @@ const Post = ({ post }) => {
     },
   });
 
+  const { mutate: createReply, isPending: isAddingReply } = useMutation({
+    mutationFn: async ({ postId, commentId, content }) => {
+      await axiosInstance.post(`/posts/${postId}/comment/${commentId}/reply`, {
+        content,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      toast.success("Reply added successfully");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to add reply");
+    },
+  });
+
   const { mutate: reactToPost, isPending: isReacting } = useMutation({
     mutationFn: async ({ postId, reactionType }) => {
       await axiosInstance.post(`/posts/${postId}/react`, {
@@ -198,8 +214,50 @@ const Post = ({ post }) => {
             profilePicture: authUser.profilePicture,
           },
           createdAt: new Date(),
+          replies: [],
         },
       ]);
+    }
+  };
+
+  const handleAddReply = async (e, commentId, replyContent) => {
+    e.preventDefault();
+    if (!replyContent.trim() || isAddingReply) return;
+
+    try {
+      createReply({
+        postId: post._id,
+        commentId,
+        content: replyContent
+      });
+
+      // Optimistic UI update
+      const updatedComments = comments.map(comment => {
+        if (comment._id === commentId) {
+          return {
+            ...comment,
+            replies: [
+              ...(comment.replies || []),
+              {
+                content: replyContent,
+                user: {
+                  _id: authUser._id,
+                  name: authUser.name,
+                  profilePicture: authUser.profilePicture,
+                },
+                createdAt: new Date()
+              }
+            ]
+          };
+        }
+        return comment;
+      });
+      
+      setComments(updatedComments);
+      return true; // Return success to reset form in child component
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      return false;
     }
   };
 
@@ -312,6 +370,9 @@ const Post = ({ post }) => {
         setNewComment={setNewComment}
         handleAddComment={handleAddComment}
         isAddingComment={isAddingComment}
+        handleAddReply={handleAddReply}
+        isAddingReply={isAddingReply}
+        postId={post._id}
       />
 
       {/* Post Modals Component */}

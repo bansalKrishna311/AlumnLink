@@ -11,6 +11,7 @@ import {
     reviewPost,
     createAdminPost,
     updatePostStatus,
+    replyToComment,
 } from "../controllers/post.controller.js";
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.post("/createAdminPost", protectRoute, createAdminPost);
 router.delete("/delete/:id", protectRoute, deletePost);
 router.get("/:id", protectRoute, getPostById);
 router.post("/:id/comment", protectRoute, createComment);
+router.post("/:postId/comment/:commentId/reply", protectRoute, replyToComment);
 // router.post("/:id/like", protectRoute, likePost);
 
 // New admin routes
