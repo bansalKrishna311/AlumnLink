@@ -103,9 +103,10 @@ export function AppSidebar({ ...props }) {
                           asChild
                           isActive={activeItem === item.title}
                           onClick={() => setActiveItem(item.title)}
+                          className={activeItem === item.title ? "bg-[#fe6019]/20 text-[#fe6019] font-medium" : "hover:bg-[#fe6019]/10 hover:text-[#fe6019]"}
                         >
                           <a href={item.url} className="flex items-center">
-                            {item.icon && <item.icon className="w-4 h-4 mr-2" />}
+                            {item.icon && <item.icon className={`w-4 h-4 mr-2 ${activeItem === item.title ? "text-[#fe6019]" : ""}`} />}
                             <span>{item.title}</span>
                           </a>
                         </SidebarMenuButton>
@@ -121,11 +122,11 @@ export function AppSidebar({ ...props }) {
 
       <SidebarFooter className="mt-auto border-t border-border p-4">
         <div className="flex items-center mb-4">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <User className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-full bg-[#fe6019]/20 flex items-center justify-center">
+            <User className="w-4 h-4 text-[#fe6019]" />
           </div>
           <div className="ml-2">
-            <p className="text-sm font-medium">{username || "Admin User"}</p>
+            <p className="text-sm font-medium text-[#fe6019]">{username || "Admin User"}</p>
             <p className="text-xs text-muted-foreground">Administrator</p>
           </div>
         </div>

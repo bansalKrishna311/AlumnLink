@@ -25,11 +25,11 @@ import { toast } from "react-hot-toast";
 const NetworkTypeIcon = ({ type }) => {
   switch (type) {
     case "Institute":
-      return <Building className="h-4 w-4 text-indigo-500" />;
+      return <Building className="h-4 w-4 text-[#fe6019]" />;
     case "School":
-      return <School className="h-4 w-4 text-emerald-500" />;
+      return <School className="h-4 w-4 text-[#fe6019]" />;
     case "Corporate":
-      return <Briefcase className="h-4 w-4 text-amber-500" />;
+      return <Briefcase className="h-4 w-4 text-[#fe6019]" />;
     default:
       return null;
   }
@@ -183,7 +183,7 @@ const JoinNetwork = () => {
     <div className="w-full max-w-lg mx-auto">
       <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <Dialog.Trigger asChild>
-          <button className="group relative flex w-full max-w-lg items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg">
+          <button className="group relative flex w-full max-w-lg items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#fe6019] to-orange-500 px-8 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg">
             {/* Main text that slides out */}
             <span className="transform transition-all duration-500 group-hover:translate-x-96">
               Join a network
@@ -238,15 +238,15 @@ const JoinNetwork = () => {
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", bounce: 0.5 }}
                   >
-                    <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+                    <CheckCircle className="h-16 w-16 text-[#fe6019] mb-4" />
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-green-500 mb-2">Request Sent!</h2>
+                  <h2 className="text-2xl font-bold text-[#fe6019] mb-2">Request Sent!</h2>
                   <p className="text-gray-600 dark:text-gray-300">Your network join request has been submitted successfully.</p>
                 </motion.div>
               ) : (
                 <Card className="w-full border-0 shadow-none">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-2xl font-bold bg-gradient-to-br from-violet-700 to-indigo-600 bg-clip-text text-transparent">
+                    <CardTitle className="text-2xl font-bold bg-gradient-to-br from-[#fe6019] to-orange-500 bg-clip-text text-transparent">
                       Join Network
                     </CardTitle>
                     <CardDescription className="text-gray-500 dark:text-gray-400">
@@ -257,7 +257,7 @@ const JoinNetwork = () => {
                   <CardContent className="pt-4">
                     {isLoading ? (
                       <div className="flex justify-center items-center py-10">
-                        <Loader size={24} className="animate-spin text-indigo-600" />
+                        <Loader size={24} className="animate-spin text-[#fe6019]" />
                         <span className="ml-2 text-gray-600 dark:text-gray-300">Loading networks...</span>
                       </div>
                     ) : (
@@ -269,11 +269,11 @@ const JoinNetwork = () => {
                           </Label>
                           
                           {selectedNetworkDetails ? (
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800">
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800">
                               <div className="flex items-center gap-2">
                                 <NetworkTypeIcon type={selectedNetworkDetails.type} />
                                 <span className="font-medium">{selectedNetworkDetails.name}</span>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300">
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-800 text-[#fe6019] dark:text-orange-300">
                                   {selectedNetworkDetails.type}
                                 </span>
                               </div>
@@ -290,7 +290,7 @@ const JoinNetwork = () => {
                             </div>
                           ) : (
                             <Select onValueChange={handleNetworkSelect}>
-                              <SelectTrigger className="w-full rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                              <SelectTrigger className="w-full rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019]">
                                 <SelectValue placeholder="Choose your network" />
                               </SelectTrigger>
                               <SelectContent 
@@ -347,7 +347,7 @@ const JoinNetwork = () => {
                             placeholder="Enter your ID number"
                             value={formData.rollNumber}
                             onChange={handleInputChange}
-                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019]"
                           />
                           {errors.rollNumber && <p className="text-sm text-red-500 mt-1">{errors.rollNumber}</p>}
                         </div>
@@ -364,7 +364,7 @@ const JoinNetwork = () => {
                             value={formData.batch}
                             onChange={handleInputChange}
                             type="number"
-                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019]"
                           />
                           {errors.batch && <p className="text-sm text-red-500 mt-1">{errors.batch}</p>}
                         </div>
@@ -380,7 +380,7 @@ const JoinNetwork = () => {
                             placeholder="e.g. Computer Science, Marketing"
                             value={formData.courseName}
                             onChange={handleInputChange}
-                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019]"
                           />
                           {errors.courseName && <p className="text-sm text-red-500 mt-1">{errors.courseName}</p>}
                         </div>
@@ -389,7 +389,7 @@ const JoinNetwork = () => {
                           <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg py-2 px-4 font-medium transition-all hover:from-violet-500 hover:to-indigo-500"
+                            className="flex-1 bg-gradient-to-r from-[#fe6019] to-orange-500 text-white rounded-lg py-2 px-4 font-medium transition-all hover:from-[#fe6019] hover:to-orange-400"
                           >
                             {isSubmitting ? (
                               <>

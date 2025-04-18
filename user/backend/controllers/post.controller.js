@@ -22,7 +22,8 @@ export const getFeedPosts = async (req, res) => {
             status: "approved" // Only show approved posts
         })
             .populate("author", "name username profilePicture headline")
-            .populate("comments.user", "name profilePicture")
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline") // Populate reaction user info
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -116,7 +117,8 @@ export const getPostById = async (req, res) => {
         const postId = req.params.id;
         const post = await Post.findById(postId)
             .populate("author", "name username profilePicture headline")
-            .populate("comments.user", "name profilePicture username headline");
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline"); // Add this line
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -135,36 +137,138 @@ export const createComment = async (req, res) => {
         const postId = req.params.id;
         const { content } = req.body;
 
-        const post = await Post.findByIdAndUpdate(
-            postId,
-            { $push: { comments: { user: req.user._id, content } } },
-            { new: true }
-        ).populate("author", "name email username headline profilePicture");
+        // First find the post to ensure it exists
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
 
+        // Add the comment to the post
+        const comment = {
+            user: req.user._id,
+            content,
+            createdAt: new Date(),
+            replies: []
+        };
+
+        existingPost.comments.push(comment);
+        await existingPost.save();
+
+        // Get the updated post with populated data
+        const updatedPost = await Post.findById(postId)
+            .populate("author", "name email username headline profilePicture")
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("comments.replies.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline");
+
+        // Try to create a notification, but don't fail if it doesn't work
+        try {
+            // Create a notification if the comment owner is not the post owner
+            if (existingPost.author.toString() !== req.user._id.toString()) {
+                const newNotification = new Notification({
+                    recipient: existingPost.author,
+                    type: "comment",
+                    relatedUser: req.user._id,
+                    relatedPost: postId,
+                });
+                await newNotification.save();
+
+                // Try to send notification email
+                try {
+                    const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+                    await sendCommentNotificationEmail(
+                        updatedPost.author.email, 
+                        updatedPost.author.name, 
+                        req.user.name, 
+                        postUrl, 
+                        content
+                    );
+                } catch (emailError) {
+                    console.error("Error sending comment notification email:", emailError);
+                    // Continue execution even if email fails
+                }
+            }
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
+        res.status(200).json(updatedPost);
+    } catch (error) {
+        console.error("Error in createComment controller:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Create a reply to a comment
+export const replyToComment = async (req, res) => {
+    try {
+        const { postId, commentId } = req.params;
+        const { content } = req.body;
+
+        // Find the post first
+        const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
 
-        // Create a notification if the comment owner is not the post owner
-        if (post.author._id.toString() !== req.user._id.toString()) {
-            const newNotification = new Notification({
-                recipient: post.author,
-                type: "comment",
-                relatedUser: req.user._id,
-                relatedPost: postId,
-            });
+        // Find the comment by ID
+        const commentIndex = post.comments.findIndex(
+            comment => comment._id.toString() === commentId
+        );
 
-            await newNotification.save();
-
-            // Send notification email
-            const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
-            await sendCommentNotificationEmail(post.author.email, post.author.name, req.user.name, postUrl, content);
+        if (commentIndex === -1) {
+            return res.status(404).json({ message: "Comment not found" });
         }
 
-        res.status(200).json(post);
+        // Get the comment
+        const comment = post.comments[commentIndex];
+        
+        // Initialize replies array if it doesn't exist
+        if (!comment.replies) {
+            comment.replies = [];
+        }
+
+        // Add the reply to the comment
+        comment.replies.push({
+            user: req.user._id,
+            content: content,
+            createdAt: new Date()
+        });
+
+        // Save the post
+        await post.save();
+
+        // Get the updated post with populated user data
+        const updatedPost = await Post.findById(postId)
+            .populate("author", "name email username headline profilePicture")
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("comments.replies.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline");
+
+        // Try to create a notification, but don't let it fail the entire request
+        try {
+            // Create a notification for the comment owner (if it's not the same user)
+            if (comment.user.toString() !== req.user._id.toString()) {
+                const newNotification = new Notification({
+                    recipient: comment.user,
+                    type: "reply",
+                    relatedUser: req.user._id,
+                    relatedPost: postId,
+                });
+                await newNotification.save();
+                
+                // TODO: Send notification email for reply (similar to comment notification)
+            }
+        } catch (notificationError) {
+            console.error("Error creating reply notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
+        res.status(200).json(updatedPost);
     } catch (error) {
-        console.error("Error in createComment controller:", error);
-        res.status(500).json({ message: "Server error" });
+        console.error("Error in replyToComment controller:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
@@ -213,10 +317,6 @@ export const reactToPost = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
-
-
-
 
 export const getPendingPosts = async (req, res) => {
     try {
@@ -331,3 +431,116 @@ export const reviewPost = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+// Like or unlike a comment
+export const likeComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const commentIndex = post.comments.findIndex(
+      comment => comment._id.toString() === commentId
+    );
+
+    if (commentIndex === -1) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const comment = post.comments[commentIndex];
+    
+    // Check if user already liked the comment
+    const likeIndex = comment.likes.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle like
+    if (likeIndex === -1) {
+      // Add like
+      comment.likes.push(userId);
+    } else {
+      // Remove like
+      comment.likes.splice(likeIndex, 1);
+    }
+
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in likeComment controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Like or unlike a reply
+export const likeReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const commentIndex = post.comments.findIndex(
+      comment => comment._id.toString() === commentId
+    );
+
+    if (commentIndex === -1) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Find the reply
+    const reply = post.comments[commentIndex].replies.find(
+      reply => reply._id.toString() === replyId
+    );
+
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    // Check if user already liked the reply
+    const likeIndex = reply.likes.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle like
+    if (likeIndex === -1) {
+      // Add like
+      reply.likes.push(userId);
+    } else {
+      // Remove like
+      reply.likes.splice(likeIndex, 1);
+    }
+
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in likeReply controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

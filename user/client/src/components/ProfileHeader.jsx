@@ -81,7 +81,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
       case "Linked":
         return (
           <div className="flex gap-2 justify-center">
-            <div className={`${baseClass} bg-green-500 hover:bg-green-600`}>
+            <div className={`${baseClass} bg-[#fe6019] hover:bg-[#fe6019]/90`}>
               <UserCheck size={20} className="mr-2" />
               Linked
             </div>
@@ -97,7 +97,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
       case "pending":
         return (
-          <button className={`${baseClass} bg-yellow-500 hover:bg-yellow-600`}>
+          <button className={`${baseClass} bg-[#fe6019]/70 hover:bg-[#fe6019]/80`}>
             <Clock size={20} className="mr-2" />
             Pending
           </button>
@@ -108,7 +108,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
           <div className="flex gap-2 justify-center">
             <button
               onClick={() => acceptRequest(Linkstatus.data.requestId)}
-              className={`${baseClass} bg-green-500 hover:bg-green-600`}
+              className={`${baseClass} bg-[#fe6019] hover:bg-[#fe6019]/90`}
             >
               Accept
             </button>
@@ -124,7 +124,11 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
         return (
           <button
             onClick={() => sendLinkRequest(userData._id)}
-            className="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-full transition duration-300 flex items-center justify-center"
+            className={`px-4 py-2 rounded-full font-semibold ${
+              isLinked
+                ? "bg-gray-200 text-gray-800"
+                : "bg-[#fe6019] text-white hover:bg-[#fe6019]/90"
+            }`}
           >
             <UserPlus size={20} className="mr-2" />
             Link
@@ -162,8 +166,8 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
         }}
       >
         {isEditing && (
-          <label className="absolute top-2 right-2 bg-white p-2 rounded-full shadow cursor-pointer">
-            <Camera size={20} />
+          <label className="absolute top-2 right-2 bg-white p-2 rounded-full shadow cursor-pointer hover:bg-[#fe6019]/10">
+            <Camera size={20} className="text-[#fe6019]" />
             <input
               type="file"
               className="hidden"
@@ -175,10 +179,10 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
         )}
 
         {isOwnProfile && !isEditing && (
-          <div className="absolute top-2 right-2 bg-white p-2 rounded-full shadow">
+          <div className="absolute top-2 right-2 bg-white p-2 rounded-full shadow hover:bg-[#fe6019]/10">
             <Edit3
               size={24}
-              className="cursor-pointer text-gray-500 hover:text-gray-700"
+              className="cursor-pointer text-[#fe6019]"
               onClick={() => setIsEditing(true)}
             />
           </div>
@@ -188,14 +192,14 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
       <div className="p-4">
         <div className="relative -mt-20 mb-4">
           <img
-            className="w-32 h-32 rounded-full mx-auto object-cover"
+            className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-lg"
             src={editedData.profilePicture || userData.profilePicture || "/avatar.png"}
             alt={userData.name}
           />
 
           {isEditing && (
-            <label className="absolute bottom-0 right-1/2 transform translate-x-16 bg-white p-2 rounded-full shadow cursor-pointer">
-              <Camera size={20} />
+            <label className="absolute bottom-0 right-1/2 transform translate-x-16 bg-white p-2 rounded-full shadow cursor-pointer hover:bg-[#fe6019]/10">
+              <Camera size={20} className="text-[#fe6019]" />
               <input
                 type="file"
                 className="hidden"
@@ -213,10 +217,10 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
               type="text"
               value={editedData.name ?? userData.name}
               onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
-              className="text-2xl font-bold mb-2 text-center w-full"
+              className="text-2xl font-bold mb-2 text-center w-full focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md"
             />
           ) : (
-            <h1 className="text-2xl font-bold mb-2">{userData.name}</h1>
+            <h1 className="text-2xl font-bold mb-2 text-[#fe6019]">{userData.name}</h1>
           )}
 
           {isEditing ? (
@@ -224,20 +228,20 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
               type="text"
               value={editedData.headline ?? userData.headline}
               onChange={(e) => setEditedData({ ...editedData, headline: e.target.value })}
-              className="text-gray-600 text-center w-full"
+              className="text-gray-600 text-center w-full focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md"
             />
           ) : (
             <p className="text-gray-600">{userData.headline}</p>
           )}
 
           <div className="flex justify-center items-center mt-2">
-            <MapPin size={16} className="text-gray-500 mr-1" />
+            <MapPin size={16} className="text-[#fe6019] mr-1" />
             {isEditing ? (
               <input
                 type="text"
                 value={editedData.location ?? userData.location}
                 onChange={(e) => setEditedData({ ...editedData, location: e.target.value })}
-                className="text-gray-600 text-center"
+                className="text-gray-600 text-center focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md"
               />
             ) : (
               <span className="text-gray-600">{userData.location}</span>
@@ -247,7 +251,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
         <div className="flex justify-center gap-10 align-middle">
           <div
-            className="text-gray-700 font-bold cursor-pointer"
+            className="text-[#fe6019] font-bold cursor-pointer hover:text-[#fe6019]/80"
             onClick={handleLinkCountClick}
           >
             {userData.Links.length} Links
@@ -257,7 +261,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
           {isEditing && (
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-full"
+              className="bg-[#fe6019] text-white px-4 py-2 rounded-full font-semibold hover:bg-[#fe6019]/90"
               onClick={handleSave}
             >
               Save

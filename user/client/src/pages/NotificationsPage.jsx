@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
 import { toast } from "react-hot-toast"
 import { Bell, ExternalLink, Eye, MessageSquare, ThumbsUp, Trash2, UserPlus } from "lucide-react"
 import { Link } from "react-router-dom"
 import { formatDistanceToNow } from "date-fns"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 
 import Sidebar from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,26 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 
+// Main color: #fe6019 (vibrant orange)
+const THEME_COLOR = "#fe6019"
+const THEME_COLOR_LIGHT = "rgba(254, 96, 25, 0.1)"
+const THEME_COLOR_MEDIUM = "rgba(254, 96, 25, 0.2)"
+
 const NotificationsPage = () => {
   const [activeTab, setActiveTab] = useState("all")
+  const [isMobile, setIsMobile] = useState(false)
   const queryClient = useQueryClient()
+  const prefersReducedMotion = useReducedMotion()
+
+  // Responsive handler
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    handleResize() // Initial check
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const { data: authUser } = useQuery({
     queryKey: ["authUser"],
@@ -60,32 +77,56 @@ const NotificationsPage = () => {
 
   const unreadCount = notifications?.data?.filter((n) => !n.read).length || 0
 
+  // Animation variants for smooth transitions
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-screen bg-gray-50">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-screen ">
       <div className="col-span-1 lg:col-span-1">
         <Sidebar user={authUser} />
       </div>
-      <div className="col-span-1 lg:col-span-3 py-6 px-4">
+      <div className="col-span-1 lg:col-span-3 py-6 px-4 md:px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+          initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+          animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
         >
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-4 md:p-6 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-3">
-                <motion.div whileHover={{ rotate: 15 }} transition={{ type: "spring", stiffness: 400 }}>
-                  <Bell className="h-6 w-6 text-purple-500" />
+                <motion.div 
+                  whileHover={prefersReducedMotion ? {} : { rotate: 15, scale: 1.1 }} 
+                  transition={{ type: "spring", stiffness: 400 }}
+                  style={{ color: THEME_COLOR }}
+                >
+                  <Bell className="h-6 w-6" />
                 </motion.div>
-                <h1 className="text-2xl font-bold">Notifications</h1>
+                <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
                 {unreadCount > 0 && (
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                    initial={prefersReducedMotion ? { scale: 1 } : { scale: 0 }}
+                    animate={prefersReducedMotion ? { scale: 1 } : { scale: 1 }}
                     transition={{ type: "spring", stiffness: 500 }}
                   >
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                    <Badge 
+                      variant="secondary" 
+                      style={{ 
+                        backgroundColor: THEME_COLOR_LIGHT, 
+                        color: THEME_COLOR 
+                      }} 
+                      className="hover:bg-opacity-80 transition-all"
+                    >
                       {unreadCount} unread
                     </Badge>
                   </motion.div>
@@ -93,8 +134,17 @@ const NotificationsPage = () => {
               </div>
 
               {unreadCount > 0 && (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button variant="outline" size="sm" onClick={() => markAllAsReadMutation()} className="text-sm">
+                <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.05 }} whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => markAllAsReadMutation()} 
+                    className="text-sm"
+                    style={{ 
+                      borderColor: THEME_COLOR_LIGHT, 
+                      color: THEME_COLOR 
+                    }}
+                  >
                     Mark all as read
                   </Button>
                 </motion.div>
@@ -102,41 +152,75 @@ const NotificationsPage = () => {
             </div>
 
             <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-4 md:w-auto md:inline-flex">
-                <TabsTrigger value="all" className="text-sm">
+              <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto md:inline-flex gap-1`}>
+                <TabsTrigger 
+                  value="all" 
+                  className="text-sm data-[state=active]:bg-opacity-10"
+                  style={{ 
+                    "--tab-accent": THEME_COLOR,
+                    color: activeTab === "all" ? THEME_COLOR : "inherit"
+                  }}
+                >
                   All
                 </TabsTrigger>
-                <TabsTrigger value="unread" className="text-sm">
+                <TabsTrigger 
+                  value="unread" 
+                  className="text-sm data-[state=active]:bg-opacity-10"
+                  style={{ 
+                    "--tab-accent": THEME_COLOR,
+                    color: activeTab === "unread" ? THEME_COLOR : "inherit"
+                  }}
+                >
                   Unread
                 </TabsTrigger>
-                <TabsTrigger value="like" className="text-sm">
+                <TabsTrigger 
+                  value="like" 
+                  className="text-sm data-[state=active]:bg-opacity-10"
+                  style={{ 
+                    "--tab-accent": THEME_COLOR,
+                    color: activeTab === "like" ? THEME_COLOR : "inherit"
+                  }}
+                >
                   Likes
                 </TabsTrigger>
-                <TabsTrigger value="comment" className="text-sm">
+                <TabsTrigger 
+                  value="comment" 
+                  className="text-sm data-[state=active]:bg-opacity-10"
+                  style={{ 
+                    "--tab-accent": THEME_COLOR,
+                    color: activeTab === "comment" ? THEME_COLOR : "inherit"
+                  }}
+                >
                   Comments
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {isLoading ? (
               <NotificationSkeleton />
             ) : filteredNotifications && filteredNotifications.length > 0 ? (
               <AnimatePresence initial={false} mode="popLayout">
-                <ul className="space-y-4">
+                <motion.ul 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-4"
+                >
                   {filteredNotifications.map((notification) => (
                     <NotificationItem
                       key={notification._id}
                       notification={notification}
                       onMarkAsRead={markAsReadMutation}
                       onDelete={deleteNotificationMutation}
+                      prefersReducedMotion={prefersReducedMotion}
                     />
                   ))}
-                </ul>
+                </motion.ul>
               </AnimatePresence>
             ) : (
-              <EmptyState type={activeTab} />
+              <EmptyState type={activeTab} prefersReducedMotion={prefersReducedMotion} />
             )}
           </div>
         </motion.div>
@@ -145,24 +229,38 @@ const NotificationsPage = () => {
   )
 }
 
-const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
+const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReducedMotion }) => {
+  // Animation variants for list items
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    exit: { 
+      opacity: 0, 
+      height: 0, 
+      marginTop: 0, 
+      marginBottom: 0, 
+      overflow: "hidden",
+      transition: { duration: 0.2 } 
+    }
+  }
+
   const renderNotificationIcon = (type) => {
     switch (type) {
       case "like":
         return (
-          <div className="p-2 bg-blue-50 text-blue-500 rounded-full">
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
             <ThumbsUp className="h-4 w-4" />
           </div>
         )
       case "comment":
         return (
-          <div className="p-2 bg-green-50 text-green-500 rounded-full">
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
             <MessageSquare className="h-4 w-4" />
           </div>
         )
       case "LinkAccepted":
         return (
-          <div className="p-2 bg-purple-50 text-purple-500 rounded-full">
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
             <UserPlus className="h-4 w-4" />
           </div>
         )
@@ -176,7 +274,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
       case "like":
         return (
           <span>
-            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline">
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
               {notification.relatedUser.name}
             </Link>{" "}
             liked your post
@@ -185,7 +283,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
       case "comment":
         return (
           <span>
-            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline">
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
               {notification.relatedUser.name}
             </Link>{" "}
             commented on your post
@@ -194,7 +292,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
       case "LinkAccepted":
         return (
           <span>
-            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline">
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
               {notification.relatedUser.name}
             </Link>{" "}
             accepted your Link request
@@ -211,7 +309,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
     return (
       <Link
         to={`/post/${relatedPost._id}`}
-        className="mt-3 p-3 bg-gray-50 rounded-lg flex items-center space-x-3 hover:bg-gray-100 transition-all group"
+        className="mt-3 p-3 bg-gray-50 rounded-lg flex flex-col sm:flex-row items-start sm:items-center gap-3 hover:bg-gray-100 transition-all group"
       >
         {relatedPost.image && (
           <img
@@ -223,7 +321,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
         <div className="flex-1 overflow-hidden">
           <p className="text-sm text-gray-600 line-clamp-2">{relatedPost.content}</p>
         </div>
-        <ExternalLink size={16} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+        <ExternalLink size={16} className="text-gray-400 group-hover:text-[#fe6019] transition-colors" />
       </Link>
     )
   }
@@ -231,16 +329,18 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
   return (
     <motion.li
       layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
-      transition={{ duration: 0.2 }}
-      className={`bg-white border rounded-xl p-4 transition-all hover:shadow-md ${
-        !notification.read ? "border-purple-200 bg-purple-50/30" : "border-gray-200"
+      variants={prefersReducedMotion ? {} : itemVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className={`bg-white border rounded-xl p-4 md:p-5 transition-all hover:shadow-md ${
+        !notification.read 
+          ? "border-[#fe6019] bg-[rgba(254,96,25,0.05)]" 
+          : "border-gray-200"
       }`}
     >
-      <div className="flex items-start gap-4">
-        <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+        <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
           <Link to={`/profile/${notification.relatedUser.username}`}>
             <img
               src={notification.relatedUser.profilePicture || "/avatar.png"}
@@ -251,9 +351,9 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
         </motion.div>
 
         <div className="flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {renderNotificationIcon(notification.type)}
-            <p className="text-sm">{renderNotificationContent(notification)}</p>
+            <p className="text-sm sm:text-base">{renderNotificationContent(notification)}</p>
           </div>
           <p className="text-xs text-gray-500 mt-1">
             {formatDistanceToNow(new Date(notification.createdAt), {
@@ -263,13 +363,14 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
           {renderRelatedPost(notification.relatedPost)}
         </div>
 
-        <div className="flex gap-2 self-start">
+        <div className="flex gap-2 self-start mt-3 sm:mt-0">
           {!notification.read && (
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
               onClick={() => onMarkAsRead(notification._id)}
-              className="p-2 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200 transition-colors"
+              className="p-2 rounded-full transition-colors"
+              style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}
               aria-label="Mark as read"
             >
               <Eye size={14} />
@@ -277,10 +378,11 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
           )}
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+            whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
             onClick={() => onDelete(notification._id)}
-            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+            className="p-2 rounded-full transition-colors"
+            style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}
             aria-label="Delete notification"
           >
             <Trash2 size={14} />
@@ -295,14 +397,14 @@ const NotificationSkeleton = () => {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl">
+        <div key={i} className="flex flex-col sm:flex-row items-start gap-4 p-4 border border-gray-200 rounded-xl">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="space-y-2 flex-1">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-3 w-1/4" />
+            <Skeleton className="h-4 w-full sm:w-3/4" />
+            <Skeleton className="h-3 w-1/3 sm:w-1/4" />
             <Skeleton className="h-16 w-full mt-2" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-3 sm:mt-0">
             <Skeleton className="h-8 w-8 rounded-full" />
             <Skeleton className="h-8 w-8 rounded-full" />
           </div>
@@ -312,7 +414,7 @@ const NotificationSkeleton = () => {
   )
 }
 
-const EmptyState = ({ type }) => {
+const EmptyState = ({ type, prefersReducedMotion }) => {
   let message = "No notifications at the moment"
 
   if (type === "unread") {
@@ -324,16 +426,22 @@ const EmptyState = ({ type }) => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+    <motion.div 
+      initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }} 
+      animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1 }} 
+      transition={{ duration: 0.5 }}
+      className="text-center py-8 md:py-12"
+    >
       <motion.div
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
+        initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.8 }}
+        animate={prefersReducedMotion ? { scale: 1 } : { scale: 1 }}
         transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-        className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4"
+        className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+        style={{ backgroundColor: "rgba(254, 96, 25, 0.1)" }}
       >
-        <Bell className="h-8 w-8 text-gray-400" />
+        <Bell className="h-8 w-8" style={{ color: "#fe6019" }} />
       </motion.div>
-      <h3 className="text-lg font-medium text-gray-900 mb-1">{message}</h3>
+      <h3 className="text-lg font-medium mb-1" style={{ color: "#fe6019" }}>{message}</h3>
       <p className="text-gray-500 max-w-sm mx-auto">When you receive new notifications, they'll appear here</p>
     </motion.div>
   )

@@ -47,16 +47,16 @@ export default function Sidebar({ user }) {
           <img
             src={user.profilePicture || "/avatar.png"}
             alt={user.name}
-            className="w-20 h-20 rounded-full mx-auto mt-[-40px] shadow-md"
+            className="w-20 h-20 rounded-full mx-auto mt-[-40px] shadow-md border-2 border-[#fe6019]"
           />
-          <h2 className="text-xl font-semibold mt-2">{user.name}</h2>
+          <h2 className="text-xl font-semibold mt-2 text-[#fe6019]">{user.name}</h2>
         </Link>
         <p className="text-info">{user.headline}</p>
         <p className="text-info text-xs">{user.Links.length} Links</p>
       </div>
       {/* New Section for Categories with Images */}
       <div className="border-t border-base-100 p-4">
-        <h3 className="text-lg font-semibold mb-2">Post </h3>
+        <h3 className="text-lg font-semibold mb-2 text-[#fe6019]">Post </h3>
         <ul className="space-y-2">
           {[
             "discussion",
@@ -69,7 +69,7 @@ export default function Sidebar({ user }) {
             <li key={type}>
               <button
                 onClick={() => openPostCreation(type)}
-                className="flex items-center justify-center p-0 transition-all duration-200 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:shadow-md"
+                className="flex items-center justify-center p-0 transition-all duration-200 hover:bg-[#fe6019]/20 hover:shadow-md"
                 style={{ height: "50px" }} // Make button full width
               >
                 <img

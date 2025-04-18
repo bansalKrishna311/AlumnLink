@@ -13,6 +13,7 @@ export default {
                 sm: 'calc(var(--radius) - 4px)',
             },
             colors: {
+                primary: '#fe6019',
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',
                     foreground: 'hsl(var(--sidebar-foreground))',
@@ -24,6 +25,9 @@ export default {
                     ring: 'hsl(var(--sidebar-ring))',
                 },
             },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+            },
         },
     },
     plugins: [daisyui, tailwindcssAnimate],
@@ -31,9 +35,9 @@ export default {
         themes: [
             {
                 AlumnLink: {
-                    primary: "#0A66C2", // AlumnLink Blue
+                    primary: "#fe6019", // AlumnLink Orange
                     secondary: "#FFFFFF", // White
-                    accent: "#7FC15E", // AlumnLink Green (for accents)
+                    accent: "#fd8e5e", // Lighter orange for accents
                     neutral: "#000000", // Black (for text)
                     "base-100": "#F3F2EF", // Light Gray (background)
                     info: "#5E5E5E", // Dark Gray (for secondary text)
