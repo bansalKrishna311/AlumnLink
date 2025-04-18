@@ -243,11 +243,11 @@ const Post = ({ post }) => {
   // Get reaction color based on reaction type
   const getReactionColor = (type) => {
     const colors = {
-      like: "text-blue-600",
-      love: "text-red-600",
-      sad: "text-yellow-600",
-      wow: "text-purple-600",
-      angry: "text-orange-600",
+      like: "text-[#fe6019]",
+      love: "text-[#fe6019]",
+      sad: "text-[#fe6019]/80",
+      wow: "text-[#fe6019]/90",
+      angry: "text-[#fe6019]/70",
     }
     return colors[type] || "text-gray-700"
   }
@@ -255,11 +255,11 @@ const Post = ({ post }) => {
   // Get reaction background color based on reaction type
   const getReactionBgColor = (type) => {
     const colors = {
-      like: "bg-blue-50 hover:bg-blue-100",
-      love: "bg-red-50 hover:bg-red-100",
-      sad: "bg-yellow-50 hover:bg-yellow-100",
-      wow: "bg-purple-50 hover:bg-purple-100",
-      angry: "bg-orange-50 hover:bg-orange-100",
+      like: "bg-[#fe6019]/10 hover:bg-[#fe6019]/20",
+      love: "bg-[#fe6019]/10 hover:bg-[#fe6019]/20",
+      sad: "bg-[#fe6019]/10 hover:bg-[#fe6019]/20",
+      wow: "bg-[#fe6019]/10 hover:bg-[#fe6019]/20",
+      angry: "bg-[#fe6019]/10 hover:bg-[#fe6019]/20",
     }
     return colors[type] || "hover:bg-gray-100"
   }
@@ -574,7 +574,7 @@ const Post = ({ post }) => {
               className={`flex items-center justify-center py-1.5 px-3 text-sm font-medium rounded-md transition-colors ${
                 userReaction
                   ? `${getReactionColor(userReaction)} ${getReactionBgColor(userReaction)}`
-                  : "text-gray-700 hover:bg-gray-100"
+                  : "text-[#fe6019] hover:bg-[#fe6019]/10"
               }`}
               disabled={isReacting}
               onClick={() => userReaction && handleReactToPost(userReaction)}
@@ -609,7 +609,7 @@ const Post = ({ post }) => {
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("like")}
-                    className={`p-2 rounded-full hover:bg-blue-100 ${userReaction === "like" ? "bg-blue-50" : ""}`}
+                    className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "like" ? "bg-[#fe6019]/10" : ""}`}
                     title="Like"
                   >
                     <span className="text-lg">👍</span>
@@ -618,7 +618,7 @@ const Post = ({ post }) => {
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("love")}
-                    className={`p-2 rounded-full hover:bg-red-100 ${userReaction === "love" ? "bg-red-50" : ""}`}
+                    className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "love" ? "bg-[#fe6019]/10" : ""}`}
                     title="Love"
                   >
                     <span className="text-lg">❤️</span>
@@ -627,7 +627,7 @@ const Post = ({ post }) => {
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("sad")}
-                    className={`p-2 rounded-full hover:bg-yellow-100 ${userReaction === "sad" ? "bg-yellow-50" : ""}`}
+                    className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "sad" ? "bg-[#fe6019]/10" : ""}`}
                     title="Sad"
                   >
                     <span className="text-lg">😢</span>
@@ -636,7 +636,7 @@ const Post = ({ post }) => {
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("wow")}
-                    className={`p-2 rounded-full hover:bg-purple-100 ${userReaction === "wow" ? "bg-purple-50" : ""}`}
+                    className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "wow" ? "bg-[#fe6019]/10" : ""}`}
                     title="Wow"
                   >
                     <span className="text-lg">😮</span>
@@ -645,7 +645,7 @@ const Post = ({ post }) => {
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleReactToPost("angry")}
-                    className={`p-2 rounded-full hover:bg-orange-100 ${userReaction === "angry" ? "bg-orange-50" : ""}`}
+                    className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "angry" ? "bg-[#fe6019]/10" : ""}`}
                     title="Angry"
                   >
                     <span className="text-lg">😠</span>
@@ -670,7 +670,7 @@ const Post = ({ post }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center justify-center py-1.5 px-3 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-center py-1.5 px-3 text-sm font-medium text-[#fe6019] rounded-md hover:bg-[#fe6019]/10 transition-colors"
           >
             <MessageCircle size={16} className="mr-1.5" />
             Comment
@@ -680,7 +680,7 @@ const Post = ({ post }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSharePost}
-            className="flex items-center justify-center py-1.5 px-3 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-center py-1.5 px-3 text-sm font-medium text-[#fe6019] rounded-md hover:bg-[#fe6019]/10 transition-colors"
           >
             <Share2 size={16} className="mr-1.5" />
             Share
@@ -771,13 +771,13 @@ const Post = ({ post }) => {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="w-full pl-3 pr-10 py-2 text-sm rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-transparent"
+                  className="w-full pl-3 pr-10 py-2 text-sm rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#fe6019] focus:border-transparent"
                 />
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#fe6019] text-white p-1.5 rounded-full hover:bg-[#fe6019]/90 transition-colors"
                   disabled={isAddingComment || !newComment.trim()}
                 >
                   {isAddingComment ? <Loader size={14} className="animate-spin" /> : <Send size={14} />}
@@ -824,7 +824,7 @@ const Post = ({ post }) => {
                 {/* Reaction type tabs */}
                 <div className="flex border-b mb-2 overflow-x-auto">
                   <button
-                    className={`px-4 py-2 text-sm font-medium ${activeReactionTab === "all" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600 hover:text-gray-900"}`}
+                    className={`px-4 py-2 text-sm font-medium ${activeReactionTab === "all" ? "text-[#fe6019] border-b-2 border-[#fe6019]" : "text-gray-600 hover:text-gray-900"}`}
                     onClick={() => setActiveReactionTab("all")}
                   >
                     All ({totalReactions})
@@ -832,7 +832,7 @@ const Post = ({ post }) => {
                   {Object.keys(reactionsByType).map((type) => (
                     <button
                       key={type}
-                      className={`px-4 py-2 text-sm font-medium ${activeReactionTab === type ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600 hover:text-gray-900"}`}
+                      className={`px-4 py-2 text-sm font-medium ${activeReactionTab === type ? "text-[#fe6019] border-b-2 border-[#fe6019]" : "text-gray-600 hover:text-gray-900"}`}
                       onClick={() => setActiveReactionTab(type)}
                     >
                       <span className="mr-1">{getReactionEmoji(type)}</span>
