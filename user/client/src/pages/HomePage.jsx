@@ -77,7 +77,7 @@ const HomePage = () => {
               onClick={() => handleTypeChange(type.id)}
               className={`px-4 py-2 rounded-full overflow-none transition-all duration-200 whitespace-nowrap
                 ${selectedType === type.id 
-                  ? 'bg-blue-500 text-white shadow-lg' 
+                  ? 'bg-[#fe6019] text-white shadow-lg' 
                   : 'bg-white hover:bg-gray-100 text-gray-700'
                 }`}
             >
@@ -126,7 +126,7 @@ const HomePage = () => {
                 transition={{ type: "spring", delay: 0.2 }}
                 className="mb-6"
               >
-                <Users size={64} className="mx-auto text-blue-500" />
+                <Users size={64} className="mx-auto text-[#fe6019]" />
               </motion.div>
               <motion.h2 
                 initial={{ y: 20, opacity: 0 }}

@@ -30,7 +30,22 @@ const UserLinksPage = () => {
 
     try {
       const response = await axiosInstance.get(`/links/${userId}`);
-      setLinks(response.data || []);
+      const linksData = response.data || [];
+      
+      // Fetch complete user data for each link
+      const completeLinksData = await Promise.all(
+        linksData.map(async (link) => {
+          try {
+            const userResponse = await axiosInstance.get(`/users/${link._id}`);
+            return userResponse.data;
+          } catch (error) {
+            console.error(`Failed to fetch user data for ${link._id}:`, error);
+            return link; // Return original link data if user fetch fails
+          }
+        })
+      );
+      
+      setLinks(completeLinksData);
     } catch (error) {
       console.error("Failed to fetch user links:", error);
       setError(error?.message || "Failed to fetch user links");
@@ -241,15 +256,15 @@ const UserLinksPage = () => {
                 
                 {/* Skills showcase - Prominently displayed */}
                 {link.skills && link.skills.length > 0 && (
-                  <div className="mt-6 bg-orange-50 p-4 rounded-xl border border-orange-100">
-                    <h4 className="text-sm font-medium text-orange-700 mb-3 flex items-center">
+                  <div className="mt-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                    <h4 className="text-sm font-medium text-orange-700 mb-2 flex items-center">
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                       Skills & Expertise
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {link.skills.map((skill, index) => (
                         <span 
-                          key={`${skill}-${index}`}
+                          key={index}
                           className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-white text-orange-600 border border-orange-200 hover:bg-orange-100 transition-colors shadow-sm"
                         >
                           {skill}

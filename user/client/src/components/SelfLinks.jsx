@@ -65,19 +65,19 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
           {/* Header Section */}
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-2">
-              <GraduationCap className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <GraduationCap className="h-6 w-6" style={{ color: '#fe6019' }} />
+              <h2 className="text-2xl font-bold tracking-tight" style={{ background: 'linear-gradient(to right, #fe6019, rgba(254, 96, 25, 0.7))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
                 My Alma Matters
               </h2>
             </div>
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-hover:[&>*]:text-[#fe6019]" />
               <Input
                 type="text"
                 placeholder="Search Alma Matters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-background/50 backdrop-blur-sm border-opacity-50 transition-all duration-300 focus:bg-background focus:shadow-lg focus:border-primary/50"
+                className="pl-10 bg-background/50 backdrop-blur-sm border-opacity-50 transition-all duration-300 focus:bg-background focus:shadow-lg focus:border-[#fe6019] focus:ring-[#fe6019]"
               />
             </div>
           </div>
@@ -96,8 +96,8 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
                       <Card
-                        className="group hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden bg-gradient-to-r hover:from-primary/5 hover:to-background"
-                        onClick={() => handleOpenUserAccount(link.user.username)}
+                        className="group hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                        style={{ background: 'linear-gradient(to right, rgba(254, 96, 25, 0.05), transparent)' }}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start space-x-4">
@@ -113,8 +113,8 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                                     className="w-12 h-12 rounded-full object-cover border-2 border-background shadow-md"
                                   />
                                 ) : (
-                                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                                    <UserCircle2 className="w-10 h-10 text-primary/70" />
+                                  <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, rgba(254, 96, 25, 0.2), rgba(254, 96, 25, 0.1))' }}>
+                                    <UserCircle2 className="w-10 h-10" style={{ color: 'rgba(254, 96, 25, 0.7)' }} />
                                   </div>
                                 )}
                                 {link.user.isOnline && (
@@ -125,7 +125,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <h3 className="font-semibold text-md group-hover:text-primary transition-colors break-words">
+                                <h3 className="font-semibold text-md group-hover:text-[#fe6019] transition-colors break-words">
                                   {link.user.name || "Unknown User"}
                                 </h3>
                               </div>
@@ -136,8 +136,8 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                                 </p>
 
                                 {link.user.location && (
-                                  <div className="flex items-center space-x-1.5 text-sm text-muted-foreground/80 bg-primary/5 px-2 py-0.5 rounded-full">
-                                    <MapPin className="h-3.5 w-3.5 text-primary/70" />
+                                  <div className="flex items-center space-x-1.5 text-sm text-muted-foreground/80 px-2 py-0.5 rounded-full" style={{ background: 'rgba(254, 96, 25, 0.05)' }}>
+                                    <MapPin className="h-3.5 w-3.5" style={{ color: 'rgba(254, 96, 25, 0.7)' }} />
                                     <span className="break-words">
                                       {link.user.location}
                                     </span>
@@ -148,7 +148,8 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                           </div>
                           <div className="mt-3 flex justify-end">
                             <button
-                              className="flex items-center space-x-1 text-xs text-primary/70 hover:text-primary transition-colors"
+                              className="flex items-center space-x-1 text-xs transition-colors"
+                              style={{ color: 'rgba(254, 96, 25, 0.7)' }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/links/${link.user._id}`);
@@ -170,15 +171,15 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Card className="bg-gradient-to-br from-background to-primary/5">
+                  <Card className="bg-gradient-to-br from-background" style={{ background: 'linear-gradient(to bottom right, transparent, rgba(254, 96, 25, 0.05))' }}>
                     <CardContent className="flex flex-col items-center justify-center py-12">
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
-                        <UserCircle2 className="h-12 w-12 text-primary/50 mb-4" />
+                        <UserCircle2 className="h-12 w-12 mb-4" style={{ color: 'rgba(254, 96, 25, 0.5)' }} />
                       </motion.div>
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      <h3 className="text-lg font-semibold" style={{ background: 'linear-gradient(to right, #fe6019, rgba(254, 96, 25, 0.7))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
                         {searchQuery ? "No matches found" : "No Alma Matters yet"}
                       </h3>
                       <p className="text-sm text-muted-foreground mt-2 text-center max-w-sm">

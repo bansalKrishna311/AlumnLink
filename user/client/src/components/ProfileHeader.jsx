@@ -124,7 +124,11 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
         return (
           <button
             onClick={() => sendLinkRequest(userData._id)}
-            className="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-full transition duration-300 flex items-center justify-center"
+            className={`px-4 py-2 rounded-full font-semibold ${
+              isLinked
+                ? "bg-gray-200 text-gray-800"
+                : "bg-[#fe6019] text-white hover:bg-[#e55617]"
+            }`}
           >
             <UserPlus size={20} className="mr-2" />
             Link
@@ -257,7 +261,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
           {isEditing && (
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-full"
+              className="bg-[#fe6019] text-white px-4 py-2 rounded-full font-semibold hover:bg-[#e55617]"
               onClick={handleSave}
             >
               Save
