@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { axiosInstance } from "@/lib/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
@@ -13,6 +13,10 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredLinks, setFilteredLinks] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we're on the standalone page
+  const isStandalonePage = location.pathname === "/my-links";
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -59,7 +63,11 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   }
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-xl sticky top-16 w-96 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-opacity-50">
+    <Card className={`
+      ${isStandalonePage ? 'max-w-4xl mx-auto' : 'max-w-4xl mx-auto sticky top-16'} 
+      shadow-xl w-full bg-gradient-to-b from-background to-background/95 
+      backdrop-blur-sm border-opacity-50
+    `}>
       <CardContent className="p-6">
         <div className="space-y-6">
           {/* Header Section */}
@@ -83,7 +91,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
           </div>
 
           {/* Alma Matters List */}
-          <ScrollArea className="max-h-[450px] pr-4">
+          <ScrollArea className="max-h-[450px] pr-4 overflow-x-hidden">
             <AnimatePresence mode="popLayout">
               {filteredLinks.length > 0 ? (
                 <div className="space-y-4">
@@ -138,7 +146,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                                 {link.user.location && (
                                   <div className="flex items-center space-x-1.5 text-sm text-muted-foreground/80 px-2 py-0.5 rounded-full" style={{ background: 'rgba(254, 96, 25, 0.05)' }}>
                                     <MapPin className="h-3.5 w-3.5" style={{ color: 'rgba(254, 96, 25, 0.7)' }} />
-                                    <span className="break-words">
+                                    <span className="truncate max-w-[100px]">
                                       {link.user.location}
                                     </span>
                                   </div>

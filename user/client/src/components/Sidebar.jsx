@@ -32,27 +32,28 @@ export default function Sidebar({ user }) {
     setModalOpen(false);
   };
 
+  // Check if we're inside a Sheet component on mobile
+  const isInSheet = window.innerWidth < 1024;
+
   return (
-    <div className="bg-secondary rounded-lg shadow-lg sticky top-16 z-20">
-      {" "}
-      {/* Adjust top value to prevent overlap with navbar */}
+    <div className={`bg-secondary rounded-lg shadow-lg ${isInSheet ? "h-full" : "sticky top-16 z-20"}`}>
       <div className="p-4 text-center">
         <div
           className="h-16 rounded-t-lg bg-cover bg-center"
           style={{
-            backgroundImage: `url("${user.bannerImg || "/banner.png"}")`,
+            backgroundImage: `url("${user?.bannerImg || "/banner.png"}")`,
           }}
         />
-        <Link to={`/profile/${user.username}`}>
+        <Link to={`/profile/${user?.username}`}>
           <img
-            src={user.profilePicture || "/avatar.png"}
-            alt={user.name}
+            src={user?.profilePicture || "/avatar.png"}
+            alt={user?.name}
             className="w-20 h-20 rounded-full mx-auto mt-[-40px] shadow-md border-2 border-[#fe6019]"
           />
-          <h2 className="text-xl font-semibold mt-2 text-[#fe6019]">{user.name}</h2>
+          <h2 className="text-xl font-semibold mt-2 text-[#fe6019]">{user?.name}</h2>
         </Link>
-        <p className="text-info">{user.headline}</p>
-        <p className="text-info text-xs">{user.Links.length} Links</p>
+        <p className="text-info">{user?.headline}</p>
+        <p className="text-info text-xs">{user?.Links?.length} Links</p>
       </div>
       {/* New Section for Categories with Images */}
       <div className="border-t border-base-100 p-4">

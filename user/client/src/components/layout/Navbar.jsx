@@ -1,11 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
-import { Link } from "react-router-dom";
-import { Bell, Home, LogOut, User, Users } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, Home, LogOut, User, Users, Menu, Link2 } from "lucide-react";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import Sidebar from "../Sidebar";
+import SelfLinks from "../SelfLinks";
 
 const Navbar = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const [selfLinksOpen, setSelfLinksOpen] = useState(false);
 
 	const { data: notifications } = useQuery({
 		queryKey: ["notifications"],
@@ -29,11 +36,40 @@ const Navbar = () => {
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
+	// Handle showing SelfLinks as a stack screen instead of a sheet on mobile
+	const handleSelfLinksClick = () => {
+		if (window.innerWidth >= 1024) {
+			// On large screens, do nothing special as the component is already visible
+			return;
+		}
+		
+		// On small screens, navigate to SelfLinks page instead of opening a sheet
+		navigate('/my-links');
+		
+		// Close the sheet if it's open
+		if (selfLinksOpen) {
+			setSelfLinksOpen(false);
+		}
+	};
+
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
 			<div className='max-w-7xl mx-auto px-4'>
 				<div className='flex justify-between items-center py-3'>
 					<div className='flex items-center space-x-4'>
+						{authUser && (
+							<Sheet open={sidebarOpen} onOpenChange={setSidebarOpen} className="lg:hidden">
+								<SheetTrigger asChild>
+									<button className="text-neutral flex flex-col items-center lg:hidden" aria-label="Menu">
+										<Menu size={20} />
+										<span className='text-xs hidden md:block lg:hidden'>Menu</span>
+									</button>
+								</SheetTrigger>
+								<SheetContent side="left" className="p-0 w-[280px]">
+									<Sidebar user={authUser} />
+								</SheetContent>
+							</Sheet>
+						)}
 						<Link to='/'>
 							<img className='h-8 rounded' src='/logo copy.png' alt='AlumnLink' />
 						</Link>
@@ -76,6 +112,23 @@ const Navbar = () => {
 									<User size={20} />
 									<span className='text-xs hidden md:block'>Me</span>
 								</Link>
+
+
+								{/* Keep Sheet for large screens for consistency */}
+								<Sheet open={selfLinksOpen} onOpenChange={setSelfLinksOpen} className="hidden lg:block">
+									<SheetTrigger asChild>
+										<button className="text-neutral flex flex-col items-center" aria-label="My Alma Matters">
+											<Link2 size={20} />
+											<span className='text-xs hidden md:block'>Links</span>
+										</button>
+									</SheetTrigger>
+									<SheetContent side="right" className="p-0 ">
+										<div className="h-full overflow-auto">
+											<SelfLinks />
+										</div>
+									</SheetContent>
+								</Sheet>
+
 								<button
 									className='flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800'
 									onClick={() => logout()}
