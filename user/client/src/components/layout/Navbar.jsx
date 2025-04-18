@@ -100,9 +100,14 @@ const Navbar = () => {
 								{/* Link toggle visible only on smaller screens */}
 								<Sheet open={selfLinksOpen} onOpenChange={setSelfLinksOpen}>
 									<SheetTrigger asChild>
-											<button className="text-neutral flex flex-col items-center lg:hidden" aria-label="My Alma Matters">
-											<Link2 size={20} />
-											<span className='text-xs hidden md:block lg:hidden'>Links</span>
+										<button className="text-neutral flex flex-col items-center lg:hidden group" aria-label="My Alma Matters">
+											<div className="relative">
+												<Link2 
+													size={20} 
+													className="transform rotate-[135deg] transition-transform duration-300 group-hover:scale-45 group-hover:text-primary" 
+												/>
+											</div>
+											<span className='text-xs hidden md:block lg:hidden group-hover:text-primary transition-colors'>Links</span>
 										</button>
 									</SheetTrigger>
 									<SheetContent side="right" className="p-0 lg:hidden">
