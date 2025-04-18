@@ -339,7 +339,7 @@ export const getLinkstatus = async (req, res) => {
 };
 export const getUsersLinks = async (req, res) => {
   try {
-    const userId = req.params.userId; // Validate this parameter
+    const userId = req.params.userId;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId" });
@@ -347,7 +347,7 @@ export const getUsersLinks = async (req, res) => {
 
     const user = await User.findById(userId).populate({
       path: "Links",
-      select: "name username profilePicture location", // Added 'location'
+      select: "name username profilePicture location skills experience education",
     });
 
     if (!user) {
