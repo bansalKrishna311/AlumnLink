@@ -163,7 +163,7 @@ const UserLinksPage = () => {
                     </motion.div>
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">{link.name || "Unknown User"}</h3>
-                      <p className="text-[#fe6019] hover:text-[#e55617] transition-colors duration-200">@{link.username || "unknown"}</p>
+                      <p className="text-blue-600 font-medium">@{link.username || "unknown"}</p>
                       {link.location && (
                         <motion.p
                           initial={{ opacity: 0, x: -10 }}
@@ -176,11 +176,6 @@ const UserLinksPage = () => {
                       )}
                     </div>
                   </div>
-                  <button
-                    className="bg-[#fe6019] text-white px-4 py-2 rounded-full hover:bg-[#e55617] transition-colors duration-200"
-                  >
-                    Connect
-                  </button>
                 </div>
               </motion.div>
             ))}
