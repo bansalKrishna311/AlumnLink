@@ -75,18 +75,28 @@ const Comment = memo(({
                 const hasLikedReply = reply.likes?.some(id => id.toString() === authUser?._id?.toString());
                 const replyLikeCount = reply.likes?.length || 0;
                 
+                // Get the correct profile picture for the reply
+                const replyUserPicture = typeof reply.user === 'object' && reply.user?.profilePicture ? 
+                  reply.user.profilePicture : 
+                  (reply.user === authUser?._id ? authUser?.profilePicture : "/avatar.png");
+                
+                // Get the correct name for the reply
+                const replyUserName = typeof reply.user === 'object' && reply.user?.name ? 
+                  reply.user.name : 
+                  (reply.user === authUser?._id ? authUser?.name : "User");
+                
                 return (
                   <div key={reply._id || replyIndex} className="bg-gray-50 rounded-md p-2">
                     <div className="flex items-start">
                       <img
-                        src={reply.user?.profilePicture || "/avatar.png"}
-                        alt={reply.user?.name || "User"}
+                        src={replyUserPicture}
+                        alt={replyUserName}
                         className="w-6 h-6 rounded-full mr-1.5 flex-shrink-0 border border-gray-200 object-cover"
                       />
                       <div className="flex-grow">
                         <div className="flex items-center">
                           <span className="font-semibold text-gray-800 text-xs mr-1.5">
-                            {typeof reply.user === 'object' && reply.user !== null ? reply.user.name : authUser?.name}
+                            {replyUserName}
                           </span>
                           <span className="text-xs text-gray-500">
                             {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
