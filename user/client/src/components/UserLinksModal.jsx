@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { axiosInstance } from "@/lib/axios";
-import { Loader2, UserCircle2, Search, MapPin, Briefcase, GraduationCap, Code, MessageCircle } from "lucide-react";
+import { 
+  Loader2, UserCircle2, Search, MapPin, Briefcase, 
+  GraduationCap, Code, MessageCircle, Filter, 
+  ChevronLeft, ChevronRight
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import Doodles from "@/pages/auth/components/Doodles";
+import { debounce } from "lodash";
 
 const UserLinksPage = () => {
   const { userId } = useParams();
@@ -11,19 +16,57 @@ const UserLinksPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [availableSkills, setAvailableSkills] = useState([]);
+  const [sortBy, setSortBy] = useState("name"); // Default sort by name
+  const [sortOrder, setSortOrder] = useState("asc"); // Default sort order ascending
   const navigate = useNavigate();
+
+  // Debounced search function to prevent excessive API calls
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      setSearchQuery(query);
+      setPage(1); // Reset to first page on new search
+    }, 400),
+    []
+  );
 
   useEffect(() => {
     if (userId) {
       fetchUserLinks();
     }
-  }, [userId]);
+  }, [userId, page, itemsPerPage, sortBy, sortOrder]);
 
   const fetchUserLinks = async () => {
     try {
-      const response = await axiosInstance.get(`/links/${userId}`);
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/links/${userId}`, {
+        params: {
+          page,
+          limit: itemsPerPage,
+          sortBy,
+          sortOrder
+        }
+      });
+      
       console.log("API Response:", response.data);
       setLinks(response.data || []);
+      
+      // Extract unique values for filters
+      extractFilterOptions(response.data);
+      
+      // Calculate total pages if pagination info is available
+      if (response.headers && response.headers["x-total-count"]) {
+        const totalCount = parseInt(response.headers["x-total-count"]);
+        setTotalPages(Math.ceil(totalCount / itemsPerPage));
+      } else {
+        // If server doesn't provide count, estimate based on results
+        setTotalPages(response.data.length < itemsPerPage ? 1 : page + 1);
+      }
     } catch (error) {
       console.error("Failed to fetch user links:", error);
     } finally {
@@ -31,9 +74,54 @@ const UserLinksPage = () => {
     }
   };
 
+  const extractFilterOptions = (data) => {
+    // Extract unique skills
+    const skills = [...new Set(data
+      .flatMap(link => link.skills || [])
+    )];
+    
+    setAvailableSkills(skills);
+  };
+
   const handleMessage = (e, username) => {
     e.stopPropagation(); // Prevent card click event from firing
     navigate(`/messages/${username}`);
+  };
+
+  const handleSearchChange = (e) => {
+    debouncedSearch(e.target.value);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      window.scrollTo(0, 0); // Scroll to top when changing pages
+    }
+  };
+
+  const toggleFilters = () => {
+    setFiltersVisible(!filtersVisible);
+  };
+
+  const resetFilters = () => {
+    setSelectedLocation("");
+    setSelectedSkill("");
+    setSearchQuery("");
+    setSortBy("name");
+    setSortOrder("asc");
+    setPage(1);
+  };
+
+  const handleSortChange = (field) => {
+    if (sortBy === field) {
+      // If already sorting by this field, toggle order
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      // Otherwise, sort by the new field in ascending order
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+    setPage(1); // Reset to first page
   };
 
   const filteredLinks = links.filter((link) => {
@@ -41,8 +129,13 @@ const UserLinksPage = () => {
     const name = (link.name || "").toLowerCase();
     const username = (link.username || "").toLowerCase();
     const locationMatch = !selectedLocation || link.location === selectedLocation;
+    const skillMatch = !selectedSkill || (link.skills && link.skills.includes(selectedSkill));
 
-    return (name.includes(searchTerm) || username.includes(searchTerm)) && locationMatch;
+    return (
+      (name.includes(searchTerm) || username.includes(searchTerm)) && 
+      locationMatch && 
+      skillMatch
+    );
   });
 
   const locations = [
@@ -57,33 +150,134 @@ const UserLinksPage = () => {
       <Doodles/>
 
       <div className="relative max-w-4xl mx-auto p-6 space-y-6">
-        {/* Search and Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 backdrop-blur-sm bg-white/30 p-4 rounded-xl border border-orange-100 shadow-lg">
-          <div className="relative w-full md:max-w-[70%]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#fe6019]" />
-              <Input
-                type="text"
-                placeholder="Search connections..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full border-orange-200 focus:border-[#fe6019] focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
-              />
+        {/* Search and Basic Filters */}
+        <div className="flex flex-col space-y-4 backdrop-blur-sm bg-white/30 p-4 rounded-xl border border-orange-100 shadow-lg">
+          <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+            <div className="relative w-full md:max-w-[70%]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#fe6019]" />
+                <Input
+                  type="text"
+                  placeholder="Search connections by name or username..."
+                  onChange={handleSearchChange}
+                  className="pl-10 w-full border-orange-200 focus:border-[#fe6019] focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
+                />
+              </div>
             </div>
+            
+            <button
+              onClick={toggleFilters}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-[#fe6019] text-white rounded-md hover:bg-[#e54e0e] transition-colors"
+            >
+              <Filter className="h-4 w-4" />
+              {filtersVisible ? "Hide Filters" : "Show Filters"}
+            </button>
           </div>
           
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="px-4 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
-          >
-            <option value="">All Chapters</option>
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
+          {/* Expanded Filters Section */}
+          {filtersVisible && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-orange-100">
+              {/* Location Filter */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-[#fe6019]" />
+                  Chapter Location
+                </label>
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="px-3 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  <option value="">All Chapters</option>
+                  {locations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Skills Filter */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Code className="h-4 w-4 text-[#fe6019]" />
+                  Skills
+                </label>
+                <select
+                  value={selectedSkill}
+                  onChange={(e) => setSelectedSkill(e.target.value)}
+                  className="px-3 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  <option value="">All Skills</option>
+                  {availableSkills.map((skill) => (
+                    <option key={skill} value={skill}>
+                      {skill}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Sort By */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Sort By</label>
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [field, order] = e.target.value.split("-");
+                    setSortBy(field);
+                    setSortOrder(order);
+                  }}
+                  className="px-3 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="createdAt-desc">Recently Connected</option>
+                </select>
+              </div>
+              
+              {/* Items Per Page */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Items Per Page</label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setPage(1); // Reset to first page when changing items per page
+                  }}
+                  className="px-3 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+              
+              {/* Reset Filters Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={resetFilters}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Results section with filter summary */}
+        <div className="bg-white/70 backdrop-blur-sm p-3 rounded-lg border border-orange-100 text-sm text-gray-600">
+          {filteredLinks.length > 0 ? (
+            <p>
+              Showing {filteredLinks.length} connection{filteredLinks.length !== 1 ? 's' : ''}
+              {(selectedLocation || selectedSkill || searchQuery) && ' • Filtered by: '}
+              {selectedLocation && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{selectedLocation}</span>}
+              {selectedSkill && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{selectedSkill}</span>}
+              {searchQuery && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">"{searchQuery}"</span>}
+            </p>
+          ) : !isLoading && (
+            <p>No connections match your filters</p>
+          )}
         </div>
 
         {isLoading ? (
@@ -115,12 +309,14 @@ const UserLinksPage = () => {
                           {link.name || "Unknown User"}
                         </h3>
                         <p className="text-gray-600">@{link.username || "unknown"}</p>
-                        {link.location && (
-                          <p className="text-gray-500 flex items-center space-x-2 mt-1">
-                            <MapPin className="h-4 w-4 text-[#fe6019]" />
-                            <span>{link.location}</span>
-                          </p>
-                        )}
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {link.location && (
+                            <p className="text-gray-500 flex items-center space-x-1 text-sm">
+                              <MapPin className="h-3 w-3 text-[#fe6019]" />
+                              <span>{link.location}</span>
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
@@ -141,7 +337,7 @@ const UserLinksPage = () => {
                         <span className="font-medium">Skills:</span>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-1">
-                        {link.skills.map((skill, idx) => (
+                        {link.skills.slice(0, 5).map((skill, idx) => (
                           <span 
                             key={idx} 
                             className="bg-orange-50 text-[#fe6019] px-3 py-1 rounded-full text-sm"
@@ -149,49 +345,49 @@ const UserLinksPage = () => {
                             {skill}
                           </span>
                         ))}
+                        {link.skills.length > 5 && (
+                          <span 
+                            className="bg-orange-50 text-[#fe6019] px-3 py-1 rounded-full text-sm"
+                          >
+                            +{link.skills.length - 5} more
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
                   
-                  {/* Education Section */}
+                  {/* Education Section (Collapsed) */}
                   {link.education && link.education.length > 0 && (
                     <div className="mt-2">
                       <div className="flex items-center space-x-2 text-gray-700">
                         <GraduationCap className="h-4 w-4 text-[#fe6019]" />
                         <span className="font-medium">Education:</span>
                       </div>
-                      <div className="mt-1 space-y-2">
-                        {link.education.map((edu, idx) => (
-                          <div key={idx} className="text-sm text-gray-700">
-                            <p className="font-medium">{edu.school} • {edu.degree}</p>
-                            <p>{edu.fieldOfStudy}</p>
-                            <p className="text-gray-500">
-                              {new Date(edu.startDate).getFullYear()} - 
-                              {edu.isCurrentlyStudying ? 'Present' : edu.endDate ? new Date(edu.endDate).getFullYear() : ''}
-                            </p>
-                          </div>
-                        ))}
+                      <div className="mt-1">
+                        <div className="text-sm text-gray-700">
+                          <p className="font-medium">{link.education[0].school} • {link.education[0].degree}</p>
+                          {link.education.length > 1 && (
+                            <p className="text-xs text-gray-500">+{link.education.length - 1} more</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
                   
-                  {/* Experience Section */}
+                  {/* Experience Section (Collapsed) */}
                   {link.experience && link.experience.length > 0 && (
                     <div className="mt-2">
                       <div className="flex items-center space-x-2 text-gray-700">
                         <Briefcase className="h-4 w-4 text-[#fe6019]" />
                         <span className="font-medium">Experience:</span>
                       </div>
-                      <div className="mt-1 space-y-2">
-                        {link.experience.map((exp, idx) => (
-                          <div key={idx} className="text-sm text-gray-700">
-                            <p className="font-medium">{exp.title} • {exp.company}</p>
-                            <p className="text-gray-500">
-                              {new Date(exp.startDate).getFullYear()} - 
-                              {exp.isCurrentlyWorking ? 'Present' : exp.endDate ? new Date(exp.endDate).getFullYear() : ''}
-                            </p>
-                          </div>
-                        ))}
+                      <div className="mt-1">
+                        <div className="text-sm text-gray-700">
+                          <p className="font-medium">{link.experience[0].title} • {link.experience[0].company}</p>
+                          {link.experience.length > 1 && (
+                            <p className="text-xs text-gray-500">+{link.experience.length - 1} more</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -203,13 +399,73 @@ const UserLinksPage = () => {
           <div className="text-center py-12 bg-white/70 backdrop-blur-sm rounded-xl border border-orange-100">
             <UserCircle2 className="mx-auto h-16 w-16 text-[#fe6019]" />
             <h3 className="mt-4 text-xl font-medium text-gray-900">
-              {searchQuery || selectedLocation ? "No matches found" : "No connections yet"}
+              {searchQuery || selectedLocation || selectedSkill ? "No matches found" : "No connections yet"}
             </h3>
             <p className="mt-2 text-gray-600">
-              {searchQuery || selectedLocation
+              {searchQuery || selectedLocation || selectedSkill
                 ? "Try adjusting your search terms or filters"
                 : "Start connecting with other users to build your network."}
             </p>
+          </div>
+        )}
+        
+        {/* Pagination Controls */}
+        {!isLoading && filteredLinks.length > 0 && (
+          <div className="flex items-center justify-between mt-6 bg-white/70 backdrop-blur-sm p-3 rounded-lg border border-orange-100">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-md ${
+                page === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#fe6019] hover:bg-orange-50"
+              }`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Previous</span>
+            </button>
+            
+            <div className="flex items-center space-x-1">
+              {[...Array(totalPages)].map((_, idx) => (
+                // Only show at most 5 page numbers
+                (totalPages <= 5 || 
+                 idx === 0 || 
+                 idx === totalPages - 1 || 
+                 (idx >= page - 2 && idx <= page)) && (
+                  <React.Fragment key={idx}>
+                    {totalPages > 5 && idx === totalPages - 1 && page < totalPages - 2 && (
+                      <span className="px-2">...</span>
+                    )}
+                    <button
+                      onClick={() => handlePageChange(idx + 1)}
+                      className={`h-8 w-8 rounded-md flex items-center justify-center ${
+                        page === idx + 1
+                          ? "bg-[#fe6019] text-white"
+                          : "text-gray-700 hover:bg-orange-50"
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                    {totalPages > 5 && idx === 0 && page > 3 && (
+                      <span className="px-2">...</span>
+                    )}
+                  </React.Fragment>
+                )
+              ))}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-md ${
+                page === totalPages
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#fe6019] hover:bg-orange-50"
+              }`}
+            >
+              <span>Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         )}
       </div>
