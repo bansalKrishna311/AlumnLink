@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, Send, Loader, CornerDownRight, X, Heart } from "lucide-react";
 import { Virtuoso } from 'react-virtuoso';
+import { useNavigate } from "react-router-dom"; // Import for navigation
 
 // Use memo to prevent unnecessary re-renders
 const Comment = memo(({ 
@@ -19,7 +20,8 @@ const Comment = memo(({
   handleLikeReply,
   isLikingComment,
   isLikingReply,
-  totalCommentsCount
+  totalCommentsCount,
+  navigateToProfile // New prop for navigation
 }) => {
   const hasLiked = comment.likes?.some(id => id.toString() === authUser?._id?.toString());
   const likeCount = comment.likes?.length || 0;
@@ -36,11 +38,17 @@ const Comment = memo(({
         <img
           src={comment.user?.profilePicture || "/avatar.png"}
           alt={comment.user?.name}
-          className="w-8 h-8 rounded-full mr-2 flex-shrink-0 border border-gray-200 object-cover"
+          className="w-8 h-8 rounded-full mr-2 flex-shrink-0 border border-gray-200 object-cover cursor-pointer"
+          onClick={() => navigateToProfile(comment.user?.username || comment.user?.name)}
         />
         <div className="flex-grow">
           <div className="flex items-center">
-            <span className="font-semibold text-gray-800 mr-1.5">{comment.user?.name}</span>
+            <span 
+              className="font-semibold text-gray-800 mr-1.5 cursor-pointer hover:text-[#fe6019]"
+              onClick={() => navigateToProfile(comment.user?.username || comment.user?.name)}
+            >
+              {comment.user?.name}
+            </span>
             <span className="text-xs text-gray-500">
               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
             </span>
@@ -85,17 +93,27 @@ const Comment = memo(({
                   reply.user.name : 
                   (reply.user === authUser?._id ? authUser?.name : "User");
                 
+                // Get username for profile navigation
+                const replyUsername = typeof reply.user === 'object' && reply.user?.username ? 
+                  reply.user.username : 
+                  (typeof reply.user === 'object' && reply.user?.name ? reply.user.name : 
+                  (reply.user === authUser?._id ? authUser?.username || authUser?.name : "User"));
+                
                 return (
                   <div key={reply._id || replyIndex} className="bg-gray-50 rounded-md p-2">
                     <div className="flex items-start">
                       <img
                         src={replyUserPicture}
                         alt={replyUserName}
-                        className="w-6 h-6 rounded-full mr-1.5 flex-shrink-0 border border-gray-200 object-cover"
+                        className="w-6 h-6 rounded-full mr-1.5 flex-shrink-0 border border-gray-200 object-cover cursor-pointer"
+                        onClick={() => navigateToProfile(replyUsername)}
                       />
                       <div className="flex-grow">
                         <div className="flex items-center">
-                          <span className="font-semibold text-gray-800 text-xs mr-1.5">
+                          <span 
+                            className="font-semibold text-gray-800 text-xs mr-1.5 cursor-pointer hover:text-[#fe6019]"
+                            onClick={() => navigateToProfile(replyUsername)}
+                          >
                             {replyUserName}
                           </span>
                           <span className="text-xs text-gray-500">
@@ -213,6 +231,7 @@ const PostComments = ({
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
   const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const navigate = useNavigate(); // For navigation to profile pages
 
   useEffect(() => {
     // Simulate loading comments (remove this in production and use real loading state)
@@ -244,6 +263,13 @@ const PostComments = ({
     if (success) {
       setReplyContent("");
       setReplyingTo(null);
+    }
+  };
+  
+  // Function to navigate to a user's profile
+  const navigateToProfile = (username) => {
+    if (username) {
+      navigate(`/profile/${username}`);
     }
   };
   
@@ -315,6 +341,7 @@ const PostComments = ({
                     isLikingComment={isLikingComment}
                     isLikingReply={isLikingReply}
                     totalCommentsCount={totalCommentsCount}
+                    navigateToProfile={navigateToProfile}
                   />
                 ))}
               </motion.div>
@@ -339,6 +366,7 @@ const PostComments = ({
                     isLikingComment={isLikingComment}
                     isLikingReply={isLikingReply}
                     totalCommentsCount={totalCommentsCount}
+                    navigateToProfile={navigateToProfile}
                   />
                 )}
               />
@@ -356,7 +384,8 @@ const PostComments = ({
               <img
                 src={authUser?.profilePicture || "/avatar.png"}
                 alt={authUser?.name || "You"}
-                className="w-8 h-8 rounded-full border border-gray-200 object-cover"
+                className="w-8 h-8 rounded-full border border-gray-200 object-cover cursor-pointer"
+                onClick={() => navigateToProfile(authUser?.username || authUser?.name)}
               />
             </div>
             <div className="relative flex-grow">
