@@ -431,3 +431,116 @@ export const reviewPost = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+// Like or unlike a comment
+export const likeComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const commentIndex = post.comments.findIndex(
+      comment => comment._id.toString() === commentId
+    );
+
+    if (commentIndex === -1) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const comment = post.comments[commentIndex];
+    
+    // Check if user already liked the comment
+    const likeIndex = comment.likes.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle like
+    if (likeIndex === -1) {
+      // Add like
+      comment.likes.push(userId);
+    } else {
+      // Remove like
+      comment.likes.splice(likeIndex, 1);
+    }
+
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in likeComment controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Like or unlike a reply
+export const likeReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const commentIndex = post.comments.findIndex(
+      comment => comment._id.toString() === commentId
+    );
+
+    if (commentIndex === -1) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Find the reply
+    const reply = post.comments[commentIndex].replies.find(
+      reply => reply._id.toString() === replyId
+    );
+
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    // Check if user already liked the reply
+    const likeIndex = reply.likes.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle like
+    if (likeIndex === -1) {
+      // Add like
+      reply.likes.push(userId);
+    } else {
+      // Remove like
+      reply.likes.splice(likeIndex, 1);
+    }
+
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in likeReply controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

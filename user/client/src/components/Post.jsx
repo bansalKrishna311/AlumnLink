@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
@@ -162,6 +162,32 @@ const Post = ({ post }) => {
     },
   });
 
+  const { mutate: likeComment, isPending: isLikingComment } = useMutation({
+    mutationFn: async ({ postId, commentId }) => {
+      await axiosInstance.post(`/posts/${postId}/comment/${commentId}/like`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to like comment");
+    },
+  });
+
+  const { mutate: likeReply, isPending: isLikingReply } = useMutation({
+    mutationFn: async ({ postId, commentId, replyId }) => {
+      await axiosInstance.post(`/posts/${postId}/comment/${commentId}/reply/${replyId}/like`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to like reply");
+    },
+  });
+
   // Action Handlers
   const handleDeletePost = () => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -261,6 +287,16 @@ const Post = ({ post }) => {
     }
   };
 
+  const handleLikeComment = (commentId) => {
+    if (isLikingComment) return;
+    likeComment({ postId: post._id, commentId });
+  };
+
+  const handleLikeReply = (commentId, replyId) => {
+    if (isLikingReply) return;
+    likeReply({ postId: post._id, commentId, replyId });
+  };
+
   // Utility functions
   const getReactionEmoji = (type) => {
     switch (type) {
@@ -322,6 +358,21 @@ const Post = ({ post }) => {
     }
   };
 
+  // Calculate total comments count (comments + replies)
+  const totalCommentsCount = useMemo(() => {
+    if (!comments || !Array.isArray(comments)) return 0;
+    
+    // Count main comments
+    const mainCommentsCount = comments.length;
+    
+    // Count all replies
+    const repliesCount = comments.reduce((total, comment) => {
+      return total + (Array.isArray(comment.replies) ? comment.replies.length : 0);
+    }, 0);
+    
+    return mainCommentsCount + repliesCount;
+  }, [comments]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 overflow-hidden">
       <div className="p-4">
@@ -358,6 +409,7 @@ const Post = ({ post }) => {
           getReactionColor={getReactionColor}
           getReactionBgColor={getReactionBgColor}
           setShowReactionsModal={setShowReactionsModal}
+          totalCommentsCount={totalCommentsCount}
         />
       </div>
 
@@ -373,6 +425,11 @@ const Post = ({ post }) => {
         handleAddReply={handleAddReply}
         isAddingReply={isAddingReply}
         postId={post._id}
+        handleLikeComment={handleLikeComment}
+        handleLikeReply={handleLikeReply}
+        isLikingComment={isLikingComment}
+        isLikingReply={isLikingReply}
+        totalCommentsCount={totalCommentsCount}
       />
 
       {/* Post Modals Component */}

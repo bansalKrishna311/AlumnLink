@@ -16,7 +16,8 @@ const PostActions = ({
   getReactionText, 
   getReactionColor, 
   getReactionBgColor,
-  setShowReactionsModal // Add this prop
+  setShowReactionsModal,
+  totalCommentsCount
 }) => {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const reactionPickerRef = useRef(null);
@@ -75,7 +76,19 @@ const PostActions = ({
           )}
           <div className="flex items-center cursor-pointer" onClick={() => setShowComments(!showComments)}>
             <MessageCircle size={14} className="text-gray-600 mr-1.5" />
-            <span className="text-gray-600">{comments.length}</span>
+            <span className="text-gray-600">
+              {totalCommentsCount > 0 && (
+                <>
+                  {totalCommentsCount} {totalCommentsCount === 1 ? 'comment' : 'comments'}
+                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) && (
+                    <span className="text-xs ml-1">
+                      ({comments.length} {comments.length === 1 ? 'thread' : 'threads'})
+                    </span>
+                  )}
+                </>
+              )}
+              {totalCommentsCount === 0 && "Comment"}
+            </span>
           </div>
         </motion.div>
       </div>
