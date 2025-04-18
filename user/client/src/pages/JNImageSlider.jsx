@@ -74,10 +74,12 @@ const JNImageSlider = () => {
         {[...images, ...images].map((image, index) => (
           <motion.div
             key={index}
-            className="group flex flex-col items-center justify-between border border-gray-200 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+            className="group flex flex-col items-center justify-between border border-orange-200 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-orange-800"
             style={{ width: "300px", height: "300px", flexShrink: 0 }}
             whileHover={{ 
               scale: 1.05,
+              boxShadow: "0 10px 25px -5px rgba(254, 96, 25, 0.2), 0 8px 10px -6px rgba(254, 96, 25, 0.2)",
+              border: "1px solid rgba(254, 96, 25, 0.3)",
               transition: {
                 type: "spring",
                 stiffness: 300,
@@ -109,13 +111,14 @@ const JNImageSlider = () => {
               initial={{ opacity: 0.8 }}
               whileHover={{ 
                 opacity: 1,
+                backgroundColor: "rgba(254, 96, 25, 0.05)",
                 transition: {
                   duration: 0.2
                 }
               }}
             >
               <motion.p 
-                className="text-lg font-semibold text-gray-700 dark:text-gray-300 text-center"
+                className="text-lg font-semibold text-[#fe6019] text-center"
                 whileHover={{
                   scale: 1.02,
                   transition: {

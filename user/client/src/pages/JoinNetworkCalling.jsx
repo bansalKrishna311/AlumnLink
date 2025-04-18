@@ -1,12 +1,27 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import JoinNetwork from "./joinNetwork";
 import JNImageSlider from "./JNImageSlider";
+import Doodles from "./auth/components/Doodles";
 
 const JoinNetworkCalling = () => {
   const [isHovered, setIsHovered] = useState(false);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
+
+  // Disable scrolling when component mounts
+  useEffect(() => {
+    // Save the current overflow style
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+    
+    // Re-enable scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   const paragraphVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -51,6 +66,8 @@ const JoinNetworkCalling = () => {
   };
 
   return (
+    <>
+    <Doodles/>
     <motion.div
       className="w-full h-full flex flex-col justify-start items-center pt-8 pb-16 relative bg-transparent overflow-hidden"
       initial="hidden"
@@ -58,7 +75,7 @@ const JoinNetworkCalling = () => {
       ref={ref}
     >
       <motion.p
-        className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-black via-gray-800 to-blue-700 bg-clip-text text-transparent mb-2 px-4"
+        className="text-2xl p-2 md:text-3xl font-bold text-center bg-gradient-to-r from-[#fe6019] via-orange-600 to-amber-600 bg-clip-text text-transparent mb-2 "
         variants={paragraphVariants}
       >
         Stay connected with your alumni network
@@ -98,7 +115,7 @@ const JoinNetworkCalling = () => {
           }}
         >
           <motion.div
-            className="absolute inset-0 bg-blue-400/40 rounded-lg blur-md -z-10"
+            className="absolute inset-0 bg-[#fe6019]/40 rounded-lg blur-md -z-10"
             animate={{
               opacity: isHovered ? 0.7 : 0,
               scale: isHovered ? 1.08 : 1,
@@ -133,6 +150,7 @@ const JoinNetworkCalling = () => {
         <JNImageSlider />
       </motion.div>
     </motion.div>
+    </>
   );
 };
 
