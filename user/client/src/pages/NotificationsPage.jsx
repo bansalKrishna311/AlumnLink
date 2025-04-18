@@ -9,7 +9,7 @@ import { Link } from "react-router-dom"
 import { formatDistanceToNow } from "date-fns"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 
-import Sidebar from "@/components/sidebar"
+import Sidebar from "@/components/Sidebar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
