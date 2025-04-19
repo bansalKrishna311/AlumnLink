@@ -12,9 +12,13 @@ import {
 	removeLink,
 	resetToPending,
 	sendLinkRequest,
+	getDashboardStats
 } from "../controllers/Link.controller.js";
 import User from '../models/user.model.js';
 const router = express.Router();
+
+// Dashboard route
+router.get("/dashboard-stats", protectRoute, getDashboardStats);
 
 // Route to send a Link request with additional fields (like name, rollNumber, etc.)
 router.post("/request/:userId", protectRoute, sendLinkRequest);

@@ -486,3 +486,49 @@ export const resetToPending = async (req, res) => {
     }
 };
 
+export const getDashboardStats = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        
+        // Run all queries in parallel for better performance
+        const [pendingCount, acceptedCount, rejectedCount] = await Promise.all([
+            // Count pending requests
+            LinkRequest.countDocuments({
+                status: 'pending',
+                recipient: userId
+            }),
+            
+            // Count accepted links
+            LinkRequest.countDocuments({
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "accepted"
+            }),
+            
+            // Count rejected requests
+            LinkRequest.countDocuments({
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "rejected"
+            })
+        ]);
+        
+        // Format the data for the dashboard
+        const dashboardData = {
+            totalRequests: pendingCount + acceptedCount + rejectedCount,
+            stats: [
+                { name: "Pending", value: pendingCount, status: "pending" },
+                { name: "Accepted", value: acceptedCount, status: "accepted" },
+                { name: "Rejected", value: rejectedCount, status: "rejected" }
+            ]
+        };
+        
+        res.status(200).json(dashboardData);
+    } catch (error) {
+        console.error("Error in getDashboardStats:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to fetch dashboard statistics",
+            error: error.message 
+        });
+    }
+};
+

@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
@@ -22,19 +20,11 @@ const AdminPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [pendingRes, acceptedRes, rejectedRes] = await Promise.all([
-          axiosInstance.get("/links/link-requests"),
-          axiosInstance.get("/links/"),
-          axiosInstance.get("/links/rejected"),
-        ])
-
-        const chartData = [
-          { name: "Pending", value: pendingRes.data.length, status: "pending" },
-          { name: "Accepted", value: acceptedRes.data.length, status: "accepted" },
-          { name: "Rejected", value: rejectedRes.data.length, status: "rejected" },
-        ]
-
-        setData(chartData)
+        // Use the dedicated dashboard-stats endpoint
+        const response = await axiosInstance.get("/links/dashboard-stats")
+        
+        // Use the stats array directly from the response
+        setData(response.data.stats)
       } catch (err) {
         setError(err.message)
       } finally {
