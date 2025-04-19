@@ -46,7 +46,8 @@ export const getFeedPosts = async (req, res) => {
         })
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline") // Populate reaction user info
+            .populate("reactions.user", "name username profilePicture headline")
+            .populate("adminId", "name username") // Populate admin who approved the post
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -141,7 +142,8 @@ export const getPostById = async (req, res) => {
         const post = await Post.findById(postId)
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline"); // Add this line
+            .populate("reactions.user", "name username profilePicture headline")
+            .populate("adminId", "name username"); // Populate admin who approved the post
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -507,6 +509,12 @@ export const updatePostStatus = async (req, res) => {
       // Update the post status
       post.status = status;
       post.reviewedAt = new Date();
+      
+      // Save admin ID who approved the post
+      if (status === 'approved') {
+        post.adminId = req.user._id;
+      }
+      
       await post.save();
       
       // Create notification for the author based on status
@@ -568,8 +576,12 @@ export const reviewPost = async (req, res) => {
         post.feedback = feedback;
       }
       
-      // Add review timestamp
+      // Add review timestamp and admin ID
       post.reviewedAt = new Date();
+      if (status === 'approved') {
+        post.adminId = req.user._id;
+      }
+      
       await post.save();
       
       // Create notification for the author based on status
@@ -907,6 +919,7 @@ export const getBookmarkedPosts = async (req, res) => {
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
+      .populate("adminId", "name username") // Populate admin who approved the post
       .sort({ createdAt: -1 });
 
     res.status(200).json(bookmarkedPosts);
@@ -935,6 +948,7 @@ export const getPostsByUsername = async (req, res) => {
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
+      .populate("adminId", "name username") // Populate admin who approved the post
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);

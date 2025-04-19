@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { X, Globe } from "lucide-react";
+import { X, Globe, CheckCircle } from "lucide-react";
 
 
 
@@ -65,6 +65,15 @@ const PostHeader = ({
               })}
             </p>
           </div>
+          {/* Display approved by admin info */}
+          {post.adminId && (
+            <div className="flex items-center mt-0.5">
+              <CheckCircle size={10} className="text-green-500 mr-1" />
+              <p className="text-xs text-gray-500">
+                Posted for <Link to={`/profile/${post.adminId.username}`} className="text-[#fe6019] hover:underline">{post.adminId.name}</Link>
+              </p>
+            </div>
+          )}
         </div>
       </motion.div>
 
