@@ -11,7 +11,7 @@ import notificationRoutes from "./routes/notification.route.js";
 import LinkRoutes from "./routes/Link.route.js";
 import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
-// import networkRequestRoutes from "./routes/networkRequest.routes.js";
+import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
 import connectDB from "./lib/db.js"; // Correct the import
 
@@ -24,7 +24,36 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
+// Schedule cleanup and notification tasks to run daily at midnight
+const scheduleCleanupTasks = () => {
+    const now = new Date();
+    const night = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1, // tomorrow
+        0, 0, 0 // midnight
+    );
+    const timeToMidnight = night.getTime() - now.getTime();
 
+    // First cleanup at next midnight
+    setTimeout(() => {
+        Promise.all([
+            cleanupOldLinkRequests(),
+            notifyExpiringRequests()
+        ]).catch(err => console.error('Error in scheduled tasks:', err));
+
+        // Then setup daily interval
+        setInterval(() => {
+            Promise.all([
+                cleanupOldLinkRequests(),
+                notifyExpiringRequests()
+            ]).catch(err => console.error('Error in scheduled tasks:', err));
+        }, 24 * 60 * 60 * 1000);
+    }, timeToMidnight);
+};
+
+// Start the cleanup schedule
+scheduleCleanupTasks();
 
 if (process.env.NODE_ENV !== "production") {
 	app.use(
@@ -44,16 +73,12 @@ app.get("/", (req, res) => {
     res.send("Hello, World!");
 });
 
-
-
-
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", verifySession, userRoutes);
 app.use("/api/v1/posts", verifySession, postRoutes);
 app.use("/api/v1/notifications", verifySession, notificationRoutes);
 app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
-
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "/frontend/dist")));
@@ -65,4 +90,5 @@ if (process.env.NODE_ENV === "production") {
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
+	console.log('Auto-cleanup scheduler initialized for old link requests');
 });

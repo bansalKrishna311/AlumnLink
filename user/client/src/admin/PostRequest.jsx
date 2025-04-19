@@ -10,8 +10,16 @@ const PostRequests = () => {
   const { data: pendingPosts, isLoading } = useQuery({
     queryKey: ["pendingPosts"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/posts/admin/pending");
-      return res.data;
+      try {
+        const res = await axiosInstance.get("/posts/admin/pending");
+        return res.data;
+      } catch (err) {
+        // Return empty array instead of showing error for 404
+        if (err.response && err.response.status === 404) {
+          return [];
+        }
+        throw err;
+      }
     }
   });
 

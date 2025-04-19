@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaCheck, FaTimes, FaSearch, FaCheckSquare } from "react-icons/fa";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
-import { User, MapPin, Calendar, BookOpen, Code } from "lucide-react";
+import { User, MapPin, Calendar, BookOpen, Code, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ManageUsers = () => {
@@ -153,6 +153,18 @@ const ManageUsers = () => {
       >
         Manage User Requests
       </motion.h1>
+
+      <motion.div
+        className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="flex items-center gap-2 text-amber-700">
+          <AlertTriangle className="h-5 w-5" />
+          <p>Pending requests will be automatically deleted after 30 days. Please review them in a timely manner.</p>
+        </div>
+      </motion.div>
 
       {error && (
         <motion.div 

@@ -14,7 +14,8 @@ import {
   Calendar,
   BookOpen,
   Code,
-  Trash2
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -274,6 +275,18 @@ const RejectedRequests = () => {
       >
         Rejected Connection Requests
       </motion.h1>
+
+      <motion.div
+        className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="flex items-center gap-2 text-red-700">
+          <AlertTriangle className="h-5 w-5" />
+          <p>Rejected requests will be automatically deleted after 30 days. You can change them back to pending status before deletion if needed.</p>
+        </div>
+      </motion.div>
 
       {error && (
         <motion.div 
