@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
 import { toast } from "react-hot-toast"
-import { Bell, ExternalLink, Eye, MessageSquare, ThumbsUp, Trash2, UserPlus } from "lucide-react"
+import { Bell, ExternalLink, Eye, MessageSquare, ThumbsUp, Trash2, UserPlus, AtSign, CheckCircle, XCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import { formatDistanceToNow } from "date-fns"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
@@ -258,10 +258,34 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
             <MessageSquare className="h-4 w-4" />
           </div>
         )
+      case "reply":
+        return (
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
+            <MessageSquare className="h-4 w-4" />
+          </div>
+        )
+      case "mention":
+        return (
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
+            <AtSign className="h-4 w-4" />
+          </div>
+        )
       case "LinkAccepted":
         return (
           <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
             <UserPlus className="h-4 w-4" />
+          </div>
+        )
+      case "postApproved":
+        return (
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
+            <CheckCircle className="h-4 w-4" />
+          </div>
+        )
+      case "postRejected":
+        return (
+          <div className="p-2 rounded-full" style={{ backgroundColor: "rgba(254, 96, 25, 0.1)", color: "#fe6019" }}>
+            <XCircle className="h-4 w-4" />
           </div>
         )
       default:
@@ -270,6 +294,29 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
   }
 
   const renderNotificationContent = (notification) => {
+    // If there's no relatedUser, show a generic message
+    if (!notification.relatedUser) {
+      switch (notification.type) {
+        case "like":
+          return <span>Someone reacted to your post</span>;
+        case "comment":
+          return <span>Someone commented on your post</span>;
+        case "LinkAccepted":
+          return <span>Your Link request was accepted</span>;
+        case "mention":
+          return <span>You were mentioned in a post</span>;
+        case "reply":
+          return <span>Someone replied to your comment</span>;
+        case "postApproved":
+          return <span>Your post was approved</span>;
+        case "postRejected":
+          return <span>Your post was rejected</span>;
+        default:
+          return <span>You have a new notification</span>;
+      }
+    }
+
+    // If relatedUser exists, use the personalized message
     switch (notification.type) {
       case "like":
         return (
@@ -277,7 +324,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
             <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
               {notification.relatedUser.name}
             </Link>{" "}
-            liked your post
+            reacted to your post
           </span>
         )
       case "comment":
@@ -298,8 +345,44 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
             accepted your Link request
           </span>
         )
+      case "mention":
+        return (
+          <span>
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
+              {notification.relatedUser.name}
+            </Link>{" "}
+            mentioned you in a post
+          </span>
+        )
+      case "reply":
+        return (
+          <span>
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
+              {notification.relatedUser.name}
+            </Link>{" "}
+            replied to your comment
+          </span>
+        )
+      case "postApproved":
+        return (
+          <span>
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
+              {notification.relatedUser.name}
+            </Link>{" "}
+            approved your post
+          </span>
+        )
+      case "postRejected":
+        return (
+          <span>
+            <Link to={`/profile/${notification.relatedUser.username}`} className="font-medium hover:underline" style={{ color: "#fe6019" }}>
+              {notification.relatedUser.name}
+            </Link>{" "}
+            rejected your post
+          </span>
+        )
       default:
-        return null
+        return <span>You have a new notification</span>
     }
   }
 
@@ -340,15 +423,21 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete, prefersReduced
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-        <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
-          <Link to={`/profile/${notification.relatedUser.username}`}>
-            <img
-              src={notification.relatedUser.profilePicture || "/avatar.png"}
-              alt={notification.relatedUser.name}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
-            />
-          </Link>
-        </motion.div>
+        {notification.relatedUser ? (
+          <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
+            <Link to={`/profile/${notification.relatedUser.username}`}>
+              <img
+                src={notification.relatedUser.profilePicture || "/avatar.png"}
+                alt={notification.relatedUser.name}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
+          </div>
+        )}
 
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">

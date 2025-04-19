@@ -356,6 +356,10 @@ export const reactToPost = async (req, res) => {
             (reaction) => reaction.user.toString() === req.user._id.toString()
         );
 
+        // Track if this is a new reaction for notification purposes
+        const isNewReaction = existingReactionIndex === -1 && reactionType !== null;
+        const isRemovingReaction = reactionType === null && existingReactionIndex !== -1;
+
         if (reactionType === null) {
             // If reactionType is null, remove the user's reaction
             if (existingReactionIndex !== -1) {
@@ -380,6 +384,25 @@ export const reactToPost = async (req, res) => {
         }
 
         await post.save();
+
+        // Create notification for post author if this is a new reaction and author is not the reactor
+        try {
+            if (isNewReaction && post.author.toString() !== req.user._id.toString()) {
+                const newNotification = new Notification({
+                    recipient: post.author,
+                    type: "like", // Using "like" type for all reactions for simplicity
+                    relatedUser: req.user._id,
+                    relatedPost: postId,
+                });
+                await newNotification.save();
+                
+                // TODO: Send email notification for reactions if needed
+            }
+        } catch (notificationError) {
+            console.error("Error creating reaction notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).json(post);
     } catch (error) {
         console.error("Error in reactToPost controller:", error);
@@ -420,21 +443,39 @@ export const updatePostStatus = async (req, res) => {
         return res.status(400).json({ message: 'Invalid status' });
       }
   
-      const post = await Post.findByIdAndUpdate(
-        postId,
-        { status, reviewedAt: new Date() },
-        { new: true }
-      );
-  
+      const post = await Post.findById(postId);
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Update the post status
+      post.status = status;
+      post.reviewedAt = new Date();
+      await post.save();
+      
+      // Create notification for the author based on status
+      try {
+        const notificationType = status === 'approved' ? "postApproved" : "postRejected";
+        
+        const newNotification = new Notification({
+          recipient: post.author,
+          type: notificationType,
+          relatedUser: req.user._id, // Admin who processed the post
+          relatedPost: postId,
+        });
+        await newNotification.save();
+        
+        // TODO: Send email notification for post status change if needed
+      } catch (notificationError) {
+        console.error(`Error creating post ${status} notification:`, notificationError);
+        // Continue execution even if notification fails
       }
   
       res.json(post);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
-  };
+};
 
 export const reviewPost = async (req, res) => {
     const { postId } = req.params;
@@ -451,15 +492,36 @@ export const reviewPost = async (req, res) => {
       if (feedback) {
         post.feedback = feedback;
       }
+      
+      // Add review timestamp
+      post.reviewedAt = new Date();
       await post.save();
+      
+      // Create notification for the author based on status
+      try {
+        const notificationType = status === 'approved' ? "postApproved" : "postRejected";
+        
+        const newNotification = new Notification({
+          recipient: post.author,
+          type: notificationType,
+          relatedUser: req.user._id, // Admin who processed the post
+          relatedPost: postId,
+        });
+        await newNotification.save();
+        
+        // TODO: Send email notification for post status change if needed
+      } catch (notificationError) {
+        console.error(`Error creating post ${status} notification:`, notificationError);
+        // Continue execution even if notification fails
+      }
   
       res.status(200).json({ message: "Post status updated successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to update post status", error });
     }
-  };
-  
-  export const createAdminPost = async (req, res) => {
+};
+
+export const createAdminPost = async (req, res) => {
     try {
       const { title, content, type, jobDetails, internshipDetails, eventDetails } = req.body;
       const image = req.file ? req.file.path : null;
@@ -529,10 +591,31 @@ export const likeComment = async (req, res) => {
       id => id.toString() === userId.toString()
     );
 
+    // Track if this is a new like for notification purposes
+    const isAddingLike = likeIndex === -1;
+
     // Toggle like
-    if (likeIndex === -1) {
+    if (isAddingLike) {
       // Add like
       comment.likes.push(userId);
+      
+      // Create notification for comment author (if not the same user)
+      try {
+        if (comment.user.toString() !== userId.toString()) {
+          const newNotification = new Notification({
+            recipient: comment.user,
+            type: "like",
+            relatedUser: userId,
+            relatedPost: postId,
+          });
+          await newNotification.save();
+          
+          // TODO: Send email notification for likes if needed
+        }
+      } catch (notificationError) {
+        console.error("Error creating comment like notification:", notificationError);
+        // Continue execution even if notification fails
+      }
     } else {
       // Remove like
       comment.likes.splice(likeIndex, 1);
@@ -576,12 +659,19 @@ export const likeReply = async (req, res) => {
     }
 
     // Find the reply
-    const reply = post.comments[commentIndex].replies.find(
+    const replyIndex = post.comments[commentIndex].replies.findIndex(
       reply => reply._id.toString() === replyId
     );
 
-    if (!reply) {
+    if (replyIndex === -1) {
       return res.status(404).json({ message: "Reply not found" });
+    }
+
+    const reply = post.comments[commentIndex].replies[replyIndex];
+
+    // Initialize likes array if it doesn't exist
+    if (!reply.likes) {
+      reply.likes = [];
     }
 
     // Check if user already liked the reply
@@ -589,10 +679,31 @@ export const likeReply = async (req, res) => {
       id => id.toString() === userId.toString()
     );
 
+    // Track if this is a new like for notification purposes
+    const isAddingLike = likeIndex === -1;
+
     // Toggle like
-    if (likeIndex === -1) {
+    if (isAddingLike) {
       // Add like
       reply.likes.push(userId);
+      
+      // Create notification for reply author (if not the same user)
+      try {
+        if (reply.user._id.toString() !== userId.toString()) {
+          const newNotification = new Notification({
+            recipient: reply.user._id,
+            type: "like",
+            relatedUser: userId,
+            relatedPost: postId,
+          });
+          await newNotification.save();
+          
+          // TODO: Send email notification for likes if needed
+        }
+      } catch (notificationError) {
+        console.error("Error creating reply like notification:", notificationError);
+        // Continue execution even if notification fails
+      }
     } else {
       // Remove like
       reply.likes.splice(likeIndex, 1);
