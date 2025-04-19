@@ -87,7 +87,18 @@ export const acceptLinkRequest = async (req, res) => {
         await User.findByIdAndUpdate(userId, { $addToSet: { Links: request.sender._id } });
 
         // Send acceptance email
-        await sendLinkAcceptedEmail(request.sender.email, req.user.name);
+        try {
+            const profileUrl = `${process.env.CLIENT_URL}/profile/${req.user.username}`;
+            await sendLinkAcceptedEmail(
+                request.sender.email, 
+                request.sender.name, 
+                req.user.name, 
+                profileUrl
+            );
+        } catch (emailError) {
+            console.error("Error sending link acceptance email:", emailError);
+            // Continue even if email fails
+        }
 
         const notification = new Notification({
             recipient: request.sender._id,
