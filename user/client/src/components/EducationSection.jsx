@@ -109,13 +109,13 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <School className="mr-2 text-gray-600" size={22} />
+            <School className="mr-2 text-[#fe6019]"  size={22} />
             Education
           </h2>
           {isOwnProfile && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition"
+              className="flex items-center text-[#fe6019] hover:text-[#e04e0a] font-medium text-sm transition"
             >
               <Pencil size={16} className="mr-1" />
               Edit
@@ -132,7 +132,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
             {isEditing && (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
               >
                 <Plus size={16} className="mr-2" />
                 Add Education
@@ -153,7 +153,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                 <div className="p-4 flex justify-between">
                   <div className="flex">
                     <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center mr-4">
-                      <BookOpen className="text-blue-600" size={20} />
+                      <BookOpen className="text-[#fe6019]" size={20} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{edu.school}</h3>
@@ -164,7 +164,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                       <div className="text-gray-500 text-sm flex items-center mt-1">
                         <Calendar size={14} className="mr-1" />
                         {formatDate(edu.startDate)} - {edu.isCurrentlyStudying ? 
-                          <span className="flex items-center text-blue-600 font-medium">
+                          <span className="flex items-center text-[#fe6019] font-medium">
                             <Clock size={14} className="mx-1" /> Present
                           </span> : 
                           formatDate(edu.endDate) || "Present"}
@@ -174,7 +174,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                         <div>
                           <button 
                             onClick={() => toggleExpand(edu._id)} 
-                            className="text-blue-600 text-sm font-medium flex items-center mt-2 hover:text-blue-800 transition"
+                            className="text-[#fe6019] text-sm font-medium flex items-center mt-2 hover:text-[#e04e0a] transition"
                           >
                             {expandedId === edu._id ? (
                               <>Less <ChevronUp size={14} className="ml-1" /></>
@@ -195,7 +195,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                     <div className="flex items-start">
                       <button
                         onClick={() => handleEditEducation(edu)}
-                        className="text-blue-600 hover:text-blue-800 transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center mr-1"
+                        className="text-[#fe6019] hover:text-[#e04e0a] transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center mr-1"
                         aria-label="Edit education"
                       >
                         <Edit size={16} />
@@ -239,7 +239,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Ex: Stanford University"
                   value={newEducation.school}
                   onChange={(e) => setNewEducation({ ...newEducation, school: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -250,7 +250,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Ex: Bachelor's"
                   value={newEducation.degree}
                   onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -261,7 +261,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Ex: Computer Science"
                   value={newEducation.fieldOfStudy}
                   onChange={(e) => setNewEducation({ ...newEducation, fieldOfStudy: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -273,7 +273,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   dateFormat="MMM yyyy"
                   showMonthYearPicker
                   placeholderText="Select start date"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -286,7 +286,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   showMonthYearPicker
                   placeholderText="Select end date"
                   disabled={newEducation.isCurrentlyStudying}
-                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${newEducation.isCurrentlyStudying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition ${newEducation.isCurrentlyStudying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
               
@@ -296,7 +296,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                     type="checkbox"
                     checked={newEducation.isCurrentlyStudying}
                     onChange={handleCurrentlyStudyingChange}
-                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 mr-2"
+                    className="rounded border-gray-300 text-[#fe6019] shadow-sm focus:border-[#fe6019] focus:ring focus:ring-[#fe6019] focus:ring-opacity-50 mr-2"
                   />
                   I am currently studying here
                 </label>
@@ -308,7 +308,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Activities, accomplishments, etc."
                   value={newEducation.description}
                   onChange={(e) => setNewEducation({ ...newEducation, description: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                   rows={3}
                 />
               </div>
@@ -317,7 +317,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
             <div className="mt-4 flex gap-3">
               <button
                 onClick={handleAddEducation}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
               >
                 {editingEducationId ? (
                   <>
@@ -370,7 +370,7 @@ const EducationSection = ({ userData, isOwnProfile, onSave }) => {
             </button>
             <button
               onClick={handleSave}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
             >
               <Save size={16} className="mr-2" />
               Save Changes

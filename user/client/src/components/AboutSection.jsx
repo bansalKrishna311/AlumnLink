@@ -30,13 +30,13 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <User className="mr-2 text-gray-600" size={22} />
+            <User className="mr-2 text-[#fe6019]"  size={22} />
             About
           </h2>
           {isOwnProfile && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition"
+              className="flex items-center text-[#fe6019] hover:text-[#e04e0a] font-medium text-sm transition"
             >
               <Edit2 size={16} className="mr-1" />
               Edit
@@ -55,7 +55,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                 <textarea
                   value={about}
                   onChange={handleChange}
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
+                  className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition resize-none"
                   rows="6"
                   placeholder="Describe your professional background, accomplishments, interests, and skills..."
                 />
@@ -64,7 +64,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                 </div>
               </div>
 
-              <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-700 flex items-start">
+              <div className="mt-4 bg-[#fff1eb] border border-[#ffdfce] rounded-lg p-3 text-sm text-[#e04e0a] flex items-start">
                 <Info size={16} className="mr-2 mt-0.5 flex-shrink-0" />
                 <p>
                   Your about section is like your professional summary. Keep it concise, highlight your expertise, and share what makes you unique in your field.
@@ -81,7 +81,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
                 >
                   <Save size={16} className="mr-2" />
                   Save
@@ -98,7 +98,8 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                 {isOwnProfile && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
+
                   >
                     <Edit2 size={16} className="mr-2" />
                     Add About Section
@@ -111,7 +112,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                   <textarea
                     value={about}
                     onChange={handleChange}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition resize-none"
                     rows="6"
                     placeholder="Describe your professional background, accomplishments, interests, and skills..."
                   />
@@ -120,7 +121,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                   </div>
                 </div>
 
-                <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-700 flex items-start">
+                <div className="mt-4 bg-[#fff1eb] border border-[#ffdfce] rounded-lg p-3 text-sm text-[#e04e0a] flex items-start">
                   <Info size={16} className="mr-2 mt-0.5 flex-shrink-0" />
                   <p>
                     A complete about section makes your profile more discoverable. Focus on your professional journey, achievements, and what you're passionate about.
@@ -137,7 +138,7 @@ const AboutSection = ({ userData, isOwnProfile, onSave }) => {
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                    className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
                   >
                     <Save size={16} className="mr-2" />
                     Save
