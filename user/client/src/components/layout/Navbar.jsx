@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell, Home, LogOut, User, Users, Menu, Link2 } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,6 +11,7 @@ const Navbar = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [selfLinksOpen, setSelfLinksOpen] = useState(false);
 
@@ -36,6 +37,13 @@ const Navbar = () => {
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
+	// Check current path to determine active page
+	const isHomePage = location.pathname === "/";
+	const isNetworkPage = location.pathname === "/network";
+	const isNotificationsPage = location.pathname === "/notifications";
+	const isProfilePage = location.pathname.startsWith("/profile/") && 
+		(authUser && location.pathname.includes(authUser.username));
+
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
 			<div className='max-w-7xl mx-auto px-4'>
@@ -44,7 +52,7 @@ const Navbar = () => {
 						{authUser && (
 							<Sheet open={sidebarOpen} onOpenChange={setSidebarOpen} className="lg:hidden">
 								<SheetTrigger asChild>
-									<button className="text-neutral flex flex-col items-center lg:hidden" aria-label="Menu">
+									<button className="text-[#fe6019] flex flex-col items-center lg:hidden hover:text-[#fe6019]/80 transition-colors" aria-label="Menu">
 										<Menu size={20} />
 										<span className='text-xs hidden md:block lg:hidden'>Menu</span>
 									</button>
@@ -61,29 +69,41 @@ const Navbar = () => {
 					<div className='flex items-center gap-2 md:gap-6'>
 						{authUser ? (
 							<>
-								<Link to={"/"} className='text-neutral flex flex-col items-center'>
-									<Home size={20} />
-									<span className='text-xs hidden md:block'>Home</span>
+								<Link to={"/"} className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019]/80 transition-colors'>
+										<Home 
+											size={20} 
+											fill={isHomePage ? "#fe6019" : "none"} 
+											className={isHomePage ? "font-bold" : ""}
+										/>
+										<span className={`text-xs text-black hidden md:block ${isHomePage ? "font-semibold" : ""}`}>Home</span>
 								</Link>
-								<Link to='/network' className='text-neutral flex flex-col items-center relative'>
-									<Users size={20} />
-									<span className='text-xs hidden md:block'>My Network</span>
+								<Link to='/network' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019]/80 transition-colors relative'>
+									<Users 
+										size={20} 
+										fill={isNetworkPage ? "#fe6019" : "none"}
+										className={isNetworkPage ? "font-bold" : ""}
+									/>
+									<span className={`text-xs text-black hidden md:block ${isNetworkPage ? "font-semibold" : ""}`}>My Network</span>
 									{unreadLinkRequestsCount > 0 && (
 										<span
-											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
-										rounded-full size-3 md:size-4 flex items-center justify-center'
+											className='absolute -top-1 -right-1 md:right-4 bg-[#fe6019] text-white text-xs 
+										rounded-full size-3 md:size-4 flex items-center justify-center font-medium'
 										>
 											{unreadLinkRequestsCount}
 										</span>
 									)}
 								</Link>
-								<Link to='/notifications' className='text-neutral flex flex-col items-center relative'>
-									<Bell size={20} />
-									<span className='text-xs hidden md:block'>Notifications</span>
+								<Link to='/notifications' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019]/80 transition-colors relative'>
+									<Bell 
+										size={20} 
+										fill={isNotificationsPage ? "#fe6019" : "none"}
+										className={isNotificationsPage ? "font-bold" : ""}
+									/>
+									<span className={`text-xs text-black hidden md:block ${isNotificationsPage ? "font-semibold" : ""}`}>Notifications</span>
 									{unreadNotificationCount > 0 && (
 										<span
-											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
-										rounded-full size-3 md:size-4 flex items-center justify-center'
+											className='absolute -top-1 -right-1 md:right-4 bg-[#fe6019] text-white text-xs 
+										rounded-full size-3 md:size-4 flex items-center justify-center font-medium'
 										>
 											{unreadNotificationCount}
 										</span>
@@ -91,23 +111,27 @@ const Navbar = () => {
 								</Link>
 								<Link
 									to={`/profile/${authUser.username}`}
-									className='text-neutral flex flex-col items-center'
+									className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019]/80 transition-colors'
 								>
-									<User size={20} />
-									<span className='text-xs hidden md:block'>Me</span>
+										<User 
+											size={20} 
+											fill={isProfilePage ? "#fe6019" : "none"}
+											className={isProfilePage ? "font-bold" : ""}
+										/>
+										<span className={`text-xs text-black hidden md:block ${isProfilePage ? "font-semibold" : ""}`}>Me</span>
 								</Link>
 
 								{/* Link toggle visible only on smaller screens */}
 								<Sheet open={selfLinksOpen} onOpenChange={setSelfLinksOpen}>
 									<SheetTrigger asChild>
-										<button className="text-neutral flex flex-col items-center lg:hidden group" aria-label="My Alma Matters">
+										<button className="text-[#fe6019] flex flex-col items-center lg:hidden group hover:text-[#fe6019]/80 transition-colors" aria-label="My Alma Matters">
 											<div className="relative">
 												<Link2 
 													size={20} 
-													className="transform rotate-[135deg] transition-transform duration-300 group-hover:scale-45 group-hover:text-primary" 
+													className="transform rotate-[135deg] transition-transform duration-300 group-hover:scale-105" 
 												/>
 											</div>
-											<span className='text-xs hidden md:block lg:hidden group-hover:text-primary transition-colors'>Links</span>
+											<span className='text-xs hidden md:block lg:hidden'>Links</span>
 										</button>
 									</SheetTrigger>
 									<SheetContent side="right" className="p-0 lg:hidden">
@@ -118,19 +142,19 @@ const Navbar = () => {
 								</Sheet>
 
 								<button
-									className='flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800'
+									className='flex items-center space-x-1 text-sm text-[#fe6019] hover:text-[#fe6019]/80 transition-colors'
 									onClick={() => logout()}
 								>
 									<LogOut size={20} />
-									<span className='hidden md:inline'>Logout</span>
+									<span className='hidden md:inline text-black'>Logout</span>
 								</button>
 							</>
 						) : (
 							<>
-								<Link to='/login' className='btn btn-ghost'>
+								<Link to='/login' className='btn btn-ghost text-[#fe6019]'>
 									Sign In
 								</Link>
-								<Link to='/signup' className='btn btn-primary'>
+								<Link to='/signup' className='btn btn-primary bg-[#fe6019] hover:bg-[#fe6019]/90 border-[#fe6019]'>
 									Join now
 								</Link>
 							</>
