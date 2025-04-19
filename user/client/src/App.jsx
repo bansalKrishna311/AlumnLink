@@ -11,6 +11,8 @@ import {userRoutes} from "./routes/userRoutes";
 import {adminRoutes} from "./routes/adminRoutes";
 import {superAdminRoutes} from "./routes/superAdminRoutes";
 import LandHome from "./Landing/Pages/LandHome";
+import ProfilePage from "./pages/ProfilePage";
+import UserPostsPage from "./pages/UserPostsPage";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({

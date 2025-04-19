@@ -6,6 +6,23 @@ import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 import mongoose from "mongoose";
 
+// Helper function to extract mentions from content
+const extractMentions = (content) => {
+  const mentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+  const mentions = [];
+  
+  while ((match = mentionPattern.exec(content)) !== null) {
+    const [, username, userId] = match;
+    mentions.push({
+      username,
+      userId
+    });
+  }
+  
+  return mentions;
+};
+
 // Fetch posts for the user's feed
 // Modify getFeedPosts to only show approved posts
 export const getFeedPosts = async (req, res) => {
@@ -161,9 +178,12 @@ export const createComment = async (req, res) => {
             .populate("comments.replies.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline");
 
-        // Try to create a notification, but don't fail if it doesn't work
+        // Extract mentions from the comment
+        const mentions = extractMentions(content);
+
+        // Create notifications
         try {
-            // Create a notification if the comment owner is not the post owner
+            // First create notification for post author (if not the commenter)
             if (existingPost.author.toString() !== req.user._id.toString()) {
                 const newNotification = new Notification({
                     recipient: existingPost.author,
@@ -188,6 +208,25 @@ export const createComment = async (req, res) => {
                     // Continue execution even if email fails
                 }
             }
+            
+            // Create notifications for mentioned users
+            if (mentions.length > 0) {
+                for (const mention of mentions) {
+                    // Skip if mentioned user is the commenter
+                    if (mention.userId === req.user._id.toString()) continue;
+                    
+                    const mentionNotification = new Notification({
+                        recipient: mention.userId,
+                        type: "mention",
+                        relatedUser: req.user._id,
+                        relatedPost: postId,
+                    });
+                    await mentionNotification.save();
+                    
+                    // TODO: Add email notification for mentions
+                }
+            }
+            
         } catch (notificationError) {
             console.error("Error creating notification:", notificationError);
             // Continue execution even if notification fails
@@ -229,9 +268,15 @@ export const replyToComment = async (req, res) => {
             comment.replies = [];
         }
 
-        // Add the reply to the comment
+        // Add the reply to the comment with user details
         comment.replies.push({
-            user: req.user._id,
+            user: {
+                _id: req.user._id,
+                name: req.user.name,
+                username: req.user.username,
+                profilePicture: req.user.profilePicture,
+                headline: req.user.headline
+            },
             content: content,
             createdAt: new Date()
         });
@@ -245,8 +290,11 @@ export const replyToComment = async (req, res) => {
             .populate("comments.user", "name profilePicture username headline")
             .populate("comments.replies.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline");
+            
+        // Extract mentions from reply
+        const mentions = extractMentions(content);
 
-        // Try to create a notification, but don't let it fail the entire request
+        // Try to create notifications, but don't let it fail the entire request
         try {
             // Create a notification for the comment owner (if it's not the same user)
             if (comment.user.toString() !== req.user._id.toString()) {
@@ -260,6 +308,27 @@ export const replyToComment = async (req, res) => {
                 
                 // TODO: Send notification email for reply (similar to comment notification)
             }
+            
+            // Create notifications for mentioned users
+            if (mentions.length > 0) {
+                for (const mention of mentions) {
+                    // Skip if mentioned user is the replier
+                    if (mention.userId === req.user._id.toString()) continue;
+                    // Skip if mentioned user is the comment owner (already notified as a reply)
+                    if (mention.userId === comment.user.toString()) continue;
+                    
+                    const mentionNotification = new Notification({
+                        recipient: mention.userId,
+                        type: "mention",
+                        relatedUser: req.user._id,
+                        relatedPost: postId,
+                    });
+                    await mentionNotification.save();
+                    
+                    // TODO: Add email notification for mentions
+                }
+            }
+            
         } catch (notificationError) {
             console.error("Error creating reply notification:", notificationError);
             // Continue execution even if notification fails
@@ -287,6 +356,10 @@ export const reactToPost = async (req, res) => {
             (reaction) => reaction.user.toString() === req.user._id.toString()
         );
 
+        // Track if this is a new reaction for notification purposes
+        const isNewReaction = existingReactionIndex === -1 && reactionType !== null;
+        const isRemovingReaction = reactionType === null && existingReactionIndex !== -1;
+
         if (reactionType === null) {
             // If reactionType is null, remove the user's reaction
             if (existingReactionIndex !== -1) {
@@ -311,6 +384,25 @@ export const reactToPost = async (req, res) => {
         }
 
         await post.save();
+
+        // Create notification for post author if this is a new reaction and author is not the reactor
+        try {
+            if (isNewReaction && post.author.toString() !== req.user._id.toString()) {
+                const newNotification = new Notification({
+                    recipient: post.author,
+                    type: "like", // Using "like" type for all reactions for simplicity
+                    relatedUser: req.user._id,
+                    relatedPost: postId,
+                });
+                await newNotification.save();
+                
+                // TODO: Send email notification for reactions if needed
+            }
+        } catch (notificationError) {
+            console.error("Error creating reaction notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).json(post);
     } catch (error) {
         console.error("Error in reactToPost controller:", error);
@@ -351,21 +443,39 @@ export const updatePostStatus = async (req, res) => {
         return res.status(400).json({ message: 'Invalid status' });
       }
   
-      const post = await Post.findByIdAndUpdate(
-        postId,
-        { status, reviewedAt: new Date() },
-        { new: true }
-      );
-  
+      const post = await Post.findById(postId);
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Update the post status
+      post.status = status;
+      post.reviewedAt = new Date();
+      await post.save();
+      
+      // Create notification for the author based on status
+      try {
+        const notificationType = status === 'approved' ? "postApproved" : "postRejected";
+        
+        const newNotification = new Notification({
+          recipient: post.author,
+          type: notificationType,
+          relatedUser: req.user._id, // Admin who processed the post
+          relatedPost: postId,
+        });
+        await newNotification.save();
+        
+        // TODO: Send email notification for post status change if needed
+      } catch (notificationError) {
+        console.error(`Error creating post ${status} notification:`, notificationError);
+        // Continue execution even if notification fails
       }
   
       res.json(post);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
-  };
+};
 
 export const reviewPost = async (req, res) => {
     const { postId } = req.params;
@@ -382,15 +492,36 @@ export const reviewPost = async (req, res) => {
       if (feedback) {
         post.feedback = feedback;
       }
+      
+      // Add review timestamp
+      post.reviewedAt = new Date();
       await post.save();
+      
+      // Create notification for the author based on status
+      try {
+        const notificationType = status === 'approved' ? "postApproved" : "postRejected";
+        
+        const newNotification = new Notification({
+          recipient: post.author,
+          type: notificationType,
+          relatedUser: req.user._id, // Admin who processed the post
+          relatedPost: postId,
+        });
+        await newNotification.save();
+        
+        // TODO: Send email notification for post status change if needed
+      } catch (notificationError) {
+        console.error(`Error creating post ${status} notification:`, notificationError);
+        // Continue execution even if notification fails
+      }
   
       res.status(200).json({ message: "Post status updated successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to update post status", error });
     }
-  };
-  
-  export const createAdminPost = async (req, res) => {
+};
+
+export const createAdminPost = async (req, res) => {
     try {
       const { title, content, type, jobDetails, internshipDetails, eventDetails } = req.body;
       const image = req.file ? req.file.path : null;
@@ -460,10 +591,31 @@ export const likeComment = async (req, res) => {
       id => id.toString() === userId.toString()
     );
 
+    // Track if this is a new like for notification purposes
+    const isAddingLike = likeIndex === -1;
+
     // Toggle like
-    if (likeIndex === -1) {
+    if (isAddingLike) {
       // Add like
       comment.likes.push(userId);
+      
+      // Create notification for comment author (if not the same user)
+      try {
+        if (comment.user.toString() !== userId.toString()) {
+          const newNotification = new Notification({
+            recipient: comment.user,
+            type: "like",
+            relatedUser: userId,
+            relatedPost: postId,
+          });
+          await newNotification.save();
+          
+          // TODO: Send email notification for likes if needed
+        }
+      } catch (notificationError) {
+        console.error("Error creating comment like notification:", notificationError);
+        // Continue execution even if notification fails
+      }
     } else {
       // Remove like
       comment.likes.splice(likeIndex, 1);
@@ -507,12 +659,19 @@ export const likeReply = async (req, res) => {
     }
 
     // Find the reply
-    const reply = post.comments[commentIndex].replies.find(
+    const replyIndex = post.comments[commentIndex].replies.findIndex(
       reply => reply._id.toString() === replyId
     );
 
-    if (!reply) {
+    if (replyIndex === -1) {
       return res.status(404).json({ message: "Reply not found" });
+    }
+
+    const reply = post.comments[commentIndex].replies[replyIndex];
+
+    // Initialize likes array if it doesn't exist
+    if (!reply.likes) {
+      reply.likes = [];
     }
 
     // Check if user already liked the reply
@@ -520,10 +679,31 @@ export const likeReply = async (req, res) => {
       id => id.toString() === userId.toString()
     );
 
+    // Track if this is a new like for notification purposes
+    const isAddingLike = likeIndex === -1;
+
     // Toggle like
-    if (likeIndex === -1) {
+    if (isAddingLike) {
       // Add like
       reply.likes.push(userId);
+      
+      // Create notification for reply author (if not the same user)
+      try {
+        if (reply.user._id.toString() !== userId.toString()) {
+          const newNotification = new Notification({
+            recipient: reply.user._id,
+            type: "like",
+            relatedUser: userId,
+            relatedPost: postId,
+          });
+          await newNotification.save();
+          
+          // TODO: Send email notification for likes if needed
+        }
+      } catch (notificationError) {
+        console.error("Error creating reply like notification:", notificationError);
+        // Continue execution even if notification fails
+      }
     } else {
       // Remove like
       reply.likes.splice(likeIndex, 1);
@@ -541,6 +721,98 @@ export const likeReply = async (req, res) => {
     res.status(200).json(updatedPost);
   } catch (error) {
     console.error("Error in likeReply controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Bookmark or unbookmark a post
+export const bookmarkPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the user has already bookmarked this post
+    const bookmarkIndex = post.bookmarks.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle bookmark status
+    if (bookmarkIndex === -1) {
+      // Add bookmark
+      post.bookmarks.push(userId);
+    } else {
+      // Remove bookmark
+      post.bookmarks.splice(bookmarkIndex, 1);
+    }
+
+    await post.save();
+
+    // Return the updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in bookmarkPost controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get all bookmarked posts for the current user
+export const getBookmarkedPosts = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find posts that have the user's ID in the bookmarks array
+    const bookmarkedPosts = await Post.find({
+      bookmarks: { $in: [userId] },
+      status: "approved" // Only show approved posts
+    })
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(bookmarkedPosts);
+  } catch (error) {
+    console.error("Error in getBookmarkedPosts controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get posts by a specific user
+export const getPostsByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // Find the user by username first
+    const user = await mongoose.model("User").findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find posts by that user
+    const posts = await Post.find({
+      author: user._id,
+      status: "approved" // Only show approved posts
+    })
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Error in getPostsByUsername controller:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

@@ -9,10 +9,13 @@ import NotificationsPage from "../pages/NotificationsPage";
 import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
+import MyLinksPage from "../pages/MyLinksPage";
 
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
 import ComingSoon from "@/pages/ComingSoon";
+import SavedPostsPage from "@/pages/SavedPostsPage";
+import UserPostsPage from "@/pages/UserPostsPage";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -96,6 +99,26 @@ const ProtectedRoute = ({ children }) => {
         ),
     },
     {
+        path: "/profile/:username/posts",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Profile | AlumnLink" />
+                    <UserPostsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/my-links",
+        element: (
+            <ProtectedRoute>
+                <PageTitle title="My Links | AlumnLink" />
+                <MyLinksPage />
+            </ProtectedRoute>
+        ),
+    },
+    {
         path: "/links/:userId",
         element: (
             <ProtectedRoute>
@@ -113,6 +136,17 @@ const ProtectedRoute = ({ children }) => {
                 <Layout>
                     <PageTitle title="Coming Soon | AlumnLink" />
                     <ComingSoon/>
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/saved-posts",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Saved Posts | AlumnLink" />
+                    <SavedPostsPage />
                 </Layout>
             </ProtectedRoute>
         ),

@@ -23,6 +23,9 @@ const Post = ({ post }) => {
   const [activeReactionTab, setActiveReactionTab] = useState("all");
   const [showPostDetails, setShowPostDetails] = useState(false);
   
+  // Check if the current user has bookmarked this post
+  const isBookmarked = post.bookmarks?.some(id => id === authUser?._id);
+  
   // Refs
   const optionsMenuRef = useRef(null);
   const reactionsModalRef = useRef(null);
@@ -137,6 +140,20 @@ const Post = ({ post }) => {
     },
   });
 
+  const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
+    mutationFn: async () => {
+      await axiosInstance.post(`/posts/${post._id}/bookmark`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      toast.success("Bookmark status updated successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to bookmark post");
+    },
+  });
+
   const { mutate: reactToPost, isPending: isReacting } = useMutation({
     mutationFn: async ({ postId, reactionType }) => {
       await axiosInstance.post(`/posts/${postId}/react`, {
@@ -149,16 +166,6 @@ const Post = ({ post }) => {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to react to post");
-    },
-  });
-
-  const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
-    mutationFn: async () => {
-      await axiosInstance.post(`/posts/${post._id}/bookmark`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Post saved to your bookmarks");
     },
   });
 
@@ -297,6 +304,11 @@ const Post = ({ post }) => {
     likeReply({ postId: post._id, commentId, replyId });
   };
 
+  const handleBookmarkPost = () => {
+    if (isBookmarking) return;
+    bookmarkPost();
+  };
+
   // Utility functions
   const getReactionEmoji = (type) => {
     switch (type) {
@@ -388,6 +400,9 @@ const Post = ({ post }) => {
           optionsMenuRef={optionsMenuRef}
           getPostTypeBadgeColor={getPostTypeBadgeColor}
           getPostTypeIcon={getPostTypeIcon}
+          handleBookmarkPost={handleBookmarkPost}
+          isBookmarking={isBookmarking}
+          isBookmarked={isBookmarked}
         />
 
         {/* Post Content Component */}

@@ -21,6 +21,11 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
 
+  const [mentionDropdownVisible, setMentionDropdownVisible] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionUsers, setMentionUsers] = useState([]);
+  const contentRef = useRef(null);
+
   const queryClient = useQueryClient();
 
   // Fetch user links
@@ -136,6 +141,33 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleContentChange = (e) => {
+    const value = e.target.value;
+    setContent(value);
+
+    // Logic to detect mentions and show dropdown
+    const mentionMatch = value.match(/@\w*$/);
+    if (mentionMatch) {
+      setMentionQuery(mentionMatch[0].substring(1));
+      setMentionDropdownVisible(true);
+    } else {
+      setMentionDropdownVisible(false);
+    }
+  };
+
+  const handleMentionSelect = (user) => {
+    const cursorPosition = contentRef.current.selectionStart;
+    const textBeforeCursor = content.substring(0, cursorPosition);
+    const textAfterCursor = content.substring(cursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@\w*$/);
+
+    if (mentionMatch) {
+      const newTextBeforeCursor = textBeforeCursor.replace(/@\w*$/, `@${user.name} `);
+      setContent(newTextBeforeCursor + textAfterCursor);
+      setMentionDropdownVisible(false);
+    }
   };
 
   const renderAdditionalInputs = () => {
@@ -268,9 +300,23 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 placeholder="What's on your mind?"
                 className={`w-full p-3 rounded-lg focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={handleContentChange}
+                ref={contentRef}
               />
             </div>
+
+            {mentionDropdownVisible && (
+              <MentionDropdown
+                query={mentionQuery}
+                users={mentionUsers}
+                onSelect={handleMentionSelect}
+                visible={mentionDropdownVisible}
+                position={{
+                  top: 150,  // Position below the content textarea
+                  left: 60   // Offset from left edge
+                }}
+              />
+            )}
 
             {imagePreview && (
               <div className="relative mt-2 mb-4">

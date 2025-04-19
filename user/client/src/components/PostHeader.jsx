@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { X, Globe } from "lucide-react";
 
+
+
 const PostHeader = ({ 
   post, 
   authUser, 
@@ -14,7 +16,10 @@ const PostHeader = ({
   isDeletingPost, 
   optionsMenuRef, 
   getPostTypeBadgeColor, 
-  getPostTypeIcon 
+  getPostTypeIcon,
+  handleBookmarkPost,
+  isBookmarking,
+  isBookmarked
 }) => {
   const isOwner = authUser?._id === post.author?._id;
 
@@ -92,6 +97,31 @@ const PostHeader = ({
               >
                 <Globe size={15} className="mr-2.5 text-gray-500" />
                 View Post Details
+              </motion.button>
+
+              <motion.button
+                whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}
+                onClick={() => {
+                  handleBookmarkPost();
+                  setShowOptionsMenu(false);
+                }}
+                disabled={isBookmarking}
+                className="w-full text-left px-4 py-2.5 flex items-center text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+              >
+                {isBookmarking ? (
+                  <div className="mr-2.5 animate-spin">⏳</div>
+                ) : (
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className={`mr-2.5 h-[15px] w-[15px] ${isBookmarked ? "fill-[#fe6019] text-[#fe6019]" : "fill-none text-gray-500"}`} 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                )}
+                {isBookmarked ? "Unsave Post" : "Save Post"}
               </motion.button>
 
               {isOwner && (

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Users, Building, Briefcase, MapPin, Clock, Calendar, ThumbsUp, MessageCircle, Globe } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Import for navigation
 
 const PostModals = ({
   post,
@@ -20,6 +21,16 @@ const PostModals = ({
   reactionsModalRef,
   getUserDetailsFromReaction
 }) => {
+  const navigate = useNavigate(); // For navigation to profile pages
+
+  // Function to navigate to a user's profile
+  const navigateToProfile = (username) => {
+    if (username) {
+      navigate(`/profile/${username}`);
+      setShowReactionsModal(false); // Close the modal when navigating
+    }
+  };
+
   return (
     <>
       {/* Reactions Modal */}
@@ -99,10 +110,14 @@ const PostModals = ({
                                 <img
                                   src={userDetails.profilePicture || "/avatar.png"}
                                   alt={userDetails.name || "User"}
-                                  className="w-8 h-8 rounded-full mr-3 border border-gray-200"
+                                  className="w-8 h-8 rounded-full mr-3 border border-gray-200 cursor-pointer"
+                                  onClick={() => navigateToProfile(userDetails.username || userDetails.name)}
                                 />
-                                <div>
-                                  <p className="font-medium text-sm">
+                                <div className="flex-grow">
+                                  <p 
+                                    className="font-medium text-sm cursor-pointer hover:text-[#fe6019]"
+                                    onClick={() => navigateToProfile(userDetails.username || userDetails.name)}
+                                  >
                                     {userDetails.name || "Unknown User"}
                                     {reaction.user && reaction.user._id 
                                       ? (reaction.user._id === authUser?._id && <span className="ml-1 text-xs text-[#fe6019]">(You)</span>) 
@@ -130,10 +145,14 @@ const PostModals = ({
                               <img
                                 src={userDetails.profilePicture || "/avatar.png"}
                                 alt={userDetails.name || "User"}
-                                className="w-8 h-8 rounded-full mr-3 border border-gray-200"
+                                className="w-8 h-8 rounded-full mr-3 border border-gray-200 cursor-pointer"
+                                onClick={() => navigateToProfile(userDetails.username || userDetails.name)}
                               />
-                              <div>
-                                <p className="font-medium text-sm">
+                              <div className="flex-grow">
+                                <p 
+                                  className="font-medium text-sm cursor-pointer hover:text-[#fe6019]"
+                                  onClick={() => navigateToProfile(userDetails.username || userDetails.name)}
+                                >
                                   {userDetails.name || "Unknown User"}
                                   {reaction.user && reaction.user._id 
                                     ? (reaction.user._id === authUser?._id && <span className="ml-1 text-xs text-[#fe6019]">(You)</span>) 
@@ -193,14 +212,16 @@ const PostModals = ({
                     transition={{ delay: 0.2 }}
                     src={post.author?.profilePicture || "/avatar.png"}
                     alt={post.author?.name}
-                    className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg object-cover"
+                    className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg object-cover cursor-pointer"
+                    onClick={() => navigateToProfile(post.author?.username || post.author?.name)}
                   />
                   <div className="ml-4 mb-1 text-white">
                     <motion.h3 
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
-                      className="font-semibold text-xl"
+                      className="font-semibold text-xl cursor-pointer hover:underline"
+                      onClick={() => navigateToProfile(post.author?.username || post.author?.name)}
                     >
                       {post.author?.name}
                     </motion.h3>

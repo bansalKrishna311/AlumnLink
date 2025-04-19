@@ -98,6 +98,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                       <Card
                         className="group hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                         style={{ background: 'linear-gradient(to right, rgba(254, 96, 25, 0.05), transparent)' }}
+                        onClick={() => navigate(`/profile/${link.user.username}`)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start space-x-4">
