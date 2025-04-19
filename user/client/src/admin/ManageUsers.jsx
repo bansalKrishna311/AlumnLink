@@ -17,11 +17,19 @@ const ManageUsers = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
+        setLoading(true);
         const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
         setRequests(response.data.data);
+        setError(null);
       } catch (error) {
         console.error("Error fetching requests:", error);
-        setError("Error fetching requests.");
+        // Handle 404 specifically as "no data" rather than an error
+        if (error.response && error.response.status === 404) {
+          setRequests([]);
+          setError(null);
+        } else {
+          setError("Unable to connect to the server. Please try again later.");
+        }
       } finally {
         setLoading(false);
       }

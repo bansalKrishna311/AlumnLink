@@ -79,6 +79,7 @@ const RejectedRequests = () => {
       if (response && response.data && Array.isArray(response.data)) {
         setLinks(response.data);
         setFilteredLinks(response.data);
+        setError(null);
       } else {
         setLinks([]);
         setFilteredLinks([]);
@@ -86,9 +87,15 @@ const RejectedRequests = () => {
       }
       setIsLoading(false);
     } catch (err) {
-      setError(err.message || "An error occurred while fetching data");
-      setLinks([]);
-      setFilteredLinks([]);
+      console.error("Error fetching rejected connections:", err);
+      // Handle 404 specifically as "no data" rather than an error
+      if (err.response && err.response.status === 404) {
+        setLinks([]);
+        setFilteredLinks([]);
+        setError(null);
+      } else {
+        setError("Unable to connect to the server. Please try again later.");
+      }
       setIsLoading(false);
     }
   };
