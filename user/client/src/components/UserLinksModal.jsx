@@ -181,7 +181,7 @@ const UserLinksPage = () => {
               <div className="flex flex-col space-y-1">
                 <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
                   <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-[#fe6019]" />
-                  Chapter Location
+                  Chapters
                 </label>
                 <select
                   value={selectedLocation}
