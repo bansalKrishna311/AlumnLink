@@ -463,10 +463,17 @@ const PostComments = ({
       const mentionText = value.substring(mentionStart + 1, cursorPos);
       setMentionQuery(mentionText);
       setMentionDropdownVisible(true);
-
+      
+      // Calculate the exact position of the @ character for the dropdown
       if (commentInputRef.current) {
-        const { top, left, height } = commentInputRef.current.getBoundingClientRect();
-        setCursorPosition({ top: height + 5, left: 10 });
+        const inputRect = commentInputRef.current.getBoundingClientRect();
+        const caretCoordinates = getCaretCoordinates(commentInputRef.current, mentionStart);
+        
+        // Position the dropdown at the @ character
+        setCursorPosition({ 
+          top: inputRect.top + caretCoordinates.top + window.scrollY,
+          left: inputRect.left + caretCoordinates.left - 5 // Small offset for better alignment
+        });
       }
     } else {
       setMentionDropdownVisible(false);
@@ -620,7 +627,7 @@ const PostComments = ({
                 onClick={() => navigateToProfile(authUser?.username || authUser?.name)}
               />
             </div>
-            <div className="relative flex-grow">
+            <div className="relative w-full">
               <input
                 type="text"
                 value={newComment}
@@ -638,16 +645,14 @@ const PostComments = ({
               >
                 {isAddingComment ? <Loader size={14} className="animate-spin" /> : <Send size={14} />}
               </motion.button>
-
+              
               <AnimatePresence>
                 {mentionDropdownVisible && (
                   <MentionDropdown
                     query={mentionQuery}
-                    users={users}
-                    loading={isLoadingUsers}
-                    onSelect={handleMentionSelect}
                     visible={mentionDropdownVisible}
-                    position={cursorPosition}
+                    onSelect={handleMentionSelect}
+                    users={users}
                   />
                 )}
               </AnimatePresence>

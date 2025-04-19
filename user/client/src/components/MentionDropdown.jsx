@@ -7,29 +7,35 @@ import { axiosInstance } from "@/lib/axios";
 const MentionDropdown = ({ 
   query, 
   visible,
-  onSelect, 
-  position
+  onSelect,
+  users = []
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef(null);
   const itemRefs = useRef([]);
   
-  // Fetch users with the search query
-  const { data: users, isLoading } = useQuery({
+  // Use passed users or fetch from API
+  const { data: fetchedUsers, isLoading } = useQuery({
     queryKey: ['mentionSuggestions', query],
     queryFn: async () => {
       // Add search parameter to the API call
       const response = await axiosInstance.get(`/users/mention-suggestions${query ? `?search=${query}` : ''}`);
       return response.data;
     },
-    // Only start searching when there's a query
-    enabled: visible,
+    // Only start searching when there's a query and no users were passed
+    enabled: visible && (!users || users.length === 0),
     // Reduce refetch rate to avoid too many requests
     staleTime: 30000,
   });
   
   // Filter users to display (limit to 10 for performance)
-  const filteredUsers = users?.slice(0, 10) || [];
+  const usersToShow = users?.length > 0 ? users : fetchedUsers;
+  const filteredUsers = (usersToShow || [])
+    .filter(user => !query || 
+      user.name?.toLowerCase().includes(query.toLowerCase()) || 
+      user.username?.toLowerCase().includes(query.toLowerCase())
+    )
+    .slice(0, 10);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -86,62 +92,60 @@ const MentionDropdown = ({
   if (!visible) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="absolute z-50 bg-white rounded-lg shadow-lg border border-gray-200 w-64 max-h-60 overflow-y-auto"
-      style={{
-        top: position?.top || '100%',
-        left: position?.left || 0
-      }}
-      ref={listRef}
-    >
-      <div className="p-2 border-b border-gray-100 flex items-center">
-        <Search size={14} className="text-gray-400 mr-2" />
-        <span className="text-sm text-gray-600">
-          {query ? `Results for "${query}"` : "Mention someone"}
-        </span>
-      </div>
-      
-      {isLoading ? (
-        <div className="p-3 text-center text-gray-500">
-          <div className="animate-spin inline-block w-5 h-5 border-2 border-[#fe6019] border-t-transparent rounded-full mr-2"></div>
-          Loading...
+    <div className="fixed z-[9999]" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        className="bg-white rounded-lg shadow-lg border-2 border-gray-200 w-80 max-h-60 overflow-y-auto"
+        ref={listRef}
+      >
+        <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center sticky top-0">
+          <Search size={14} className="text-gray-500 mr-2" />
+          <span className="text-sm font-medium">
+            {query ? `Results for "${query}"` : "Mention someone"}
+          </span>
         </div>
-      ) : filteredUsers.length === 0 ? (
-        <div className="p-3 text-center text-gray-500 flex flex-col items-center">
-          <User size={20} className="mb-1 text-gray-400" />
-          <span>No users found</span>
-          <span className="text-xs mt-1">Try a different search</span>
-        </div>
-      ) : (
-        <ul className="py-1">
-          {filteredUsers.map((user, index) => (
-            <li 
-              key={user._id} 
-              ref={el => itemRefs.current[index] = el}
-              className={`px-3 py-2 flex items-center cursor-pointer ${
-                index === selectedIndex ? 'bg-[#fe6019]/10 text-[#fe6019]' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => onSelect(user)}
-            >
-              <img 
-                src={user.profilePicture || "/avatar.png"} 
-                alt={user.name}
-                className="w-8 h-8 rounded-full mr-2 border border-gray-200 object-cover" 
-              />
-              <div>
-                <div className="font-medium text-sm">{user.name}</div>
-                {user.username && (
-                  <div className="text-xs text-gray-500">@{user.username}</div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </motion.div>
+        
+        {isLoading ? (
+          <div className="p-3 text-center text-gray-500">
+            <div className="animate-spin inline-block w-5 h-5 border-2 border-[#fe6019] border-t-transparent rounded-full mr-2"></div>
+            Loading...
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-3 text-center text-gray-500 flex flex-col items-center">
+            <User size={20} className="mb-1 text-gray-400" />
+            <span>No users found</span>
+            <span className="text-xs mt-1">Try a different search</span>
+          </div>
+        ) : (
+          <ul className="py-1">
+            {filteredUsers.map((user, index) => (
+              <li 
+                key={user._id} 
+                ref={el => itemRefs.current[index] = el}
+                className={`px-3 py-2 flex items-center cursor-pointer ${
+                  index === selectedIndex ? 'bg-[#fe6019]/10 text-[#fe6019]' : 'hover:bg-gray-50'
+                }`}
+                onClick={() => onSelect(user)}
+              >
+                <img 
+                  src={user.profilePicture || "/avatar.png"} 
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full mr-2 border border-gray-200 object-cover" 
+                />
+                <div>
+                  <div className="font-medium text-sm">{user.name}</div>
+                  {user.username && (
+                    <div className="text-xs text-gray-500">@{user.username}</div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </motion.div>
+    </div>
   );
 };
 
