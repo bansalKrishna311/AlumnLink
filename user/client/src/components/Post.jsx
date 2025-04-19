@@ -33,7 +33,20 @@ const Post = ({ post }) => {
   const queryClient = useQueryClient();
 
   // Get user's current reaction if any
-  const userReaction = post.reactions?.find((reaction) => reaction.user === authUser?._id)?.type;
+  const userReaction = useMemo(() => {
+    if (!post.reactions || !authUser) return null;
+    
+    const reaction = post.reactions.find(r => {
+      // Handle both formats: when user is a string ID or an object
+      if (typeof r.user === 'object') {
+        return r.user?._id === authUser?._id;
+      } else {
+        return r.user === authUser?._id;
+      }
+    });
+    
+    return reaction?.type || null;
+  }, [post.reactions, authUser]);
 
   // Total reactions count
   const totalReactions = post.reactions?.length || 0;
