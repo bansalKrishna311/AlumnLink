@@ -53,13 +53,20 @@ const NotificationsPage = () => {
     },
   })
 
-  const { mutate: markAllAsReadMutation } = useMutation({
-    mutationFn: () => axiosInstance.put(`/notifications/mark-all-read`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"])
-      toast.success("All notifications marked as read")
+  const { mutate: markAllAsReadMutation, isPending: isMarkingAllAsRead } = useMutation({
+    mutationFn: async () => {
+      const response = await axiosInstance.put(`/notifications/mark-all-read`);
+      return response.data;
     },
-  })
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+      toast.success("All notifications marked as read");
+    },
+    onError: (error) => {
+      console.error("Error marking all as read:", error);
+      toast.error("Failed to mark all notifications as read");
+    }
+  });
 
   const { mutate: deleteNotificationMutation } = useMutation({
     mutationFn: (id) => axiosInstance.delete(`/notifications/${id}`),
@@ -134,18 +141,24 @@ const NotificationsPage = () => {
               </div>
 
               {unreadCount > 0 && (
-                <motion.div whileHover={prefersReducedMotion ? {} : { scale: 1.05 }} whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}>
+                <motion.div 
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.05 }} 
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                  className="flex-shrink-0"
+                >
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => markAllAsReadMutation()} 
-                    className="text-sm"
+                    disabled={isMarkingAllAsRead}
+                    className="text-sm whitespace-nowrap"
                     style={{ 
                       borderColor: THEME_COLOR_LIGHT, 
                       color: THEME_COLOR 
                     }}
                   >
-                    Mark all as read
+                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                    {isMarkingAllAsRead ? "Marking..." : "Mark all as read"}
                   </Button>
                 </motion.div>
               )}

@@ -3,8 +3,14 @@
 import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
-import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
 import mongoose from "mongoose";
+import { 
+    sendCommentNotificationEmail,
+    sendLikeNotificationEmail,
+    sendReplyNotificationEmail,
+    sendMentionNotificationEmail,
+    sendPostStatusNotificationEmail
+} from "../emails/emailHandlers.js";
 
 // Helper function to extract mentions from content
 const extractMentions = (content) => {
@@ -40,7 +46,8 @@ export const getFeedPosts = async (req, res) => {
         })
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline") // Populate reaction user info
+            .populate("reactions.user", "name username profilePicture headline")
+            .populate("adminId", "name username") // Populate admin who approved the post
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -135,7 +142,8 @@ export const getPostById = async (req, res) => {
         const post = await Post.findById(postId)
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline"); // Add this line
+            .populate("reactions.user", "name username profilePicture headline")
+            .populate("adminId", "name username"); // Populate admin who approved the post
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -223,7 +231,25 @@ export const createComment = async (req, res) => {
                     });
                     await mentionNotification.save();
                     
-                    // TODO: Add email notification for mentions
+                    // Send email notification for mentions
+                    try {
+                        // Get the mentioned user information
+                        const mentionedUser = await mongoose.model("User").findById(mention.userId);
+                        if (mentionedUser && mentionedUser.email) {
+                            const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+                            
+                            await sendMentionNotificationEmail(
+                                mentionedUser.email,
+                                mentionedUser.name,
+                                req.user.name,
+                                postUrl,
+                                content
+                            );
+                        }
+                    } catch (emailError) {
+                        console.error("Error sending mention notification email:", emailError);
+                        // Continue execution even if email fails
+                    }
                 }
             }
             
@@ -306,7 +332,23 @@ export const replyToComment = async (req, res) => {
                 });
                 await newNotification.save();
                 
-                // TODO: Send notification email for reply (similar to comment notification)
+                // Send notification email for reply
+                try {
+                    // Get the comment author information
+                    const commentAuthor = await mongoose.model("User").findById(comment.user);
+                    const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+                    
+                    await sendReplyNotificationEmail(
+                        commentAuthor.email,
+                        commentAuthor.name,
+                        req.user.name,
+                        postUrl,
+                        content
+                    );
+                } catch (emailError) {
+                    console.error("Error sending reply notification email:", emailError);
+                    // Continue execution even if email fails
+                }
             }
             
             // Create notifications for mentioned users
@@ -396,7 +438,23 @@ export const reactToPost = async (req, res) => {
                 });
                 await newNotification.save();
                 
-                // TODO: Send email notification for reactions if needed
+                // Send email notification for reactions
+                try {
+                    // Get the post author information
+                    const postAuthor = await mongoose.model("User").findById(post.author);
+                    const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+                    
+                    await sendLikeNotificationEmail(
+                        postAuthor.email,
+                        postAuthor.name,
+                        req.user.name,
+                        postUrl,
+                        post.content
+                    );
+                } catch (emailError) {
+                    console.error("Error sending reaction notification email:", emailError);
+                    // Continue execution even if email fails
+                }
             }
         } catch (notificationError) {
             console.error("Error creating reaction notification:", notificationError);
@@ -451,6 +509,12 @@ export const updatePostStatus = async (req, res) => {
       // Update the post status
       post.status = status;
       post.reviewedAt = new Date();
+      
+      // Save admin ID who approved the post
+      if (status === 'approved') {
+        post.adminId = req.user._id;
+      }
+      
       await post.save();
       
       // Create notification for the author based on status
@@ -465,7 +529,26 @@ export const updatePostStatus = async (req, res) => {
         });
         await newNotification.save();
         
-        // TODO: Send email notification for post status change if needed
+        // Send email notification for post status change
+        try {
+          // Get post author and admin details
+          const postAuthor = await mongoose.model("User").findById(post.author);
+          const admin = await mongoose.model("User").findById(req.user._id);
+          const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+          
+          await sendPostStatusNotificationEmail(
+            postAuthor.email,
+            postAuthor.name,
+            admin.name,
+            status,
+            postUrl,
+            post.content,
+            null
+          );
+        } catch (emailError) {
+          console.error(`Error sending post ${status} notification email:`, emailError);
+          // Continue execution even if email fails
+        }
       } catch (notificationError) {
         console.error(`Error creating post ${status} notification:`, notificationError);
         // Continue execution even if notification fails
@@ -493,8 +576,12 @@ export const reviewPost = async (req, res) => {
         post.feedback = feedback;
       }
       
-      // Add review timestamp
+      // Add review timestamp and admin ID
       post.reviewedAt = new Date();
+      if (status === 'approved') {
+        post.adminId = req.user._id;
+      }
+      
       await post.save();
       
       // Create notification for the author based on status
@@ -509,7 +596,26 @@ export const reviewPost = async (req, res) => {
         });
         await newNotification.save();
         
-        // TODO: Send email notification for post status change if needed
+        // Send email notification for post status change
+        try {
+          // Get post author and admin details
+          const postAuthor = await mongoose.model("User").findById(post.author);
+          const admin = await mongoose.model("User").findById(req.user._id);
+          const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+          
+          await sendPostStatusNotificationEmail(
+            postAuthor.email,
+            postAuthor.name,
+            admin.name,
+            status,
+            postUrl,
+            post.content,
+            feedback || null
+          );
+        } catch (emailError) {
+          console.error(`Error sending post ${status} notification email:`, emailError);
+          // Continue execution even if email fails
+        }
       } catch (notificationError) {
         console.error(`Error creating post ${status} notification:`, notificationError);
         // Continue execution even if notification fails
@@ -610,7 +716,23 @@ export const likeComment = async (req, res) => {
           });
           await newNotification.save();
           
-          // TODO: Send email notification for likes if needed
+          // Send email notification for comment likes
+          try {
+            // Get the comment author and the post
+            const commentAuthor = await mongoose.model("User").findById(comment.user);
+            const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+            
+            await sendLikeNotificationEmail(
+              commentAuthor.email,
+              commentAuthor.name,
+              req.user.name,
+              postUrl,
+              comment.content
+            );
+          } catch (emailError) {
+            console.error("Error sending comment like notification email:", emailError);
+            // Continue execution even if email fails
+          }
         }
       } catch (notificationError) {
         console.error("Error creating comment like notification:", notificationError);
@@ -698,7 +820,24 @@ export const likeReply = async (req, res) => {
           });
           await newNotification.save();
           
-          // TODO: Send email notification for likes if needed
+          // Send email notification for reply likes
+          try {
+            // Get the reply author information
+            const replyAuthor = await mongoose.model("User").findById(reply.user._id);
+            const liker = await mongoose.model("User").findById(userId);
+            const postUrl = `${process.env.CLIENT_URL}/post/${postId}`;
+            
+            await sendLikeNotificationEmail(
+              replyAuthor.email,
+              replyAuthor.name,
+              liker.name,
+              postUrl,
+              reply.content
+            );
+          } catch (emailError) {
+            console.error("Error sending reply like notification email:", emailError);
+            // Continue execution even if email fails
+          }
         }
       } catch (notificationError) {
         console.error("Error creating reply like notification:", notificationError);
@@ -780,6 +919,7 @@ export const getBookmarkedPosts = async (req, res) => {
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
+      .populate("adminId", "name username") // Populate admin who approved the post
       .sort({ createdAt: -1 });
 
     res.status(200).json(bookmarkedPosts);
@@ -808,6 +948,7 @@ export const getPostsByUsername = async (req, res) => {
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
+      .populate("adminId", "name username") // Populate admin who approved the post
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);

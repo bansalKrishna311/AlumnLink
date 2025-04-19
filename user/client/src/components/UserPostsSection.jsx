@@ -1,17 +1,14 @@
 // filepath: c:\Users\bansa\OneDrive\Desktop\AlumnLink\user\client\src\components\UserPostsSection.jsx
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Post from "./Post";
-import { Bookmark, Filter, MessageCircle, ChevronRight } from "lucide-react";
+import { Bookmark, MessageCircle, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const UserPostsSection = ({ username, isOwnProfile }) => {
-  const [selectedType, setSelectedType] = useState("all");
   const navigate = useNavigate();
 
-  
   // Fetch user's posts
   const { data: userPosts, isLoading } = useQuery({
     queryKey: ["userPosts", username],
@@ -21,27 +18,8 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
     },
   });
 
-  const handleTypeChange = (type) => {
-    setSelectedType(type);
-  };
-
-  const filteredPosts =
-    selectedType === "all"
-      ? userPosts
-      : userPosts?.filter((post) => post.type === selectedType);
-
   // Always display only the latest post in profile
-  const displayedPosts = filteredPosts?.length > 0 ? [filteredPosts[0]] : [];
-
-  const postTypes = [
-    { id: "all", label: "All" },
-    { id: "discussion", label: "Discussion" },
-    { id: "job", label: "Job" },
-    { id: "internship", label: "Internship" },
-    { id: "event", label: "Event" },
-    { id: "personal", label: "Personal" },
-    { id: "other", label: "Other" },
-  ];
+  const displayedPosts = userPosts?.length > 0 ? [userPosts[0]] : [];
 
   const goToSavedPosts = () => {
     navigate("/saved-posts");
@@ -70,30 +48,6 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
         )}
       </div>
 
-      <motion.div 
-        className="flex space-x-2 mb-4 overflow-x-auto py-2 scrollbar-hide"
-        initial={{ y: -10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Filter size={16} className="text-gray-500 mr-1 mt-2" />
-        {postTypes.map((type) => (
-          <motion.button
-            key={type.id}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleTypeChange(type.id)}
-            className={`px-3 py-1.5 rounded-full text-sm transition-all duration-200 whitespace-nowrap
-              ${selectedType === type.id 
-                ? 'bg-[#fe6019] text-white shadow-sm' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-          >
-            {type.label}
-          </motion.button>
-        ))}
-      </motion.div>
-
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
@@ -108,7 +62,7 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
               ))}
             </div>
           </motion.div>
-        ) : filteredPosts?.length ? (
+        ) : userPosts?.length ? (
           <motion.div layout className="space-y-4">
             {displayedPosts.map((post, index) => (
               <motion.div
@@ -121,7 +75,7 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
               </motion.div>
             ))}
             
-            {filteredPosts.length > 1 && (
+            {userPosts.length > 1 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -131,7 +85,7 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
                   onClick={goToUserPosts}
                   className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
                 >
-                  <span>View All Posts ({filteredPosts.length})</span>
+                  <span>View All Posts ({userPosts.length})</span>
                   <ChevronRight className="ml-1" size={16} />
                 </button>
               </motion.div>

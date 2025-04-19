@@ -44,3 +44,17 @@ export const deleteNotification = async (req, res) => {
 		res.status(500).json({ message: "Server error" });
 	}
 };
+
+export const markAllNotificationsAsRead = async (req, res) => {
+	try {
+		await Notification.updateMany(
+			{ recipient: req.user._id, read: false },
+			{ read: true }
+		);
+
+		res.status(200).json({ message: "All notifications marked as read" });
+	} catch (error) {
+		console.error("Error in markAllNotificationsAsRead controller:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};

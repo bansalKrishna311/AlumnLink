@@ -33,7 +33,20 @@ const Post = ({ post }) => {
   const queryClient = useQueryClient();
 
   // Get user's current reaction if any
-  const userReaction = post.reactions?.find((reaction) => reaction.user === authUser?._id)?.type;
+  const userReaction = useMemo(() => {
+    if (!post.reactions || !authUser) return null;
+    
+    const reaction = post.reactions.find(r => {
+      // Handle both formats: when user is a string ID or an object
+      if (typeof r.user === 'object') {
+        return r.user?._id === authUser?._id;
+      } else {
+        return r.user === authUser?._id;
+      }
+    });
+    
+    return reaction?.type || null;
+  }, [post.reactions, authUser]);
 
   // Total reactions count
   const totalReactions = post.reactions?.length || 0;
@@ -349,14 +362,20 @@ const Post = ({ post }) => {
 
   const getPostTypeBadgeColor = (type) => {
     const types = {
-      internship: "bg-purple-100 text-purple-700 border-purple-200",
-      job: "bg-blue-100 text-blue-700 border-blue-200",
-      event: "bg-orange-100 text-orange-700 border-orange-200",
-      discussion: "bg-green-100 text-green-700 border-green-200",
-      personal: "bg-indigo-100 text-indigo-700 border-indigo-200",
-      other: "bg-gray-100 text-gray-700 border-gray-200",
+      // Discussion: Yellow/Gold color from image
+      discussion: "bg-amber-400 text-white border-amber-500",
+      // Job: Purple color from image
+      job: "bg-indigo-400 text-white border-indigo-500",
+      // Internship: Green color from image
+      internship: "bg-emerald-400 text-white border-emerald-500",
+      // Event: Light Blue color from image
+      event: "bg-sky-400 text-white border-sky-500",
+      // Personal: Pink color from image
+      personal: "bg-pink-400 text-white border-pink-500",
+      // Other: Dark Blue color from image
+      other: "bg-blue-700 text-white border-blue-800",
     };
-    return types[type] || "bg-gray-100 text-gray-700 border-gray-200";
+    return types[type] || "bg-gray-400 text-white border-gray-500";
   };
 
   const getPostTypeIcon = (type) => {
