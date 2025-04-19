@@ -47,21 +47,21 @@ const SavedPostsPage = () => {
       exit={{ opacity: 0 }}
       className="min-h-screen bg-background"
     >
-      <div className="sticky top-0 z-10 bg-secondary p-4 shadow-md">
-        <div className="flex items-center">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="mr-4 p-1 rounded-full hover:bg-gray-200"
-            aria-label="Go back"
-          >
-            <ArrowLeft size={20} className="text-[#fe6019]" />
-          </button>
-          <h1 className="text-xl font-bold text-[#fe6019] flex items-center">
-            <Bookmark size={20} className="mr-2" /> Saved Posts
-          </h1>
+        {/* <div className="sticky top-0 z-10 bg-secondary p-4 shadow-md">
+            <div className="flex items-center">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="mr-4 p-1 rounded-full hover:bg-gray-200"
+                aria-label="Go back"
+            >
+                <ArrowLeft size={20} className="text-[#fe6019]" />
+            </button>
+            <h1 className="text-xl font-bold text-[#fe6019] flex items-center">
+                <Bookmark size={20} className="mr-2" /> Saved Posts
+            </h1>
+            </div>
         </div>
-      </div>
-      
+        */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 max-w-7xl mx-auto">
         <div className="hidden lg:block lg:col-span-1">
           <Sidebar user={authUser} />

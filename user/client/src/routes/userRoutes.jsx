@@ -15,6 +15,7 @@ import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
 import ComingSoon from "@/pages/ComingSoon";
 import SavedPostsPage from "@/pages/SavedPostsPage";
+import UserPostsPage from "@/pages/UserPostsPage";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -93,6 +94,17 @@ const ProtectedRoute = ({ children }) => {
                 <Layout>
                     <PageTitle title="Profile | AlumnLink" />
                     <ProfilePage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/profile/:username/posts",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Profile | AlumnLink" />
+                    <UserPostsPage />
                 </Layout>
             </ProtectedRoute>
         ),

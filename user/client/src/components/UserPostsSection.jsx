@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Post from "./Post";
-import { Bookmark, Filter, MessageCircle } from "lucide-react";
+import { Bookmark, Filter, MessageCircle, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const UserPostsSection = ({ username, isOwnProfile }) => {
   const [selectedType, setSelectedType] = useState("all");
   const navigate = useNavigate();
 
+  
   // Fetch user's posts
   const { data: userPosts, isLoading } = useQuery({
     queryKey: ["userPosts", username],
@@ -29,6 +30,9 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
       ? userPosts
       : userPosts?.filter((post) => post.type === selectedType);
 
+  // Always display only the latest post in profile
+  const displayedPosts = filteredPosts?.length > 0 ? [filteredPosts[0]] : [];
+
   const postTypes = [
     { id: "all", label: "All" },
     { id: "discussion", label: "Discussion" },
@@ -41,6 +45,10 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
 
   const goToSavedPosts = () => {
     navigate("/saved-posts");
+  };
+
+  const goToUserPosts = () => {
+    navigate(`/profile/${username}/posts`);
   };
 
   return (
@@ -102,7 +110,7 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
           </motion.div>
         ) : filteredPosts?.length ? (
           <motion.div layout className="space-y-4">
-            {filteredPosts.map((post, index) => (
+            {displayedPosts.map((post, index) => (
               <motion.div
                 key={post._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -112,6 +120,22 @@ const UserPostsSection = ({ username, isOwnProfile }) => {
                 <Post post={post} />
               </motion.div>
             ))}
+            
+            {filteredPosts.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center mt-4"
+              >
+                <button
+                  onClick={goToUserPosts}
+                  className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  <span>View All Posts ({filteredPosts.length})</span>
+                  <ChevronRight className="ml-1" size={16} />
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         ) : (
           <motion.div
