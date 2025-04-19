@@ -121,14 +121,16 @@ export const getMentionSuggestions = async (req, res) => {
         } 
       : {};
     
-    // Get all users for mentions with optional search filter
+    // Get users for mentions with optional search filter - only users with role "user" or "admin"
     const mentionUsers = await User.find({
       // Skip deleted users if applicable
       isDeleted: { $ne: true },
+      // Only include users with roles "user" or "admin"
+      role: { $in: ["user", "admin"] },
       // Apply search filter if present
       ...searchFilter
     })
-    .select("name username profilePicture")
+    .select("name username profilePicture role adminType")
     .limit(50);
     
     res.json(mentionUsers);

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, User } from "lucide-react";
+import { Search, User, Shield } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
@@ -8,7 +8,8 @@ const MentionDropdown = ({
   query, 
   visible,
   onSelect,
-  users = []
+  users = [],
+  parentRef = null
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef(null);
@@ -18,17 +19,14 @@ const MentionDropdown = ({
   const { data: fetchedUsers, isLoading } = useQuery({
     queryKey: ['mentionSuggestions', query],
     queryFn: async () => {
-      // Add search parameter to the API call
       const response = await axiosInstance.get(`/users/mention-suggestions${query ? `?search=${query}` : ''}`);
       return response.data;
     },
-    // Only start searching when there's a query and no users were passed
     enabled: visible && (!users || users.length === 0),
-    // Reduce refetch rate to avoid too many requests
     staleTime: 30000,
   });
   
-  // Filter users to display (limit to 10 for performance)
+  // Filter users to display
   const usersToShow = users?.length > 0 ? users : fetchedUsers;
   const filteredUsers = (usersToShow || [])
     .filter(user => !query || 
@@ -90,17 +88,34 @@ const MentionDropdown = ({
   }, [selectedIndex]);
 
   if (!visible) return null;
+  
+  // Format admin type for display
+  const formatAdminType = (type) => {
+    if (!type) return 'Admin';
+    return type.charAt(0).toUpperCase() + type.slice(1) + ' Admin';
+  };
 
   return (
-    <div className="fixed z-[9999]" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
+    <div 
+      className="relative w-full"
+      style={{
+        zIndex: 9999,
+        // Position above the input field instead of below
+        position: "absolute",
+        bottom: "100%",  // Position above instead of below
+        left: 0,
+        right: 0,
+        marginBottom: "40px" // Small gap between dropdown and input
+      }}
+    >
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        className="bg-white rounded-lg shadow-lg border-2 border-gray-200 w-80 max-h-60 overflow-y-auto"
+        exit={{ opacity: 0, y: 5 }}
+        className="bg-white rounded-lg shadow-lg border-2 border-gray-200 w-full max-h-[300px] overflow-y-auto"
         ref={listRef}
       >
-        <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center sticky top-0">
+        <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center sticky top-0 z-10">
           <Search size={14} className="text-gray-500 mr-2" />
           <span className="text-sm font-medium">
             {query ? `Results for "${query}"` : "Mention someone"}
@@ -134,12 +149,18 @@ const MentionDropdown = ({
                   alt={user.name}
                   className="w-8 h-8 rounded-full mr-2 border border-gray-200 object-cover" 
                 />
-                <div>
-                  <div className="font-medium text-sm">{user.name}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm truncate">{user.name}</div>
                   {user.username && (
-                    <div className="text-xs text-gray-500">@{user.username}</div>
+                    <div className="text-xs text-gray-500 truncate">@{user.username}</div>
                   )}
                 </div>
+                {user.role === "admin" && (
+                  <div className="flex items-center text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-1 whitespace-nowrap">
+                    <Shield size={10} className="mr-0.5 flex-shrink-0" />
+                    {formatAdminType(user.adminType)}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

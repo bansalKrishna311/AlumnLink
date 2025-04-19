@@ -627,7 +627,7 @@ const PostComments = ({
                 onClick={() => navigateToProfile(authUser?.username || authUser?.name)}
               />
             </div>
-            <div className="relative w-full">
+            <div className="relative w-full" style={{ position: "relative" }}>
               <input
                 type="text"
                 value={newComment}
@@ -646,16 +646,18 @@ const PostComments = ({
                 {isAddingComment ? <Loader size={14} className="animate-spin" /> : <Send size={14} />}
               </motion.button>
               
-              <AnimatePresence>
-                {mentionDropdownVisible && (
-                  <MentionDropdown
-                    query={mentionQuery}
-                    visible={mentionDropdownVisible}
-                    onSelect={handleMentionSelect}
-                    users={users}
-                  />
-                )}
-              </AnimatePresence>
+              <div className="relative w-full" style={{ position: "relative" }}>
+                <AnimatePresence>
+                  {mentionDropdownVisible && (
+                    <MentionDropdown
+                      query={mentionQuery}
+                      visible={mentionDropdownVisible}
+                      onSelect={handleMentionSelect}
+                      users={users}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </motion.form>
         </motion.div>
