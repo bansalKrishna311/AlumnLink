@@ -14,6 +14,7 @@ import {
     replyToComment,
     likeComment,
     likeReply,
+    bookmarkPost,
 } from "../controllers/post.controller.js";
 
 const router = express.Router();
@@ -32,16 +33,15 @@ router.post("/:id/comment", protectRoute, createComment);
 router.post("/:postId/comment/:commentId/reply", protectRoute, replyToComment);
 router.post("/:postId/comment/:commentId/like", protectRoute, likeComment);
 router.post("/:postId/comment/:commentId/reply/:replyId/like", protectRoute, likeReply);
-// router.post("/:id/like", protectRoute, likePost);
+router.post("/:id/react", protectRoute, reactToPost);
+router.post("/:id/bookmark", protectRoute, bookmarkPost);
 
 // New admin routes
 router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 
-router.patch('/admin/:postId/status', updatePostStatus);
+router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
 
-
-router.post("/:id/react", protectRoute, reactToPost);  
 
 router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
 

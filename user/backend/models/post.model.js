@@ -62,6 +62,7 @@ const postSchema = new mongoose.Schema(
             eventDate: { type: Date },
             eventLocation: { type: String },
         },
+        bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
     },
     { timestamps: true }
 );

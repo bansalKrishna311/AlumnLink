@@ -724,3 +724,45 @@ export const likeReply = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Bookmark or unbookmark a post
+export const bookmarkPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the user has already bookmarked this post
+    const bookmarkIndex = post.bookmarks.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    // Toggle bookmark status
+    if (bookmarkIndex === -1) {
+      // Add bookmark
+      post.bookmarks.push(userId);
+    } else {
+      // Remove bookmark
+      post.bookmarks.splice(bookmarkIndex, 1);
+    }
+
+    await post.save();
+
+    // Return the updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name email username headline profilePicture")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("Error in bookmarkPost controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
