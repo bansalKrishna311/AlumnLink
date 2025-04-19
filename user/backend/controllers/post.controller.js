@@ -766,3 +766,53 @@ export const bookmarkPost = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Get all bookmarked posts for the current user
+export const getBookmarkedPosts = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find posts that have the user's ID in the bookmarks array
+    const bookmarkedPosts = await Post.find({
+      bookmarks: { $in: [userId] },
+      status: "approved" // Only show approved posts
+    })
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(bookmarkedPosts);
+  } catch (error) {
+    console.error("Error in getBookmarkedPosts controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get posts by a specific user
+export const getPostsByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // Find the user by username first
+    const user = await mongoose.model("User").findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find posts by that user
+    const posts = await Post.find({
+      author: user._id,
+      status: "approved" // Only show approved posts
+    })
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Error in getPostsByUsername controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
