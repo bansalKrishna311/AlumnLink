@@ -17,7 +17,9 @@ import {
     bookmarkPost,
     getBookmarkedPosts,
     getPostsByUsername,
+    getRecentAdminPosts,
 } from "../controllers/post.controller.js";
+import Post from "../models/post.model.js"; // Added import for Post model
 
 const router = express.Router();
 
@@ -47,10 +49,28 @@ router.post("/:postId/comment/:commentId/reply/:replyId/like", protectRoute, lik
 router.post("/:id/react", protectRoute, reactToPost);
 router.post("/:id/bookmark", protectRoute, bookmarkPost);
 
+// Hashtag routes
+router.get("/hashtag/:tag", protectRoute, async (req, res) => {
+    try {
+        const { tag } = req.params;
+        const posts = await Post.findByHashtag(tag)
+            .populate("author", "name username profilePicture headline")
+            .populate("comments.user", "name profilePicture username headline")
+            .populate("reactions.user", "name username profilePicture headline")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error fetching hashtag posts:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 // Admin routes
 router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
 router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
+router.get('/admin/recent', protectRoute, isAdmin, getRecentAdminPosts);
 
 export default router;

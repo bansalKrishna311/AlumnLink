@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
-import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users } from "lucide-react"
+import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users, TrendingUp } from "lucide-react"
 
 import { VersionSwitcher } from "@/components/version-switcher"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"

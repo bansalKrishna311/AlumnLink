@@ -62,10 +62,22 @@ const postSchema = new mongoose.Schema(
             eventDate: { type: Date },
             eventLocation: { type: String },
         },
-        bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+        bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        hashtags: [{ type: String, index: true }]
     },
     { timestamps: true }
 );
+
+// Method to find posts by hashtag
+postSchema.statics.findByHashtag = function(hashtag) {
+    const lowercaseTag = hashtag.toLowerCase();
+    return this.find({ 
+        $or: [
+            { hashtags: lowercaseTag },
+            { content: new RegExp('#' + lowercaseTag + '\\b', 'i') } // Search for #hashtag in content
+        ]
+    });
+};
 
 const Post = mongoose.model("Post", postSchema);
 

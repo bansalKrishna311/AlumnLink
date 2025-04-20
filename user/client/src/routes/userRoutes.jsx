@@ -10,6 +10,8 @@ import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
 import MyLinksPage from "../pages/MyLinksPage";
+// Removed TrendingHashtagsPage import
+import HashtagPage from "../pages/HashtagPage";
 
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
@@ -147,6 +149,17 @@ const ProtectedRoute = ({ children }) => {
                 <Layout>
                     <PageTitle title="Saved Posts | AlumnLink" />
                     <SavedPostsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/hashtag/:tag",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Hashtag | AlumnLink" />
+                    <HashtagPage />
                 </Layout>
             </ProtectedRoute>
         ),

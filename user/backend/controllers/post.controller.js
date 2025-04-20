@@ -4,6 +4,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import mongoose from "mongoose";
+import User from "../models/user.model.js"; // Import User model
 import { 
     sendCommentNotificationEmail,
     sendLikeNotificationEmail,
@@ -57,53 +58,95 @@ export const getFeedPosts = async (req, res) => {
     }
 };
 
-
-// Create a new post
-
+// Create a post
 export const createPost = async (req, res) => {
-    try {
-        const { content, image, type, jobDetails, internshipDetails, eventDetails, links } = req.body; // Destructure the new field
+  try {
+    const { content, type, links, image, jobDetails, internshipDetails, eventDetails } = req.body;
+    const userId = req.user.id;
 
-        console.log("Received data:", { content, image, type, jobDetails, internshipDetails, eventDetails, links });
-
-        let newPostData = {
-            author: req.user._id,
-            content,
-            type,
-        };
-
-        // Include details based on post type
-        if (type === "job" && jobDetails) {
-            newPostData.jobDetails = jobDetails; // Add jobDetails to post data
-        } else if (type === "internship" && internshipDetails) {
-            newPostData.internshipDetails = internshipDetails; // Add internshipDetails to post data
-        } else if (type === "event" && eventDetails) {
-            newPostData.eventDetails = eventDetails; // Add eventDetails to post data
-        }
-
-        // Include links if provided
-        if (Array.isArray(links) && links.length > 0) {
-            newPostData.links = links; // Add links to post data
-        }
-
-        // Upload image to Cloudinary if provided
-        if (image) {
-            const imgResult = await cloudinary.uploader.upload(image);
-            newPostData.image = imgResult.secure_url; // Add image URL to post data
-        }
-
-        // Create a new post instance with the correct structure
-        const newPost = new Post(newPostData);
-        await newPost.save();
-
-        console.log("Post created successfully:", newPost); // Log successful creation
-        res.status(201).json(newPost);
-    } catch (error) {
-        console.error("Error in createPost controller:", error);
-        res.status(500).json({ message: "Server error" });
+    // Extract hashtags from content
+    const hashtagRegex = /#(\w+)/g;
+    const hashtags = [];
+    let match;
+    
+    while ((match = hashtagRegex.exec(content)) !== null) {
+      hashtags.push(match[1].toLowerCase());
     }
-};
+    
+    // Create the post object
+    const postData = {
+      content,
+      author: userId,
+      type: type || "discussion",
+      hashtags: [...new Set(hashtags)], // Remove duplicates
+    };
 
+    // Add links if provided
+    if (links && links.length > 0) {
+      postData.links = links;
+    }
+
+    // Add image if provided
+    if (image) {
+      try {
+        // Upload image to Cloudinary
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          folder: "alumnlink/posts",
+        });
+        postData.image = uploadResponse.secure_url;
+      } catch (error) {
+        console.error("Error uploading image to Cloudinary:", error);
+        return res.status(500).json({ message: "Error uploading image" });
+      }
+    }
+
+    // Add type-specific details
+    if (type === "job" && jobDetails) {
+      postData.jobDetails = JSON.parse(jobDetails);
+    } else if (type === "internship" && internshipDetails) {
+      postData.internshipDetails = JSON.parse(internshipDetails);
+    } else if (type === "event" && eventDetails) {
+      postData.eventDetails = JSON.parse(eventDetails);
+    }
+
+    // Determine post status based on user role
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    postData.status = user.isAdmin ? "approved" : "pending";
+
+    // Create post
+    const post = await Post.create(postData);
+
+    // If user is not admin, create notification for admins
+    if (!user.isAdmin) {
+      // Find all admin users
+      const admins = await User.find({ isAdmin: true });
+      
+      // Create notifications for each admin
+      const notifications = admins.map(admin => ({
+        recipient: admin._id,
+        type: "post_approval",
+        content: `New post from ${user.name} requires approval`,
+        reference: {
+          type: "post",
+          id: post._id
+        }
+      }));
+      
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    }
+
+    return res.status(201).json({ post, status: postData.status });
+  } catch (error) {
+    console.error("Error creating post:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 // Delete a post
 export const deletePost = async (req, res) => {
@@ -954,6 +997,181 @@ export const getPostsByUsername = async (req, res) => {
     res.status(200).json(posts);
   } catch (error) {
     console.error("Error in getPostsByUsername controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get recent posts with analytics data for admin dashboard
+export const getRecentAdminPosts = async (req, res) => {
+  try {
+    // Get recent posts (limit to 5)
+    const recentPosts = await Post.find({})
+      .populate("author", "name username profilePicture headline")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get total posts count
+    const totalPosts = await Post.countDocuments();
+    
+    // Get posts created this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const postsThisMonth = await Post.countDocuments({
+      createdAt: { $gte: startOfMonth }
+    });
+
+    // Get engagement statistics
+    const allPosts = await Post.find({});
+    
+    const totalReactions = allPosts.reduce((sum, post) => sum + post.reactions.length, 0);
+    const totalComments = allPosts.reduce((sum, post) => sum + post.comments.length, 0);
+    
+    // Calculate post engagement by type
+    const postTypeEngagement = {};
+    const postCountByType = {};
+    const validTypes = ['discussion', 'job', 'internship', 'event', 'other'];
+    
+    // Initialize counters for each type
+    validTypes.forEach(type => {
+      postTypeEngagement[type] = 0;
+      postCountByType[type] = 0;
+    });
+    
+    // Calculate total engagement for each post type
+    allPosts.forEach(post => {
+      const type = post.type && validTypes.includes(post.type) ? post.type : 'other';
+      const engagement = post.reactions.length + post.comments.length;
+      
+      postTypeEngagement[type] += engagement;
+      postCountByType[type] += 1;
+    });
+    
+    // Calculate percentage distribution
+    const totalEngagement = Object.values(postTypeEngagement).reduce((sum, val) => sum + val, 0);
+    const engagementPercentages = {};
+    
+    validTypes.forEach(type => {
+      engagementPercentages[type] = totalEngagement > 0 
+        ? Math.round((postTypeEngagement[type] / totalEngagement) * 100) 
+        : 0;
+    });
+    
+    // Find type with highest average engagement
+    let mostEngagedType = 'other';
+    let highestEngagement = 0;
+    
+    Object.entries(postTypeEngagement).forEach(([type, engagement]) => {
+      const count = postCountByType[type];
+      const avgEngagement = count > 0 ? engagement / count : 0;
+      
+      if (avgEngagement > highestEngagement) {
+        highestEngagement = avgEngagement;
+        mostEngagedType = type;
+      }
+    });
+
+    // Get top performing posts - Using aggregation
+    const topPosts = await Post.aggregate([
+      {
+        $project: {
+          _id: 1,
+          author: 1,
+          content: 1,
+          type: 1,
+          createdAt: 1,
+          reactionCount: { $size: { $ifNull: ["$reactions", []] } },
+          commentCount: { $size: { $ifNull: ["$comments", []] } },
+          totalEngagement: {
+            $add: [
+              { $size: { $ifNull: ["$reactions", []] } },
+              { $size: { $ifNull: ["$comments", []] } }
+            ]
+          }
+        }
+      },
+      { $sort: { totalEngagement: -1 } },
+      { $limit: 3 }
+    ]);
+    
+    // Populate author data for top posts
+    await Post.populate(topPosts, { path: "author", select: "name username profilePicture headline" });
+
+    // Create monthly post distribution data
+    const monthlyPostData = [];
+    const currentMonth = new Date().getMonth();
+    
+    for (let i = 0; i < 12; i++) {
+      const month = new Date();
+      month.setMonth(currentMonth - i);
+      month.setDate(1);
+      month.setHours(0, 0, 0, 0);
+      
+      const nextMonth = new Date(month);
+      nextMonth.setMonth(month.getMonth() + 1);
+      
+      const count = await Post.countDocuments({
+        createdAt: { 
+          $gte: month,
+          $lt: nextMonth
+        }
+      });
+      
+      monthlyPostData.unshift({
+        month: month.toLocaleString('default', { month: 'short' }),
+        count,
+        isCurrent: i === 0
+      });
+    }
+
+    // Calculate weekly growth rate
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    
+    const postsLastWeek = await Post.countDocuments({
+      createdAt: { 
+        $gte: oneWeekAgo
+      }
+    });
+    
+    const postsPreviousWeek = await Post.countDocuments({
+      createdAt: { 
+        $gte: twoWeeksAgo,
+        $lt: oneWeekAgo
+      }
+    });
+    
+    // Calculate growth percentage
+    let weeklyGrowthRate = 0;
+    if (postsPreviousWeek > 0) {
+      weeklyGrowthRate = Math.round(((postsLastWeek - postsPreviousWeek) / postsPreviousWeek) * 100);
+    } else if (postsLastWeek > 0) {
+      weeklyGrowthRate = 100; // If there were no posts the previous week but there are now
+    }
+
+    // Prepare and send response
+    res.status(200).json({
+      posts: recentPosts,
+      stats: {
+        totalPosts,
+        postsThisMonth,
+        weeklyGrowthRate,
+        engagement: {
+          totalReactions,
+          totalComments,
+          mostEngagedType
+        },
+        engagementByType: engagementPercentages,
+        monthlyPostData,
+        topPosts
+      }
+    });
+  } catch (error) {
+    console.error("Error in getRecentAdminPosts controller:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

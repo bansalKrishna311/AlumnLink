@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { X, Globe, CheckCircle } from "lucide-react";
 
-
-
 const PostHeader = ({ 
   post, 
   authUser, 
@@ -22,6 +20,15 @@ const PostHeader = ({
   isBookmarked
 }) => {
   const isOwner = authUser?._id === post.author?._id;
+  const isAdminAuthor = post.author?.headline === "AlumnLink Admin" || post.author?.headline === "AlumnLink superadmin";
+  
+  // Determine the admin status text
+  let adminStatusText = null;
+  if ((isAdminAuthor && !post.adminId) || (post.adminId && post.adminId._id === post.author?._id)) {
+    adminStatusText = "Admin Announcement";
+  } else if (post.adminId) {
+    adminStatusText = `Posted for ${post.adminId.name}`;
+  }
 
   return (
     <div className="flex items-center justify-between mb-3">
@@ -40,6 +47,7 @@ const PostHeader = ({
           />
         </Link>
         <div>
+          {/* First row: Author name and post type */}
           <div className="flex items-center">
             <Link to={`/profile/${post?.author?.username}`}>
               <h3 className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
@@ -56,24 +64,28 @@ const PostHeader = ({
               {post.type}
             </motion.span>
           </div>
-          <div className="flex items-center">
-            <p className="text-xs text-gray-500">{post.author?.headline}</p>
+          
+          {/* Second row: Admin status and time */}
+          <div className="flex items-center text-xs text-gray-500">
+            {adminStatusText && (
+              <div className="flex items-center mr-2">
+                <CheckCircle size={10} className="text-green-500 mr-1" />
+                {adminStatusText.startsWith("Posted for") ? (
+                  <>
+                    Posted for <Link to={`/profile/${post.adminId?.username}`} className="text-[#fe6019] hover:underline">{post.adminId?.name}</Link>
+                  </>
+                ) : (
+                  adminStatusText
+                )}
+              </div>
+            )}
+            
             <span className="mx-1 text-gray-300">•</span>
-            <p className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-              })}
-            </p>
+            
+            {formatDistanceToNow(new Date(post.createdAt), {
+              addSuffix: true,
+            })}
           </div>
-          {/* Display approved by admin info */}
-          {post.adminId && (
-            <div className="flex items-center mt-0.5">
-              <CheckCircle size={10} className="text-green-500 mr-1" />
-              <p className="text-xs text-gray-500">
-                Posted for <Link to={`/profile/${post.adminId.username}`} className="text-[#fe6019] hover:underline">{post.adminId.name}</Link>
-              </p>
-            </div>
-          )}
         </div>
       </motion.div>
 

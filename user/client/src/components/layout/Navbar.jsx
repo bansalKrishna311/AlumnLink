@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Bell, Home, LogOut, User, Users, Menu, Link2 } from "lucide-react";
+import { Bell, Home, LogOut, User, Users, Menu, Link2, Hash } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Sidebar from "../Sidebar";
@@ -43,6 +43,7 @@ const Navbar = () => {
 	const isNotificationsPage = location.pathname === "/notifications";
 	const isProfilePage = location.pathname.startsWith("/profile/") && 
 		(authUser && location.pathname.includes(authUser.username));
+	const isTrendingHashtagsPage = location.pathname === "/trending-hashtags";
 
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10 transition-all duration-300 ease-in-out hover:shadow-lg'>
@@ -93,7 +94,7 @@ const Navbar = () => {
 											{unreadLinkRequestsCount}
 										</span>
 									)}
-								</Link>
+								</Link>						
 								<Link to='/notifications' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
 									<Bell 
 										size={20} 
