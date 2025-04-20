@@ -140,12 +140,12 @@ export const adminRoutes = [
         {
             path: "/saved-posts",
             element: (
-               
-                    <adminLayout>
-                        <PageTitle title="Saved Posts | AlumnLink" />
+                <AdminLayout>
+                    <PageTitle title="Saved Posts | AlumnLink" />
+                    <div className="p-6">
                         <SavedPostsPage />
-                    </adminLayout>
-                
+                    </div>
+                </AdminLayout>
             ),
         },
 ];
