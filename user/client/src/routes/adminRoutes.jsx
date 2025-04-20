@@ -12,6 +12,8 @@ import ProfileBuild from "@/pages/ProfileBuild";
 import UserLinksPage from "@/components/UserLinksModal";
 import UserPostsPage from "@/pages/UserPostsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import adminLayout from './../components/layout/admin/adminLayout';
+import SavedPostsPage from "@/pages/SavedPostsPage";
 
 export const adminRoutes = [
     { 
@@ -133,6 +135,17 @@ export const adminRoutes = [
                         <UserPostsPage />
                     </AdminLayout>
           
+            ),
+        },
+        {
+            path: "/saved-posts",
+            element: (
+               
+                    <adminLayout>
+                        <PageTitle title="Saved Posts | AlumnLink" />
+                        <SavedPostsPage />
+                    </adminLayout>
+                
             ),
         },
 ];
