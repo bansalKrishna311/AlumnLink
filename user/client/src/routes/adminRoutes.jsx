@@ -9,6 +9,7 @@ import RejectedRequests from "@/admin/rejectedRequests";
 import RejectedPosts from "@/admin/RejectedPosts";
 import PostRequest from "@/admin/PostRequest";
 import ProfileBuild from "@/pages/ProfileBuild";
+import UserLinksPage from "@/components/UserLinksModal";
 
 export const adminRoutes = [
     { 
@@ -100,6 +101,17 @@ export const adminRoutes = [
                 <ProfileBuild />
             </AdminLayout>
         )
+    },
+    {
+        path: "/links/:userId",
+        element: (
+            // <ProtectedRoute>
+                <AdminLayout>
+                    <PageTitle title="UserLinks | AlumnLink" />
+                    <UserLinksPage/>
+                </AdminLayout>
+            // </ProtectedRoute>
+        ),
     },
 ];
 
