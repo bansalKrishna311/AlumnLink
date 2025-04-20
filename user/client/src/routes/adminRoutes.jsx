@@ -10,6 +10,8 @@ import RejectedPosts from "@/admin/RejectedPosts";
 import PostRequest from "@/admin/PostRequest";
 import ProfileBuild from "@/pages/ProfileBuild";
 import UserLinksPage from "@/components/UserLinksModal";
+import UserPostsPage from "@/pages/UserPostsPage";
+import ProfilePage from "@/pages/ProfilePage";
 
 export const adminRoutes = [
     { 
@@ -105,13 +107,33 @@ export const adminRoutes = [
     {
         path: "/links/:userId",
         element: (
-            // <ProtectedRoute>
+        
                 <AdminLayout>
                     <PageTitle title="UserLinks | AlumnLink" />
                     <UserLinksPage/>
                 </AdminLayout>
-            // </ProtectedRoute>
-        ),
-    },
+        ),},
+        {
+            path: "/profile/:username",
+            element: (
+                
+                    <AdminLayout>
+                        <PageTitle title="Profile | AlumnLink" />
+                        <ProfilePage />
+                    </AdminLayout>
+               
+            ),
+        },
+        {
+            path: "/profile/:username/posts",
+            element: (
+                
+                    <AdminLayout>
+                        <PageTitle title="Profile | AlumnLink" />
+                        <UserPostsPage />
+                    </AdminLayout>
+          
+            ),
+        },
 ];
 

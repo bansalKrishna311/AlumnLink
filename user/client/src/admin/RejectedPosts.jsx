@@ -117,67 +117,6 @@ const RejectedPosts = () => {
     }
   });
 
-  // Handle deleting a post permanently
-  const handleDeletePost = async (postId) => {
-    if (processing) return;
-    
-    if (!window.confirm("Are you sure you want to permanently delete this post? This action cannot be undone.")) {
-      return;
-    }
-    
-    setProcessing(true);
-    try {
-      await axiosInstance.delete(`/posts/admin/${postId}`);
-      
-      toast.success("Post has been permanently deleted");
-      queryClient.invalidateQueries({ queryKey: ['rejectedPosts'] });
-      
-      // Remove from selected posts if it was selected
-      setSelectedPosts(prev => prev.filter(id => id !== postId));
-      
-      // Close modal if the post was being previewed
-      if (previewPost && previewPost._id === postId) {
-        setShowPreviewModal(false);
-      }
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error("Failed to delete post. Please try again.");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  // Handle bulk delete posts
-  const handleBulkDelete = async () => {
-    if (processing || selectedPosts.length === 0) return;
-    
-    if (!window.confirm(`Are you sure you want to permanently delete ${selectedPosts.length} posts? This action cannot be undone.`)) {
-      return;
-    }
-    
-    setProcessing(true);
-    try {
-      const promises = selectedPosts.map(postId => 
-        axiosInstance.delete(`/posts/admin/${postId}`)
-      );
-      
-      await Promise.all(promises);
-      toast.success(`${selectedPosts.length} posts permanently deleted`);
-      queryClient.invalidateQueries({ queryKey: ['rejectedPosts'] });
-      setSelectedPosts([]);
-      
-      // Close modal if the post was being previewed and was deleted
-      if (previewPost && selectedPosts.includes(previewPost._id)) {
-        setShowPreviewModal(false);
-      }
-    } catch (error) {
-      console.error("Error bulk deleting posts:", error);
-      toast.error("Failed to delete some posts. Please try again.");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
   // Update filtered posts when rejected posts data changes or filters change
   useEffect(() => {
     if (rejectedPosts) {
@@ -477,28 +416,16 @@ const RejectedPosts = () => {
         </div>
         
         {selectedPosts.length > 0 && (
-          <motion.div className="flex gap-4">
-            <motion.button
-              className="px-4 py-2 bg-[#fe6019] text-white rounded-lg font-medium shadow-sm hover:bg-[#e55a17] transition-colors duration-200 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              onClick={handleBulkRestore}
-              disabled={processing || selectedPosts.length === 0}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <RotateCcw size={14} />
-              {processing ? 'Processing...' : `Restore ${selectedPosts.length} Post${selectedPosts.length > 1 ? 's' : ''}`}
-            </motion.button>
-            <motion.button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium shadow-sm hover:bg-red-700 transition-colors duration-200 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              onClick={handleBulkDelete}
-              disabled={processing || selectedPosts.length === 0}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Trash2 size={14} />
-              {processing ? 'Processing...' : `Delete ${selectedPosts.length} Post${selectedPosts.length > 1 ? 's' : ''}`}
-            </motion.button>
-          </motion.div>
+          <motion.button
+            className="px-4 py-2 bg-[#fe6019] text-white rounded-lg font-medium shadow-sm hover:bg-[#e55a17] transition-colors duration-200 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleBulkRestore}
+            disabled={processing || selectedPosts.length === 0}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <RotateCcw size={14} />
+            {processing ? 'Processing...' : `Restore ${selectedPosts.length} Post${selectedPosts.length > 1 ? 's' : ''}`}
+          </motion.button>
         )}
       </motion.div>
 
@@ -640,17 +567,6 @@ const RejectedPosts = () => {
                             whileTap={{ scale: 0.9 }}
                           >
                             <RotateCcw size={14} />
-                          </motion.button>
-
-                          <motion.button
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors duration-200"
-                            aria-label="Delete Post"
-                            onClick={() => handleDeletePost(post._id)}
-                            disabled={processing}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <Trash2 size={14} />
                           </motion.button>
                         </div>
                       </td>
@@ -967,24 +883,6 @@ const RejectedPosts = () => {
                       <RotateCcw className="w-4 h-4" />
                     )}
                     Restore to Pending
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => {
-                      handleDeletePost(previewPost._id);
-                      setShowPreviewModal(false);
-                    }}
-                    disabled={processing}
-                    className="px-6 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {processing ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                    Delete Permanently
                   </motion.button>
                 </div>
                 
