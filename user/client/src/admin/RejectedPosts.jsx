@@ -132,8 +132,7 @@ const RejectedPosts = () => {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(post => 
           post.content?.toLowerCase().includes(query) || 
-          post.author?.name?.toLowerCase().includes(query) ||
-          post.feedback?.toLowerCase().includes(query)
+          post.author?.name?.toLowerCase().includes(query)
         );
       }
       
@@ -474,7 +473,6 @@ const RejectedPosts = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Author</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Type</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Content</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Rejection Reason</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Rejected On</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -533,11 +531,6 @@ const RejectedPosts = () => {
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-700 truncate max-w-xs">
                           {post.content}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-red-600 truncate max-w-xs">
-                          {post.feedback || "No specific reason provided"}
                         </p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
