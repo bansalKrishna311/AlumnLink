@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { axiosInstance } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +31,30 @@ const ConversationsPage = () => {
       return response.data;
     },
   });
+  
+  // Group connections by their organizations (Link1, Link2, etc.)
+  const groupedConnections = useMemo(() => {
+    if (!suggestedConnections) return {};
+    
+    const groups = {};
+    suggestedConnections.forEach(connection => {
+      // Only include connections with accepted status
+      if (connection.status === "accepted") {
+        const orgName = connection.courseName || "Other Network";
+        if (!groups[orgName]) {
+          groups[orgName] = [];
+        }
+        groups[orgName].push(connection);
+      }
+    });
+    
+    return groups;
+  }, [suggestedConnections]);
+
+  // Get organization names sorted alphabetically
+  const organizationNames = useMemo(() => {
+    return Object.keys(groupedConnections).sort();
+  }, [groupedConnections]);
   
   // Fetch users linked to the same admin
   const { data: sameAdminUsers, isLoading: isLoadingSameAdminUsers } = useQuery({
@@ -65,7 +89,7 @@ const ConversationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       <div className="container mx-auto py-4 px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Replace normal sidebar with suggested contacts sidebar */}
@@ -142,22 +166,21 @@ const ConversationsPage = () => {
               )}
             </div>
             
-            {/* Users linked to same admin */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800 flex items-center">
-                  <Users className="mr-2 text-[#fe6019]" size={18} />
-                  Alumni from Same Network
-                </h2>
-              </div>
-              
-              <div className="divide-y divide-gray-100 max-h-[350px] overflow-y-auto">
-                {isLoadingSameAdminUsers ? (
-                  <div className="p-4 flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#fe6019]"></div>
-                  </div>
-                ) : filteredSameAdminUsers?.length > 0 ? (
-                  filteredSameAdminUsers.map((user) => (
+            {/* Users grouped by their link organizations */}
+            {organizationNames.map((orgName, orgIndex) => (
+              <div key={orgName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+                <div className="p-4 border-b border-gray-100">
+                  <h2 className="font-semibold text-gray-800 flex items-center">
+                    <Users className="mr-2 text-[#fe6019]" size={18} />
+                    Alumni from {orgName}
+                  </h2>
+                </div>
+                
+                <div className="divide-y divide-gray-100 max-h-[250px] overflow-y-auto">
+                  {groupedConnections[orgName].filter(user => 
+                    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map((user) => (
                     <Link
                       key={user._id}
                       to={`/messages/${user.username}`}
@@ -190,14 +213,16 @@ const ConversationsPage = () => {
                         </button>
                       </div>
                     </Link>
-                  ))
-                ) : (
-                  <div className="p-4 text-center">
-                    <p className="text-sm text-gray-500">No suggestions available</p>
-                  </div>
-                )}
+                  ))}
+                  
+                  {groupedConnections[orgName].length === 0 && (
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-gray-500">No contacts available</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
             
             {/* Your connections */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

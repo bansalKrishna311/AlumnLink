@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { axiosInstance } from "@/lib/axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -70,6 +70,30 @@ const ChatPage = () => {
       return response.data;
     },
   });
+
+  // Group connections by their organizations (Link1, Link2, etc.)
+  const groupedConnections = useMemo(() => {
+    if (!userConnections) return {};
+    
+    const groups = {};
+    userConnections.forEach(connection => {
+      // Only include connections with accepted status
+      if (connection.status === "accepted") {
+        const orgName = connection.courseName || "Other Network";
+        if (!groups[orgName]) {
+          groups[orgName] = [];
+        }
+        groups[orgName].push(connection);
+      }
+    });
+    
+    return groups;
+  }, [userConnections]);
+
+  // Get organization names sorted alphabetically
+  const organizationNames = useMemo(() => {
+    return Object.keys(groupedConnections).sort();
+  }, [groupedConnections]);
 
   // Filter contacts based on search query
   const filteredSameAdminUsers = sameAdminUsers?.filter(user => 
@@ -262,22 +286,21 @@ const ChatPage = () => {
               </div>
             </div>
             
-            {/* Users linked to same admin */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800 flex items-center">
-                  <Users className="mr-2 text-[#fe6019]" size={18} />
-                  Alumni from Same Network
-                </h2>
-              </div>
-              
-              <div className="divide-y divide-gray-100 max-h-[250px] overflow-y-auto">
-                {isLoadingSameAdminUsers ? (
-                  <div className="p-4 flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#fe6019]"></div>
-                  </div>
-                ) : filteredSameAdminUsers?.length > 0 ? (
-                  filteredSameAdminUsers.map((user) => (
+            {/* Users linked to same admin - Replaced with organization-based grouping */}
+            {organizationNames.map((orgName, orgIndex) => (
+              <div key={orgName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+                <div className="p-4 border-b border-gray-100">
+                  <h2 className="font-semibold text-gray-800 flex items-center">
+                    <Users className="mr-2 text-[#fe6019]" size={18} />
+                    Alumni from {orgName}
+                  </h2>
+                </div>
+                
+                <div className="divide-y divide-gray-100 max-h-[200px] overflow-y-auto">
+                  {groupedConnections[orgName].filter(user => 
+                    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map((user) => (
                     <Link
                       key={user._id}
                       to={`/messages/${user.username}`}
@@ -324,14 +347,16 @@ const ChatPage = () => {
                         )}
                       </div>
                     </Link>
-                  ))
-                ) : (
-                  <div className="p-4 text-center">
-                    <p className="text-sm text-gray-500">No suggestions available</p>
-                  </div>
-                )}
+                  ))}
+                  
+                  {groupedConnections[orgName].length === 0 && (
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-gray-500">No contacts available</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
             
             {/* All connections */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
