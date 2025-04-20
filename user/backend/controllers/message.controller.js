@@ -4,9 +4,23 @@ import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
+// Helper function to check if user is a superadmin
+const checkSuperadminAccess = (req, res) => {
+    if (req.user.role === 'superadmin') {
+        return res.status(403).json({ 
+            message: "Messaging is not available for superadmin accounts" 
+        });
+    }
+    return null; // Continue if not superadmin
+};
+
 // Send a message
 export const sendMessage = async (req, res) => {
     try {
+        // Check if user is superadmin
+        const superadminCheck = checkSuperadminAccess(req, res);
+        if (superadminCheck) return superadminCheck;
+
         const { recipientUsername, content } = req.body;
         
         if (!recipientUsername || !content) {
@@ -44,6 +58,10 @@ export const sendMessage = async (req, res) => {
 // Get conversation with another user
 export const getConversation = async (req, res) => {
     try {
+        // Check if user is superadmin
+        const superadminCheck = checkSuperadminAccess(req, res);
+        if (superadminCheck) return superadminCheck;
+
         const { username } = req.params;
         
         // Find the other user by username
@@ -74,6 +92,10 @@ export const getConversation = async (req, res) => {
 // Get all conversations for the current user
 export const getConversations = async (req, res) => {
     try {
+        // Check if user is superadmin
+        const superadminCheck = checkSuperadminAccess(req, res);
+        if (superadminCheck) return superadminCheck;
+
         // Get all messages where the current user is either sender or recipient
         const messages = await Message.find({
             $or: [
@@ -122,6 +144,10 @@ export const getConversations = async (req, res) => {
 // Mark messages as read
 export const markMessagesAsRead = async (req, res) => {
     try {
+        // Check if user is superadmin
+        const superadminCheck = checkSuperadminAccess(req, res);
+        if (superadminCheck) return superadminCheck;
+        
         const { username } = req.params;
         
         // Find the other user by username

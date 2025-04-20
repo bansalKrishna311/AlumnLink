@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell, Home, LogOut, User, Users, Menu, Link2, Hash, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Sidebar from "../Sidebar";
 import SelfLinks from "../SelfLinks";
@@ -14,6 +14,7 @@ const Navbar = () => {
 	const location = useLocation();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [selfLinksOpen, setSelfLinksOpen] = useState(false);
+	const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
 	const { data: notifications } = useQuery({
 		queryKey: ["notifications"],
@@ -34,6 +35,13 @@ const Navbar = () => {
 		},
 	});
 
+	// Check if user is superadmin
+	useEffect(() => {
+		if (authUser) {
+			setIsSuperAdmin(authUser.role === 'superadmin');
+		}
+	}, [authUser]);
+
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
@@ -45,6 +53,13 @@ const Navbar = () => {
 		(authUser && location.pathname.includes(authUser.username));
 	const isTrendingHashtagsPage = location.pathname === "/trending-hashtags";
 	const isMessagesPage = location.pathname.startsWith("/messages");
+
+	// Redirect if superadmin tries to access messages page
+	useEffect(() => {
+		if (isSuperAdmin && isMessagesPage) {
+			navigate('/');
+		}
+	}, [isSuperAdmin, isMessagesPage, navigate]);
 
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10 transition-all duration-300 ease-in-out hover:shadow-lg'>
@@ -79,7 +94,7 @@ const Navbar = () => {
 										/>
 										<span className={`text-xs text-black hidden md:block ${isHomePage ? "font-semibold" : ""} transition-all duration-300`}>Home</span>
 								</Link>
-								<Link to='/network' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
+								<Link to='/network' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>	
 									<Users 
 										size={20} 
 										fill={isNetworkPage ? "#fe6019" : "none"}
@@ -114,14 +129,17 @@ const Navbar = () => {
 									)}
 								</Link>
 								
-								<Link to='/messages' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
-									<MessageSquare 
-										size={20} 
-										fill={isMessagesPage ? "#fe6019" : "none"}
-										className={`${isMessagesPage ? "font-bold" : ""} transform transition-transform duration-300 hover:rotate-12`}
-									/>
-									<span className={`text-xs text-black hidden md:block ${isMessagesPage ? "font-semibold" : ""} transition-all duration-300`}>Messages</span>
-								</Link>
+								{/* Only show messaging for non-superadmin users */}
+								{!isSuperAdmin && (
+									<Link to='/messages' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
+										<MessageSquare 
+											size={20} 
+											fill={isMessagesPage ? "#fe6019" : "none"}
+											className={`${isMessagesPage ? "font-bold" : ""} transform transition-transform duration-300 hover:rotate-12`}
+										/>
+										<span className={`text-xs text-black hidden md:block ${isMessagesPage ? "font-semibold" : ""} transition-all duration-300`}>Messages</span>
+									</Link>
+								)}
 								
 								<Link
 									to={`/profile/${authUser.username}`}
