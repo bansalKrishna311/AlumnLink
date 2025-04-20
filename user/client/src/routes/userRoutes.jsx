@@ -10,14 +10,14 @@ import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
 import MyLinksPage from "../pages/MyLinksPage";
-// Removed TrendingHashtagsPage import
 import HashtagPage from "../pages/HashtagPage";
-
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
 import ComingSoon from "@/pages/ComingSoon";
 import SavedPostsPage from "@/pages/SavedPostsPage";
 import UserPostsPage from "@/pages/UserPostsPage";
+import ConversationsPage from "@/pages/ConversationsPage";
+import ChatPage from "@/pages/ChatPage";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -160,6 +160,28 @@ const ProtectedRoute = ({ children }) => {
                 <Layout>
                     <PageTitle title="Hashtag | AlumnLink" />
                     <HashtagPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/messages",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Messages | AlumnLink" />
+                    <ConversationsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/messages/:username",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Chat | AlumnLink" />
+                    <ChatPage />
                 </Layout>
             </ProtectedRoute>
         ),

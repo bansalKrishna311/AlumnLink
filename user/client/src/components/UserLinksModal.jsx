@@ -85,7 +85,7 @@ const UserLinksPage = () => {
 
   const handleMessage = (e, username) => {
     e.stopPropagation(); // Prevent card click event from firing
-    navigate(`/comingsoon`); // Redirect to coming soon page instead of messages
+    navigate(`/messages/${username}`); // Navigate to a specific user's chat
   };
 
   const handleSearchChange = (e) => {
