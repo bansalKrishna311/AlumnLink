@@ -604,7 +604,8 @@ export const updatePostStatus = async (req, res) => {
 };
 
 export const reviewPost = async (req, res) => {
-    const { postId } = req.params;
+    // Handle both parameter formats (id and postId)
+    const postId = req.params.postId || req.params.id;
     const { status, feedback } = req.body;
   
     try {
@@ -1173,5 +1174,23 @@ export const getRecentAdminPosts = async (req, res) => {
   } catch (error) {
     console.error("Error in getRecentAdminPosts controller:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get all rejected posts for admin view
+export const getRejectedPosts = async (req, res) => {
+  try {
+    // Find all posts with status "rejected"
+    const rejectedPosts = await Post.find({ status: "rejected" })
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline")
+      .populate("adminId", "name username") // Populate admin who rejected the post
+      .sort({ reviewedAt: -1 }); // Most recently reviewed first
+    
+    res.status(200).json(rejectedPosts);
+  } catch (error) {
+    console.error("Error in getRejectedPosts controller:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

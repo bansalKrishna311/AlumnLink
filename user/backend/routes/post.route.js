@@ -18,6 +18,7 @@ import {
     getBookmarkedPosts,
     getPostsByUsername,
     getRecentAdminPosts,
+    getRejectedPosts,
 } from "../controllers/post.controller.js";
 import Post from "../models/post.model.js"; // Added import for Post model
 
@@ -68,7 +69,9 @@ router.get("/hashtag/:tag", protectRoute, async (req, res) => {
 
 // Admin routes
 router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
+router.get("/admin/rejected", protectRoute, isAdmin, getRejectedPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
+router.post("/admin/:postId/review", protectRoute, isAdmin, reviewPost); // Support both parameter names
 router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
 router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
 router.get('/admin/recent', protectRoute, isAdmin, getRecentAdminPosts);

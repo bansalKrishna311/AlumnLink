@@ -42,6 +42,7 @@ export function AppSidebar({ ...props }) {
     { title: "Rejected Requests", url: "/rejected-requests", icon: ThumbsDown },
     { title: "Make Post", url: "/post-creation", icon: PlusCircle },
     { title: "Admin Posts", url: "/adminposts", icon: FileText },
+    { title: "Rejected Posts", url: "/rejected-posts", icon: ThumbsDown },
     { title: "Post Request", url: "/postrequest", icon: MessageSquare },
     { title: "Build Admin Profile", url: `/buildprofile/${username}`, icon: User },
   ]

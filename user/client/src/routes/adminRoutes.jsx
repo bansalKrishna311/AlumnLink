@@ -1,4 +1,3 @@
-
 import AdminLayout from "@/components/layout/admin/adminLayout";
 import Dashboard from "../admin/Dashboard";
 import PageTitle from "../utils/PageTitle";
@@ -7,6 +6,7 @@ import AdminPosts from "@/admin/AdminPosts";
 import LinkRequestsTable from "@/admin/ManageUsers";
 import UserLinks from "@/admin/manage-alumni";
 import RejectedRequests from "@/admin/rejectedRequests";
+import RejectedPosts from "@/admin/RejectedPosts";
 import PostRequest from "@/admin/PostRequest";
 import ProfileBuild from "@/pages/ProfileBuild";
 
@@ -62,6 +62,15 @@ export const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
                 <RejectedRequests />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/rejected-posts", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Rejected Posts | AlumnLink" />
+                <RejectedPosts />
             </AdminLayout>
         )
     },
