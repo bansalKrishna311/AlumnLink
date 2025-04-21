@@ -54,7 +54,7 @@ const Navbar = () => {
             </Link>
           ))}
           <Link
-            to="/get-started"
+            to="/Login"
             className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md font-medium text-sm transition-colors"
           >
             Get Started
@@ -84,7 +84,7 @@ const Navbar = () => {
               </Link>
             ))}
             <Link
-              to="/get-started"
+              to="/Login"
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-center font-medium"
             >
               Get Started

@@ -355,7 +355,7 @@ const JoinNetwork = () => {
                         {/* Batch */}
                         <div className="space-y-2">
                           <Label htmlFor="batch" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Batch Year
+                            Batch Year (Ending)
                           </Label>
                           <Input
                             id="batch"
