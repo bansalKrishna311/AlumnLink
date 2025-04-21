@@ -22,6 +22,9 @@ const LoginPage = () => {
     mutationFn: (userData) => axiosInstance.post("/auth/login", userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
