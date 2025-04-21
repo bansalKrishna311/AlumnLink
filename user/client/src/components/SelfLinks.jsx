@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from "react"; 
-import { Search, UserCircle2, MapPin, Loader2, GraduationCap, ArrowRight } from "lucide-react";
+import { Search, UserCircle2, MapPin, Loader2, GraduationCap, ArrowRight, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { axiosInstance } from "@/lib/axios";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   const [links, setLinks] = useState([]);
@@ -39,6 +40,24 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
   const handleOpenUserAccount = useCallback(
     (username) => {
       navigate(`/profile/${username}`);
+    },
+    [navigate]
+  );
+
+  const handleMessage = useCallback(
+    (e, username) => {
+      e.stopPropagation(); // Prevent card click event from firing
+
+      // Check if the current user is a superadmin
+      const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+      if (currentUser.role === 'superadmin') {
+        // Prevent superadmin users from accessing messaging
+        e.preventDefault();
+        toast.error("Messaging is not available for superadmin accounts");
+        return;
+      }
+
+      navigate(`/messages/${username}`); // Navigate to a specific user's chat
     },
     [navigate]
   );
@@ -98,6 +117,7 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                       <Card
                         className="group hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                         style={{ background: 'linear-gradient(to right, rgba(254, 96, 25, 0.05), transparent)' }}
+                        onClick={() => navigate(`/profile/${link.user.username}`)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start space-x-4">
@@ -146,7 +166,15 @@ const SelfLinks = ({ onRemoveLink, onOpenUserAccount }) => {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 flex justify-end">
+                          <div className="mt-3 flex justify-between">
+                            <button
+                              className="flex items-center space-x-1 text-xs transition-colors bg-[#fe6019] text-white px-2 py-1 rounded-md hover:bg-[#e54e0e]"
+                              onClick={(e) => handleMessage(e, link.user.username)}
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                              <span>Message</span>
+                            </button>
+                            
                             <button
                               className="flex items-center space-x-1 text-xs transition-colors"
                               style={{ color: 'rgba(254, 96, 25, 0.7)' }}

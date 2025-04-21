@@ -113,13 +113,13 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <Briefcase className="mr-2 text-gray-600" size={22} />
+            <Briefcase className="mr-2 text-[#fe6019]"  size={22} />
             Experience
           </h2>
           {isOwnProfile && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition"
+              className="flex items-center text-[#fe6019] hover:text-[#e04e0a] font-medium text-sm transition"
             >
               <Pencil size={16} className="mr-1" />
               Edit
@@ -139,7 +139,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   setEditingExperience(emptyExperience);
                   setShowAddForm(true);
                 }}
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
               >
                 <Plus size={16} className="mr-2" />
                 Add Experience
@@ -160,7 +160,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                 <div className="p-4 flex justify-between">
                   <div className="flex">
                     <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center mr-4">
-                      <Building className="text-blue-600" size={20} />
+                      <Building className="text-[#fe6019]" size={20} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{exp.title}</h3>
@@ -175,7 +175,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                         <div>
                           <button 
                             onClick={() => toggleExpand(exp._id)} 
-                            className="text-blue-600 text-sm font-medium flex items-center mt-2 hover:text-blue-800 transition"
+                            className="text-[#fe6019] text-sm font-medium flex items-center mt-2 hover:text-[#e04e0a] transition"
                           >
                             {expandedId === exp._id ? (
                               <>Less <ChevronUp size={14} className="ml-1" /></>
@@ -196,7 +196,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEditExperience(exp)}
-                        className="text-gray-500 hover:text-blue-600 transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                        className="text-gray-500 hover:text-[#fe6019] transition p-1 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
                         aria-label="Edit experience"
                       >
                         <Pencil size={16} />
@@ -240,7 +240,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Ex: Software Engineer"
                   value={editingExperience?.title || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, title: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -251,7 +251,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Ex: Google"
                   value={editingExperience?.company || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, company: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -263,7 +263,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   dateFormat="MMM yyyy"
                   showMonthYearPicker
                   placeholderText="Select start date"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -275,7 +275,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   dateFormat="MMM yyyy"
                   showMonthYearPicker
                   placeholderText="Select end date or leave blank for current position"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
               
@@ -285,7 +285,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   placeholder="Describe your responsibilities, achievements, and skills used in this role"
                   value={editingExperience?.description || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, description: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                   rows={4}
                 />
               </div>
@@ -294,7 +294,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
             <div className="mt-4 flex gap-3">
               <button
                 onClick={handleAddExperience}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
                 disabled={!(editingExperience?.title && editingExperience?.company && editingExperience?.startDate)}
               >
                 <Save size={16} className="mr-2" />
@@ -343,7 +343,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
             </button>
             <button
               onClick={handleSave}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none disabled:bg-[#ffa07a] disabled:cursor-not-allowed"
               disabled={isSaving}
             >
               <Save size={16} className="mr-2" />

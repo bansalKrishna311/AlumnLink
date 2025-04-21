@@ -5,6 +5,7 @@ import { axiosInstance } from "@/lib/axios";
 import ProfileHeader from "@/components/ProfileHeader";
 import AboutSection from "@/components/AboutSection";
 import toast from "react-hot-toast";
+import UserPostsSection from "@/components/UserPostsSection";
 
 const ProfilePage = () => {
 	const { username } = useParams();
@@ -42,6 +43,8 @@ const ProfilePage = () => {
 		<div className='max-w-4xl mx-auto p-4'>
 			<ProfileHeader userData={userData} isOwnProfile={isOwnProfile} onSave={handleSave} />
 			<AboutSection userData={userData} isOwnProfile={isOwnProfile} onSave={handleSave} />
+            <UserPostsSection username={username} isOwnProfile={isOwnProfile} />
+
 		</div>
 	);
 };

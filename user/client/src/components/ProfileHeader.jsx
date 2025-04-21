@@ -2,8 +2,15 @@ import React, { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3 } from "lucide-react";
+import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+
+// Define allowed locations
+const ALLOWED_LOCATIONS = [
+  "Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai", "Delhi NCR", 
+  "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", 
+  "Indore", "Chandigarh", "Nagpur"
+];
 
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -213,26 +220,24 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
             <h1 className="text-2xl font-bold mb-2 text-[#fe6019]">{userData.name}</h1>
           )}
 
-          {isEditing ? (
-            <input
-              type="text"
-              value={editedData.headline ?? userData.headline}
-              onChange={(e) => setEditedData({ ...editedData, headline: e.target.value })}
-              className="text-gray-600 text-center w-full focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md"
-            />
-          ) : (
-            <p className="text-gray-600">{userData.headline}</p>
-          )}
+          {/* Display headline but don't allow editing */}
+          <p className="text-gray-600">{userData.headline}</p>
 
           <div className="flex justify-center items-center mt-2">
             <MapPin size={16} className="text-[#fe6019] mr-1" />
             {isEditing ? (
-              <input
-                type="text"
-                value={editedData.location ?? userData.location}
+              <select
+                value={editedData.location ?? userData.location ?? ""}
                 onChange={(e) => setEditedData({ ...editedData, location: e.target.value })}
-                className="text-gray-600 text-center focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md"
-              />
+                className="text-gray-600 text-center focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md py-1 px-2"
+              >
+                <option value="" disabled>Select a location</option>
+                {ALLOWED_LOCATIONS.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
             ) : (
               <span className="text-gray-600">{userData.location}</span>
             )}
@@ -248,6 +253,16 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
           </div>
 
           {!isOwnProfile && renderLinkButton()}
+
+          {!isOwnProfile && (
+            <button
+              onClick={() => navigate(`/messages/${userData.username}`)}
+              className="bg-[#fe6019] text-white px-4 py-2 rounded-full font-semibold hover:bg-[#fe6019]/90 flex items-center"
+            >
+              <MessageSquare size={18} className="mr-2" />
+              Message
+            </button>
+          )}
 
           {isEditing && (
             <button

@@ -11,6 +11,8 @@ import {userRoutes} from "./routes/userRoutes";
 import {adminRoutes} from "./routes/adminRoutes";
 import {superAdminRoutes} from "./routes/superAdminRoutes";
 import LandHome from "./Landing/Pages/LandHome";
+import ProfilePage from "./pages/ProfilePage";
+import UserPostsPage from "./pages/UserPostsPage";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({
@@ -23,7 +25,11 @@ function App() {
                 if (err.response && err.response.status === 401) {
                     return null;
                 }
-                toast.error(err.response.data.message || "Something went wrong");
+                // Don't show error toast for 404
+                if (err.response && err.response.status !== 404) {
+                    toast.error("Unable to connect to server. Please try again later.");
+                }
+                return null;
             }
         },
     });

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Users, Building, Briefcase, MapPin, Clock, Calendar, ThumbsUp, MessageCircle, Globe } from "lucide-react";
+import { X, Users, Building, Briefcase, MapPin, Clock, Calendar, ThumbsUp, MessageCircle, Globe, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import for navigation
 
 const PostModals = ({
@@ -262,6 +262,44 @@ const PostModals = ({
                     </p>
                   </div>
                 </motion.div>
+
+                {/* Admin Approval Information */}
+                {post.adminId && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.55 }}
+                    className="bg-[#f0fff4] p-4 rounded-xl border border-green-100"
+                  >
+                    <h4 className="font-medium text-green-600 mb-2 flex items-center">
+                      <CheckCircle size={16} className="mr-2 text-green-600" />
+                      Approved by Admin
+                    </h4>
+                    <div className="flex items-center mt-2">
+                      <img
+                        src={post.adminId.profilePicture || "/avatar.png"}
+                        alt={post.adminId.name}
+                        className="w-8 h-8 rounded-full mr-3 border border-gray-200 cursor-pointer"
+                        onClick={() => navigateToProfile(post.adminId.username)}
+                      />
+                      <div>
+                        <p 
+                          className="font-medium text-sm cursor-pointer hover:text-[#fe6019]"
+                          onClick={() => navigateToProfile(post.adminId.username)}
+                        >
+                          {post.adminId.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(post.reviewedAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {(post.type === "job" && post.jobDetails) && (
                   <motion.div

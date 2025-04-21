@@ -8,7 +8,6 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
-  // Common skills for suggestions - you can replace with API call or larger list
   const commonSkills = [
     "JavaScript", "React", "Node.js", "Python", "Java", "HTML", "CSS", 
     "Product Management", "UI/UX Design", "Leadership", "Communication",
@@ -67,13 +66,13 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <Lightbulb className="mr-2 text-gray-600" size={22} />
+            <Lightbulb className="mr-2 text-[#fe6019]"  size={22} />
             Skills
           </h2>
           {isOwnProfile && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition"
+              className="flex items-center text-[#fe6019] hover:text-[#e04e0a] font-medium text-sm transition"
             >
               <Edit2 size={16} className="mr-1" />
               Edit
@@ -108,7 +107,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                     : "text-gray-700"
                 }`}
               >
-                <CheckCircle2 size={14} className="text-blue-500 mr-1.5" />
+                <CheckCircle2 size={14} className="text-[#fe6019] mr-1.5" />
                 {skill}
                 {isEditing && (
                   <button 
@@ -127,7 +126,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
         {isEditing && (
           <div className="mt-6">
             <div className="relative">
-              <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
+              <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#fe6019] focus-within:border-[#fe6019] bg-white">
                 <div className="pl-3 text-gray-400">
                   <Search size={18} />
                 </div>
@@ -144,7 +143,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                   disabled={!newSkill}
                   className={`mr-1 p-2 rounded-lg transition ${
                     newSkill
-                      ? "text-blue-600 hover:bg-blue-50"
+                      ? "text-[#fe6019] hover:bg-[#fff1eb]"
                       : "text-gray-400 cursor-not-allowed"
                   }`}
                 >
@@ -161,7 +160,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                         onClick={() => selectSuggestion(suggestion)}
                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
                       >
-                        <PlusCircle size={14} className="mr-2 text-blue-500" />
+                        <PlusCircle size={14} className="mr-2 text-[#fe6019]" />
                         {suggestion}
                       </li>
                     ))}
@@ -183,7 +182,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
               </button>
               <button
                 onClick={handleSave}
-                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
               >
                 <Save size={16} className="mr-2" />
                 Save Changes

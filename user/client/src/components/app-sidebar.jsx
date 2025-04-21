@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
-import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users } from "lucide-react"
+import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users, TrendingUp } from "lucide-react"
 
 import { VersionSwitcher } from "@/components/version-switcher"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
@@ -42,6 +42,7 @@ export function AppSidebar({ ...props }) {
     { title: "Rejected Requests", url: "/rejected-requests", icon: ThumbsDown },
     { title: "Make Post", url: "/post-creation", icon: PlusCircle },
     { title: "Admin Posts", url: "/adminposts", icon: FileText },
+    { title: "Rejected Posts", url: "/rejected-posts", icon: ThumbsDown },
     { title: "Post Request", url: "/postrequest", icon: MessageSquare },
     { title: "Build Admin Profile", url: `/buildprofile/${username}`, icon: User },
   ]

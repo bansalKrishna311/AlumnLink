@@ -80,11 +80,7 @@ const PostActions = ({
               {totalCommentsCount > 0 && (
                 <>
                   {totalCommentsCount} {totalCommentsCount === 1 ? 'comment' : 'comments'}
-                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) && (
-                    <span className="text-xs ml-1">
-                      ({comments.length} {comments.length === 1 ? 'thread' : 'threads'})
-                    </span>
-                  )}
+                  {comments.length > 0 && comments.some(c => c.replies?.length > 0) }
                 </>
               )}
               {totalCommentsCount === 0 && "Comment"}
@@ -123,21 +119,19 @@ const PostActions = ({
                 : "text-[#fe6019] hover:bg-[#fe6019]/10"
             }`}
             disabled={isReacting}
-            onClick={() => userReaction && handleReactToPost(userReaction)}
+            onClick={() => userReaction ? handleReactToPost(userReaction) : handleReactToPost("like")}
+            data-reaction={userReaction || "none"}
           >
             {userReaction ? (
               <>
-                <span className="mr-1.5 text-base">{getReactionEmoji(userReaction)}</span>
-                {getReactionText(userReaction)}
+                <span className="mr-1.5 text-lg inline-flex items-center justify-center">{getReactionEmoji(userReaction)}</span>
+                <span className="font-medium">{getReactionText(userReaction)}</span>
               </>
             ) : (
-              <div 
-                className="flex items-center"
-                onClick={() => handleReactToPost("like")}
-              >
+              <>
                 <ThumbsUp size={16} className="mr-1.5" />
-                React
-              </div>
+                <span>React</span>
+              </>
             )}
           </motion.button>
 

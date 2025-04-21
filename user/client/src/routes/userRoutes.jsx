@@ -10,10 +10,14 @@ import NetworkPage from "../pages/NetworkPage";
 import PostPage from "../pages/PostPage";
 import ProfilePage from "../pages/ProfilePage";
 import MyLinksPage from "../pages/MyLinksPage";
-
+import HashtagPage from "../pages/HashtagPage";
 import UserLinksPage from "@/components/UserLinksModal";
 import JoinNetworkCalling from "@/pages/JoinNetworkCalling";
 import ComingSoon from "@/pages/ComingSoon";
+import SavedPostsPage from "@/pages/SavedPostsPage";
+import UserPostsPage from "@/pages/UserPostsPage";
+import ConversationsPage from "@/pages/ConversationsPage";
+import ChatPage from "@/pages/ChatPage";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -97,6 +101,17 @@ const ProtectedRoute = ({ children }) => {
         ),
     },
     {
+        path: "/profile/:username/posts",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Profile | AlumnLink" />
+                    <UserPostsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
         path: "/my-links",
         element: (
             <ProtectedRoute>
@@ -136,6 +151,50 @@ const ProtectedRoute = ({ children }) => {
                 </Layout>
             </ProtectedRoute>
 >>>>>>> 7ff9283c9061634d9048e407cff1096ec49ea2f7
+        ),
+    },
+    {
+        path: "/saved-posts",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Saved Posts | AlumnLink" />
+                    <SavedPostsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/hashtag/:tag",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Hashtag | AlumnLink" />
+                    <HashtagPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/messages",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Messages | AlumnLink" />
+                    <ConversationsPage />
+                </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/messages/:username",
+        element: (
+            <ProtectedRoute>
+                <Layout>
+                    <PageTitle title="Chat | AlumnLink" />
+                    <ChatPage />
+                </Layout>
+            </ProtectedRoute>
         ),
     },
 ];
