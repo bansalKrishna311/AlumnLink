@@ -11,7 +11,7 @@ function UserCard({ user, isLink }) {
 				/>
 				<h3 className='font-semibold text-lg text-center text-[#fe6019]'>{user.name}</h3>
 			</Link>
-			<p className='text-gray-600 text-center'>{user.headline}</p>
+
 			<p className='text-sm text-[#fe6019]/80 mt-2 font-medium'>{user.Links?.length} Links</p>
 			<div className='w-full space-y-2 mt-4'>
 				<button className='w-full bg-[#fe6019] text-white px-4 py-2 rounded-md hover:bg-[#fe6019]/90 transition-colors'>

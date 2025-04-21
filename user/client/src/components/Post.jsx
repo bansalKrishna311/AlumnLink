@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Briefcase, Calendar, Clock, Globe, Lock, MessageCircle } from "lucide-react";
 
 // Import modular components
@@ -320,6 +320,11 @@ const Post = ({ post }) => {
   const handleBookmarkPost = () => {
     if (isBookmarking) return;
     bookmarkPost();
+  };
+
+  const handleHashtagClick = (hashtag) => {
+    // Navigate to hashtag search page or trigger search
+    // This is handled in the PostContent component
   };
 
   // Utility functions

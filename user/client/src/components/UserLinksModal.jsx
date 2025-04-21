@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import Doodles from "@/pages/auth/components/Doodles";
 import { debounce } from "lodash";
+import toast from "react-hot-toast";
 
 const UserLinksPage = () => {
   const { userId } = useParams();
@@ -85,7 +86,17 @@ const UserLinksPage = () => {
 
   const handleMessage = (e, username) => {
     e.stopPropagation(); // Prevent card click event from firing
-    navigate(`/comingsoon`); // Redirect to coming soon page instead of messages
+
+    // Check if the current user is a superadmin
+    const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+    if (currentUser.role === 'superadmin') {
+      // Prevent superadmin users from accessing messaging
+      e.preventDefault();
+      toast.error("Messaging is not available for superadmin accounts");
+      return;
+    }
+
+    navigate(`/messages/${username}`); // Navigate to a specific user's chat
   };
 
   const handleSearchChange = (e) => {

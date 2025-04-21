@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { X, Globe, CheckCircle } from "lucide-react";
-
-
+import { useNavigate } from "react-router-dom";
 
 const PostHeader = ({ 
   post, 
@@ -21,7 +20,17 @@ const PostHeader = ({
   isBookmarking,
   isBookmarked
 }) => {
+  const navigate = useNavigate();
   const isOwner = authUser?._id === post.author?._id;
+  const isAdminAuthor = post.author?.headline === "AlumnLink Admin" || post.author?.headline === "AlumnLink superadmin";
+  
+  // Determine the admin status text
+  let adminStatusText = null;
+  if ((isAdminAuthor && !post.adminId) || (post.adminId && post.adminId._id === post.author?._id)) {
+    adminStatusText = "Admin Announcement";
+  } else if (post.adminId) {
+    adminStatusText = `Posted for ${post.adminId.name}`;
+  }
 
   return (
     <div className="flex items-center justify-between mb-3">
@@ -40,6 +49,7 @@ const PostHeader = ({
           />
         </Link>
         <div>
+          {/* First row: Author name and post type */}
           <div className="flex items-center">
             <Link to={`/profile/${post?.author?.username}`}>
               <h3 className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
@@ -56,24 +66,28 @@ const PostHeader = ({
               {post.type}
             </motion.span>
           </div>
-          <div className="flex items-center">
-            <p className="text-xs text-gray-500">{post.author?.headline}</p>
+          
+          {/* Second row: Admin status and time */}
+          <div className="flex items-center text-xs text-gray-500">
+            {adminStatusText && (
+              <div className="flex items-center mr-2">
+                <CheckCircle size={10} className="text-green-500 mr-1" />
+                {adminStatusText.startsWith("Posted for") ? (
+                  <>
+                    Posted for <Link to={`/profile/${post.adminId?.username}`} className="text-[#fe6019] hover:underline">{post.adminId?.name}</Link>
+                  </>
+                ) : (
+                  adminStatusText
+                )}
+              </div>
+            )}
+            
             <span className="mx-1 text-gray-300">•</span>
-            <p className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-              })}
-            </p>
+            
+            {formatDistanceToNow(new Date(post.createdAt), {
+              addSuffix: true,
+            })}
           </div>
-          {/* Display approved by admin info */}
-          {post.adminId && (
-            <div className="flex items-center mt-0.5">
-              <CheckCircle size={10} className="text-green-500 mr-1" />
-              <p className="text-xs text-gray-500">
-                Posted for <Link to={`/profile/${post.adminId.username}`} className="text-[#fe6019] hover:underline">{post.adminId.name}</Link>
-              </p>
-            </div>
-          )}
         </div>
       </motion.div>
 
@@ -107,6 +121,20 @@ const PostHeader = ({
                 <Globe size={15} className="mr-2.5 text-gray-500" />
                 View Post Details
               </motion.button>
+
+              {!isOwner && (
+                <motion.button
+                  whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}
+                  onClick={() => {
+                    navigate(`/messages/${post.author?.username}`);
+                    setShowOptionsMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 flex items-center text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                >
+                  <MessageSquare size={15} className="mr-2.5 text-gray-500" />
+                  Message {post.author?.name.split(' ')[0]}
+                </motion.button>
+              )}
 
               <motion.button
                 whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}

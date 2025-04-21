@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import { protectRoute } from "../middleware/auth.middleware.js";
 import {
 	acceptLinkRequest,
-
 	getLinkstatus,
 	getPendingRequests,
 	getRejectedLinks,
@@ -11,10 +10,15 @@ import {
 	getUsersLinks,
 	rejectLinkRequest,
 	removeLink,
+	resetToPending,
 	sendLinkRequest,
+	getDashboardStats
 } from "../controllers/Link.controller.js";
 import User from '../models/user.model.js';
 const router = express.Router();
+
+// Dashboard route
+router.get("/dashboard-stats", protectRoute, getDashboardStats);
 
 // Route to send a Link request with additional fields (like name, rollNumber, etc.)
 router.post("/request/:userId", protectRoute, sendLinkRequest);
@@ -41,6 +45,8 @@ router.delete("/:userId", protectRoute, removeLink);
 // Route to fetch the current Link status with a specific user
 router.get("/status/:userId", protectRoute, getLinkstatus);
 
+// Route to reset a link request to pending status (admin only)
+router.put("/reset-to-pending/:requestId", protectRoute, resetToPending);
 
 // router.patch("/link-requests/:id", updateLinkRequestStatus);
 

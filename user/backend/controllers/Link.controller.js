@@ -452,3 +452,83 @@ export const getUsersLinks = async (req, res) => {
   }
 };
 
+export const resetToPending = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        
+        // Only admin should be able to reset status
+        if (req.user.role !== "admin" && req.user.role !== "AlumnLink superadmin") {
+            return res.status(403).json({ message: "Not authorized to reset this request" });
+        }
+
+        const request = await LinkRequest.findById(requestId);
+
+        if (!request) {
+            return res.status(404).json({ message: "Link request not found" });
+        }
+
+        // No need to check status as admin can reset from any status
+
+        // Set the status to 'pending'
+        request.status = "pending";
+        await request.save();
+
+        // If previously accepted, remove the links between users
+        if (request.status === "accepted") {
+            await User.findByIdAndUpdate(request.sender, { $pull: { Links: request.recipient } });
+            await User.findByIdAndUpdate(request.recipient, { $pull: { Links: request.sender } });
+        }
+
+        res.json({ message: "Link request reset to pending status", request });
+    } catch (error) {
+        console.error("Error in resetToPending:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const getDashboardStats = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        
+        // Run all queries in parallel for better performance
+        const [pendingCount, acceptedCount, rejectedCount] = await Promise.all([
+            // Count pending requests
+            LinkRequest.countDocuments({
+                status: 'pending',
+                recipient: userId
+            }),
+            
+            // Count accepted links
+            LinkRequest.countDocuments({
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "accepted"
+            }),
+            
+            // Count rejected requests
+            LinkRequest.countDocuments({
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "rejected"
+            })
+        ]);
+        
+        // Format the data for the dashboard
+        const dashboardData = {
+            totalRequests: pendingCount + acceptedCount + rejectedCount,
+            stats: [
+                { name: "Pending", value: pendingCount, status: "pending" },
+                { name: "Accepted", value: acceptedCount, status: "accepted" },
+                { name: "Rejected", value: rejectedCount, status: "rejected" }
+            ]
+        };
+        
+        res.status(200).json(dashboardData);
+    } catch (error) {
+        console.error("Error in getDashboardStats:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to fetch dashboard statistics",
+            error: error.message 
+        });
+    }
+};
+

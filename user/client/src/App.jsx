@@ -25,7 +25,11 @@ function App() {
                 if (err.response && err.response.status === 401) {
                     return null;
                 }
-                toast.error(err.response.data.message || "Something went wrong");
+                // Don't show error toast for 404
+                if (err.response && err.response.status !== 404) {
+                    toast.error("Unable to connect to server. Please try again later.");
+                }
+                return null;
             }
         },
     });

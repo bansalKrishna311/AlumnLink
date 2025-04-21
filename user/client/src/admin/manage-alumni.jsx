@@ -9,13 +9,16 @@ import {
   MapPin, 
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User,
+  Calendar,
+  BookOpen,
+  Code,
+  Filter
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const UserLinks = () => {
   const [links, setLinks] = useState([]);
@@ -23,14 +26,16 @@ const UserLinks = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLinks, setSelectedLinks] = useState([]);
+  const [processing, setProcessing] = useState(false);
+  const [showSvietOnly, setShowSvietOnly] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
 
   // Helper function to safely convert to string and check if it includes search query
   const safeIncludes = (value, query) => {
-    // Convert to string only if value exists and isn't already a string
     if (value === null || value === undefined) return false;
     
     const stringValue = typeof value === 'string' ? value : String(value);
@@ -49,27 +54,42 @@ const UserLinks = () => {
     }
     
     try {
-      const filtered = links.filter(link => {
-        if (!link) return false;
-        
-        // Use the safeIncludes helper for all checks
-        const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
-        const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
-        const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
-        const courseMatch = safeIncludes(link.courseName, searchQuery);
-        const batchMatch = safeIncludes(link.batch, searchQuery);
-        const rollMatch = safeIncludes(link.rollNumber, searchQuery);
-        
-        return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
-      });
+      let filtered = links;
+
+      // First filter by SVIET if enabled
+      if (showSvietOnly) {
+        filtered = filtered.filter(link => {
+          const isSviet = link.courseName && 
+            typeof link.courseName === 'string' && 
+            link.courseName.toLowerCase().includes('sviet');
+          return isSviet && link.status === 'accepted';
+        });
+      }
+      
+      // Then apply search query filter
+      if (searchQuery) {
+        filtered = filtered.filter(link => {
+          if (!link) return false;
+          
+          // Use the safeIncludes helper for all checks
+          const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
+          const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
+          const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
+          const courseMatch = safeIncludes(link.courseName, searchQuery);
+          const batchMatch = safeIncludes(link.batch, searchQuery);
+          const rollMatch = safeIncludes(link.rollNumber, searchQuery);
+          
+          return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
+        });
+      }
       
       setFilteredLinks(filtered);
-      setCurrentPage(1); // Reset to first page when search changes
+      setCurrentPage(1); // Reset to first page when filter changes
     } catch (err) {
       console.error("Error in filtering:", err);
       // In case of error, don't change the current filtered list
     }
-  }, [searchQuery, links]);
+  }, [searchQuery, links, showSvietOnly]);
 
   const fetchUserLinks = async () => {
     try {
@@ -80,6 +100,7 @@ const UserLinks = () => {
       if (response && response.data && Array.isArray(response.data)) {
         setLinks(response.data);
         setFilteredLinks(response.data);
+        setError(null);
       } else {
         setLinks([]);
         setFilteredLinks([]);
@@ -87,10 +108,220 @@ const UserLinks = () => {
       }
       setIsLoading(false);
     } catch (err) {
-      setError(err.message || "An error occurred while fetching data");
-      setLinks([]);
-      setFilteredLinks([]);
+      console.error("Error fetching connections:", err);
+      // Handle 404 specifically as "no data" rather than an error
+      if (err.response && err.response.status === 404) {
+        setLinks([]);
+        setFilteredLinks([]);
+        setError(null);
+      } else {
+        setError("Unable to connect to the server. Please try again later.");
+      }
       setIsLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const route = status === "accepted" ? "/accept" : "/reject";
+      await axiosInstance.put(`/links${route}/${id}`);
+      
+      // Update the status in the UI without fetching again
+      setLinks(prevLinks =>
+        prevLinks.map(link => 
+          link._id === id ? { ...link, status } : link
+        )
+      );
+      
+      toast.success(`Connection ${status === "accepted" ? "approved" : "rejected"} successfully!`);
+    } catch (error) {
+      console.error("Error updating connection status:", error);
+      toast.error("Error updating connection status.");
+    }
+  };
+
+  const handleResetToPending = async (id) => {
+    try {
+      await axiosInstance.put(`/links/reset-to-pending/${id}`);
+      
+      // Remove the item from both links and filteredLinks arrays
+      setLinks(prevLinks => prevLinks.filter(link => link._id !== id));
+      setFilteredLinks(prevLinks => prevLinks.filter(link => link._id !== id));
+      
+      toast.success("Connection reset to pending status successfully!");
+    } catch (error) {
+      console.error("Error resetting connection status:", error);
+      toast.error("Error resetting connection status.");
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status) => {
+    if (selectedLinks.length === 0) {
+      toast.error("Please select at least one connection");
+      return;
+    }
+
+    setProcessing(true);
+    const route = status === "accepted" ? "/accept" : "/reject";
+    const successCount = { value: 0 };
+    const failCount = { value: 0 };
+
+    try {
+      // Create an array of promises for all the requests
+      const updatePromises = selectedLinks.map(async (id) => {
+        try {
+          await axiosInstance.put(`/links${route}/${id}`);
+          successCount.value++;
+          return id;
+        } catch (error) {
+          console.error(`Error ${status === "accepted" ? "approving" : "rejecting"} connection ${id}:`, error);
+          failCount.value++;
+          return null;
+        }
+      });
+
+      // Wait for all promises to resolve
+      const successfulIds = (await Promise.all(updatePromises)).filter(id => id !== null);
+      
+      // Update the statuses in the UI
+      setLinks(prevLinks =>
+        prevLinks.map(link => 
+          successfulIds.includes(link._id) ? { ...link, status } : link
+        )
+      );
+      
+      // Clear the selection
+      setSelectedLinks([]);
+      
+      if (successCount.value > 0) {
+        toast.success(`${successCount.value} connection${successCount.value > 1 ? 's' : ''} ${status === "accepted" ? "approved" : "rejected"} successfully!`);
+      }
+      
+      if (failCount.value > 0) {
+        toast.error(`Failed to ${status === "accepted" ? "approve" : "reject"} ${failCount.value} connection${failCount.value > 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error(`Error in bulk ${status}:`, error);
+      toast.error("An error occurred during batch processing");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleBulkResetToPending = async () => {
+    if (selectedLinks.length === 0) {
+      toast.error("Please select at least one connection");
+      return;
+    }
+
+    setProcessing(true);
+    const successCount = { value: 0 };
+    const failCount = { value: 0 };
+
+    try {
+      // Create an array of promises for all the requests
+      const updatePromises = selectedLinks.map(async (id) => {
+        try {
+          await axiosInstance.put(`/links/reset-to-pending/${id}`);
+          successCount.value++;
+          return id;
+        } catch (error) {
+          console.error(`Error changing connection ${id} to pending:`, error);
+          failCount.value++;
+          return null;
+        }
+      });
+
+      // Wait for all promises to resolve
+      const successfulIds = (await Promise.all(updatePromises)).filter(id => id !== null);
+      
+      // Update the statuses in the UI
+      setLinks(prevLinks =>
+        prevLinks.map(link => 
+          successfulIds.includes(link._id) ? { ...link, status: "pending" } : link
+        )
+      );
+      
+      // Clear the selection
+      setSelectedLinks([]);
+      
+      if (successCount.value > 0) {
+        toast.success(`${successCount.value} connection${successCount.value > 1 ? 's' : ''} changed to pending successfully!`);
+      }
+      
+      if (failCount.value > 0) {
+        toast.error(`Failed to change ${failCount.value} connection${failCount.value > 1 ? 's' : ''} to pending`);
+      }
+    } catch (error) {
+      console.error(`Error in bulk change to pending:`, error);
+      toast.error("An error occurred during batch processing");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const toggleLinkSelection = (id) => {
+    setSelectedLinks(prev => 
+      prev.includes(id) 
+        ? prev.filter(linkId => linkId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedLinks.length === currentItems.length) {
+      setSelectedLinks([]);
+    } else {
+      setSelectedLinks(currentItems.map(link => link._id));
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    try {
+      setSearchQuery(e.target.value);
+    } catch (err) {
+      console.error("Error in search:", err);
+    }
+  };
+
+  const toggleSvietFilter = () => {
+    setShowSvietOnly(prev => !prev);
+  };
+
+  // Pagination logic with safeguards
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLinks?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const totalPages = Math.max(1, Math.ceil((filteredLinks?.length || 0) / itemsPerPage));
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const rowVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        type: "spring", 
+        stiffness: 50,
+        damping: 10
+      }
+    },
+    exit: { 
+      opacity: 0,
+      x: -20,
+      transition: { duration: 0.2 }
     }
   };
 
@@ -107,248 +338,316 @@ const UserLinks = () => {
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'accepted':
-        return 'Accepted';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Unknown';
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'accepted':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'rejected':
-        return 'bg-rose-100 text-rose-800 border-rose-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getConnectionColor = (connection) => {
-    return connection === 'sent' 
-      ? 'bg-blue-100 text-blue-800 border-blue-200' 
-      : 'bg-purple-100 text-purple-800 border-purple-200';
-  };
-
-  // Pagination logic with safeguards
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredLinks?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.max(1, Math.ceil((filteredLinks?.length || 0) / itemsPerPage));
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const handleSearchChange = (e) => {
-    try {
-      setSearchQuery(e.target.value);
-    } catch (err) {
-      console.error("Error in search:", err);
-      // Don't update state if there's an error
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600 font-medium">Loading connections...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="max-w-4xl mx-auto border-red-200 bg-red-50">
-        <CardContent className="pt-6">
-          <div className="flex items-center text-red-600">
-            <XCircle className="h-5 w-5 mr-2" />
-            <p>Error loading connections: {error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6 bg-white rounded-xl shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <CardTitle className="text-2xl font-bold text-gray-900">Your Connections</CardTitle>
-        
-        <div className="relative w-full md:w-64">
-          <Input
-            placeholder="Search connections..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="pl-9 pr-4 py-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+    <div className="p-8 w-full max-w-[1400px] mx-auto">
+      <motion.h1 
+        className="text-3xl font-bold mb-8 text-gray-800"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        Manage Alumni Connections
+      </motion.h1>
+
+      {error && (
+        <motion.div 
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          {error}
+        </motion.div>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <motion.div 
+            className="rounded-full h-12 w-12 border-4 border-gray-300 border-t-[#fe6019]"
+            animate={{ rotate: 360 }}
+            transition={{ 
+              duration: 1.2, 
+              ease: "linear", 
+              repeat: Infinity 
+            }}
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
-      </div>
-      
-      <Separator className="my-4" />
-
-      <div className="space-y-4">
-        {currentItems && currentItems.length > 0 ? (
-          currentItems.map((link) => (
-            <Card 
-              key={link._id || Math.random().toString()} 
-              className="border border-gray-200 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow"
-            >
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center space-x-4">
-                    {link.user?.profilePicture ? (
-                      <img
-                        src={link.user.profilePicture}
-                        alt={link.user?.name || "User"}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                        <UserCircle2 className="w-8 h-8 text-gray-400" />
-                      </div>
-                    )}
-                    
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900">{link.user?.name || "Unknown User"}</h3>
-                      <div className="flex items-center text-gray-500">
-                        <span>@{link.user?.username || "username"}</span>
-                      </div>
-                     
-                      {link.user?.location && (
-                        <div className="flex items-center mt-1 text-sm text-gray-500">
-                          <MapPin className="h-3 w-3 text-gray-400 mr-1" />
-                          <span>{typeof link.user.location === 'string' ? link.user.location : 'Location'}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:items-end space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getConnectionColor(link.connection)}>
-                        {link.connection === 'sent' ? 'Sent' : 'Received'}
-                      </Badge>
-                      <Badge className={getStatusColor(link.status)}>
-                        <span className="flex items-center">
-                          {getStatusIcon(link.status)}
-                          <span className="ml-1">{getStatusText(link.status)}</span>
-                        </span>
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-gray-600 font-medium">
-                      {typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'} • 
-                      {typeof link.batch === 'string' ? link.batch : String(link.batch) || 'Unknown Batch'}
-                    </div>
-                  </div>
+      ) : (
+        <>
+          <motion.div 
+            className="mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <div className="relative max-w-md w-full">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-400" />
                 </div>
-
-                <Separator className="my-4" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between md:block">
-                    <span className="text-gray-500">Roll Number:</span>
-                    <span className="font-medium text-gray-900">
-                      {typeof link.rollNumber === 'string' ? link.rollNumber : String(link.rollNumber) || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between md:block">
-                    <span className="text-gray-500">Connected:</span>
-                    <span className="font-medium text-gray-900">
-                      {link.createdAt ? new Date(link.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      }) : "Unknown date"}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card className="border-dashed border-2 border-gray-200 bg-gray-50">
-            <CardContent className="py-12">
-              <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
-                  <UserCircle2 className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No connections found</h3>
-                <p className="mt-2 text-gray-500">
-                  {searchQuery ? 'Try adjusting your search query.' : 'Start connecting with other users to build your network.'}
-                </p>
+                <input
+                  type="text"
+                  placeholder="Search by name, roll number, batch..."
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Pagination controls */}
-      {filteredLinks && filteredLinks.length > 0 && (
-        <div className="flex items-center justify-between pt-4">
-          <p className="text-sm text-gray-600">
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredLinks.length)} of {filteredLinks.length} connections
-          </p>
-          
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-              // Logic for showing pages around current page
-              let pageNumber;
-              if (totalPages <= 5) {
-                pageNumber = index + 1;
-              } else if (currentPage <= 3) {
-                pageNumber = index + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNumber = totalPages - 4 + index;
-              } else {
-                pageNumber = currentPage - 2 + index;
-              }
               
-              return (
-                <Button
-                  key={pageNumber}
-                  variant={currentPage === pageNumber ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => paginate(pageNumber)}
-                  className="h-8 w-8 p-0"
+              <div className="flex gap-3">
+                <motion.button
+                  className={`px-4 py-2 bg-white border ${showSvietOnly ? 'border-[#fe6019] text-[#fe6019]' : 'border-gray-200 text-gray-600'} rounded-lg font-medium shadow-sm hover:bg-[#fff5f0] transition-colors duration-200 flex items-center gap-2`}
+                  onClick={toggleSvietFilter}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                 >
-                  {pageNumber}
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
+                  <Filter size={14} />
+                  {showSvietOnly ? 'Show All' : 'Show SVIET Only'}
+                </motion.button>
+                
+                <motion.button
+                  className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium shadow-sm hover:bg-amber-600 transition-colors duration-200 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={handleBulkResetToPending}
+                  disabled={processing || selectedLinks.length === 0}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Clock size={14} />
+                  {processing ? 'Processing...' : 'Change to Pending'}
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Status information */}
+          {showSvietOnly && (
+            <motion.div 
+              className="mb-4 p-3 bg-[#fff5f0] rounded-lg border border-[#fe6019]/20 text-sm text-gray-700"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
             >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-emerald-500 mr-2" />
+                <span>Showing only approved alumni connections with SVIET</span>
+              </div>
+            </motion.div>
+          )}
+
+          <motion.div 
+            className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="bg-[#fff5f0]">
+                  <th className="px-3 py-4 text-left">
+                    <div className="flex items-center">
+                      <label className="inline-flex">
+                        <input 
+                          type="checkbox" 
+                          className="form-checkbox rounded border-gray-300 text-[#fe6019] focus:ring focus:ring-[#fe6019]/20 h-5 w-5 cursor-pointer"
+                          checked={currentItems.length > 0 && selectedLinks.length === currentItems.length}
+                          onChange={toggleAllSelection}
+                        />
+                      </label>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">User</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <motion.tbody 
+                className="divide-y divide-gray-200 bg-white"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {currentItems.length > 0 ? (
+                  currentItems.map((link, index) => (
+                    <motion.tr 
+                      key={link._id || Math.random().toString()} 
+                      className={`hover:bg-[#fff5f0] transition-all duration-200 ${
+                        selectedLinks.includes(link._id) ? 'bg-[#fff5f0]' : ''
+                      }`}
+                      variants={rowVariants}
+                      custom={index}
+                      layout
+                    >
+                      <td className="pl-3 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <label className="inline-flex">
+                            <input 
+                              type="checkbox" 
+                              className="form-checkbox rounded border-gray-300 text-[#fe6019] focus:ring focus:ring-[#fe6019]/20 h-5 w-5 cursor-pointer"
+                              checked={selectedLinks.includes(link._id)}
+                              onChange={() => toggleLinkSelection(link._id)}
+                            />
+                          </label>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          {link.user?.profilePicture ? (
+                            <img
+                              src={link.user.profilePicture}
+                              alt={link.user?.name || "User"}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                            />
+                          ) : (
+                            <User size={18} className="text-[#fe6019]" />
+                          )}
+                          <div>
+                            <span className="text-sm text-gray-900 font-medium block">{link.user?.name || "Unknown User"}</span>
+                            <span className="text-xs text-gray-500">@{link.user?.username || "username"}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <Code size={18} className="text-[#fe6019]" />
+                          <span className="text-sm text-gray-600">
+                            {typeof link.rollNumber === 'string' ? link.rollNumber : String(link.rollNumber) || 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <Calendar size={18} className="text-[#fe6019]" />
+                          <span className="text-sm text-gray-600">
+                            {typeof link.batch === 'string' ? link.batch : String(link.batch) || 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <BookOpen size={18} className="text-[#fe6019]" />
+                          <span className="text-sm text-gray-600">
+                            {typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <MapPin size={18} className="text-[#fe6019]" />
+                          <span className="text-sm text-gray-600">
+                            {link.user?.location || 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex justify-center">
+                          <motion.button
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
+                            aria-label="Reset to Pending"
+                            onClick={() => handleResetToPending(link._id)}
+                            disabled={link.status === 'pending'}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <Clock size={14} />
+                          </motion.button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
+                      No connections found
+                    </td>
+                  </tr>
+                )}
+              </motion.tbody>
+            </table>
+          </motion.div>
+
+          {selectedLinks.length > 0 && (
+            <motion.div 
+              className="mt-4 p-3 bg-[#fff5f0] rounded-lg border border-[#fe6019]/20 text-sm text-gray-700 flex justify-between items-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+            >
+              <div>
+                <span className="font-medium text-[#fe6019]">{selectedLinks.length}</span> connection{selectedLinks.length !== 1 ? 's' : ''} selected
+              </div>
+              <button 
+                className="text-gray-500 hover:text-gray-700 underline text-sm"
+                onClick={() => setSelectedLinks([])}
+              >
+                Clear selection
+              </button>
+            </motion.div>
+          )}
+
+          {/* Pagination controls */}
+          {filteredLinks.length > itemsPerPage && (
+            <motion.div 
+              className="flex justify-center mt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="flex space-x-1">
+                <motion.button
+                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </motion.button>
+                
+                {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
+                  let pageNumber;
+                  if (totalPages <= 5) {
+                    pageNumber = index + 1;
+                  } else if (currentPage <= 3) {
+                    pageNumber = index + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + index;
+                  } else {
+                    pageNumber = currentPage - 2 + index;
+                  }
+                  
+                  return (
+                    <motion.button
+                      key={pageNumber}
+                      className={`h-9 w-9 rounded-md border ${
+                        currentPage === pageNumber 
+                          ? 'bg-[#fe6019] text-white border-[#fe6019]' 
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
+                      }`}
+                      onClick={() => paginate(pageNumber)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {pageNumber}
+                    </motion.button>
+                  );
+                })}
+                
+                <motion.button
+                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
     </div>
   );

@@ -50,7 +50,7 @@ export const isAdmin = async (req, res, next) => {
     try {
         const { role } = req.user;
 
-        if (!role || (role !== 'admin' && role !== 'super admin')) {
+        if (!role || (role !== 'admin' && role !== 'superadmin')) {
             return res.status(403).json({ message: "Access denied. Admin rights required." });
         }
 

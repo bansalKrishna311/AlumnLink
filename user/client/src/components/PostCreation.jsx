@@ -2,7 +2,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { Image, Loader } from "lucide-react";
+import { Image, Loader, Hash } from "lucide-react";
 import Select from 'react-select';
 
 const PostCreation = ({ user, selectedPostType, closeModal }) => {
@@ -21,12 +21,44 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
 
+  // Add state for hashtag detection and suggestion
+  const [hashtagDropdownVisible, setHashtagDropdownVisible] = useState(false);
+  const [hashtagQuery, setHashtagQuery] = useState("");
+  const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
+  const [popularHashtags, setPopularHashtags] = useState([
+    "alumni", "jobs", "networking", "events", "opportunities", "tech", "business", "career"
+  ]);
+  
   const [mentionDropdownVisible, setMentionDropdownVisible] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionUsers, setMentionUsers] = useState([]);
   const contentRef = useRef(null);
 
   const queryClient = useQueryClient();
+
+  // Fetch trending hashtags
+  const { data: trendingTags } = useQuery({
+    queryKey: ['trendingTags'],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/posts/admin/trending-tags");
+        return response.data?.map(tag => tag.tag.replace('#', '')) || [];
+      } catch (error) {
+        console.error("Error fetching trending tags:", error);
+        return [];
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (trendingTags && trendingTags.length > 0) {
+      setPopularHashtags(prev => {
+        // Combine trending tags with existing popular hashtags, removing duplicates
+        const combined = [...new Set([...trendingTags, ...prev])];
+        return combined.slice(0, 10); // Limit to 10 hashtags
+      });
+    }
+  }, [trendingTags]);
 
   // Fetch user links
   const { data: userLinks } = useQuery({
@@ -152,9 +184,40 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     if (mentionMatch) {
       setMentionQuery(mentionMatch[0].substring(1));
       setMentionDropdownVisible(true);
+      setHashtagDropdownVisible(false); // Hide hashtag dropdown when showing mentions
     } else {
       setMentionDropdownVisible(false);
+      
+      // Logic to detect hashtags and show suggestions
+      const hashtagMatch = value.match(/#\w*$/);
+      if (hashtagMatch) {
+        const query = hashtagMatch[0].substring(1).toLowerCase();
+        setHashtagQuery(query);
+        
+        // Filter hashtag suggestions based on query
+        const suggestions = popularHashtags
+          .filter(tag => tag.toLowerCase().includes(query))
+          .slice(0, 5); // Limit to 5 suggestions
+        
+        setHashtagSuggestions(suggestions);
+        setHashtagDropdownVisible(true);
+      } else {
+        setHashtagDropdownVisible(false);
+      }
     }
+  };
+
+  const handleHashtagSelect = (hashtag) => {
+    const cursorPosition = contentRef.current.selectionStart;
+    const textBeforeCursor = content.substring(0, cursorPosition);
+    const textAfterCursor = content.substring(cursorPosition);
+    const hashtagMatch = textBeforeCursor.match(/#\w*$/);
+
+    if (hashtagMatch) {
+      const newTextBeforeCursor = textBeforeCursor.replace(/#\w*$/, `#${hashtag} `);
+      setContent(newTextBeforeCursor + textAfterCursor);
+    }
+    setHashtagDropdownVisible(false);
   };
 
   const handleMentionSelect = (user) => {
@@ -296,13 +359,49 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
                 alt={user.name}
                 className="w-10 h-10 rounded-full border-2 border-[#fe6019]/50"
               />
-              <textarea
-                placeholder="What's on your mind?"
-                className={`w-full p-3 rounded-lg focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
-                value={content}
-                onChange={handleContentChange}
-                ref={contentRef}
-              />
+              <div className="w-full">
+                <textarea
+                  placeholder="What's on your mind?"
+                  className={`w-full p-3 rounded-lg focus:outline-none resize-none min-h-[100px] transition duration-200 ${getInputBackground()}`}
+                  value={content}
+                  onChange={handleContentChange}
+                  ref={contentRef}
+                />
+                
+                {/* Hashtag suggestions */}
+                {hashtagDropdownVisible && hashtagSuggestions.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 mt-1 max-h-40 overflow-y-auto z-10">
+                    {hashtagSuggestions.map((tag, index) => (
+                      <div
+                        key={index}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                        onClick={() => handleHashtagSelect(tag)}
+                      >
+                        <Hash size={16} className="text-[#fe6019] mr-2" />
+                        <span>{tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Popular hashtags */}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {popularHashtags.slice(0, 6).map((tag, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="px-2 py-1 bg-[#fe6019]/10 text-[#fe6019] rounded-full text-xs hover:bg-[#fe6019]/20 transition-colors flex items-center"
+                      onClick={() => {
+                        setContent((prev) => `${prev} #${tag} `);
+                        contentRef.current.focus();
+                      }}
+                    >
+                      <Hash size={12} className="mr-1" />
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {mentionDropdownVisible && (
