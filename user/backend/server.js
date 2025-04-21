@@ -58,16 +58,34 @@ const scheduleCleanupTasks = () => {
 // Start the cleanup schedule
 scheduleCleanupTasks();
 
-if (process.env.NODE_ENV !== "production") {
-	app.use(
-		cors({
-			origin: (origin, callback) => {
-				callback(null, origin || "*"); // Allow all origins
-			},
-			credentials: true,
-		})
-	);
-}
+// Configure CORS for both development and production
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests from any origin in development
+    const allowedOrigins = [
+      'http://localhost:5173',  // Vite default dev server
+      'http://localhost:3000',  // Common React dev server
+        'https://alumn-link-rcj5.vercel.app/', // Production URL
+    ];
+    
+    // In development, allow requests with no origin or from any origin
+    if (process.env.NODE_ENV !== "production") {
+      callback(null, true);
+    } 
+    // In production, check against allowed origins
+    else if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true, // Important for cookies/auth to work cross-origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+// Apply CORS configuration
+app.use(cors(corsOptions));
 	
 app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
