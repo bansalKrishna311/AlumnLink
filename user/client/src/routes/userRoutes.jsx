@@ -140,6 +140,7 @@ const ProtectedRoute = ({ children }) => {
                     <ComingSoon/>
                 </Layout>
             </ProtectedRoute>
+
         ),
     },
     {

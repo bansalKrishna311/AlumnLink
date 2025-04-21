@@ -17,6 +17,8 @@ import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.
 import connectDB from "./lib/db.js"; // Correct the import
 
 dotenv.config();
+console.log("Mongo URI:", process.env.MONGO_URI);
+
 
 // Connect to MongoDB before setting up the server
 connectDB();
