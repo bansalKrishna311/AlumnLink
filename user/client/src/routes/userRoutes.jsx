@@ -132,16 +132,6 @@ const ProtectedRoute = ({ children }) => {
         ),
     },
     {
-<<<<<<< HEAD
-        path: "/ComingSoon",
-        element: (
-            // <ProtectedRoute>
-                <Layout>
-                    <PageTitle title="UserLinks | AlumnLink" />
-                    <ComingSoon/>
-                </Layout>
-            // </ProtectedRoute>
-=======
         path: "/comingsoon",
         element: (
             <ProtectedRoute>
@@ -150,7 +140,7 @@ const ProtectedRoute = ({ children }) => {
                     <ComingSoon/>
                 </Layout>
             </ProtectedRoute>
->>>>>>> 7ff9283c9061634d9048e407cff1096ec49ea2f7
+
         ),
     },
     {
