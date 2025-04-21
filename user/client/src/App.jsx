@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Layout from "./components/layout/Layout";
+import Layout from "./Landing/Layout";
 import LoginPage from "./pages/auth/LoginPage";
 import SignUpPage from "./pages/auth/SignUpPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -11,6 +11,9 @@ import {userRoutes} from "./routes/userRoutes";
 import {adminRoutes} from "./routes/adminRoutes";
 import {superAdminRoutes} from "./routes/superAdminRoutes";
 import LandHome from "./Landing/Pages/LandHome";
+import About from './Landing/Pages/About';
+import Terms from './Landing/Pages/Terms';
+import Contact from './Landing/Pages/Contact';
 import ProfilePage from "./pages/ProfilePage";
 import UserPostsPage from "./pages/UserPostsPage";
 
@@ -46,7 +49,13 @@ function App() {
     return (
         <>
             <Routes>
-            <Route path="/Landing" element={!authUser ? <LandHome /> : <Navigate to="/" />} />
+           
+            <Route path="/Landing" element={<Layout />}>
+  <Route index element={<LandHome />} /> {/* /Landing */}
+  <Route path="about" element={<About />} /> {/* /Landing/about */}
+  <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
+  <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
+</Route>
 
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />

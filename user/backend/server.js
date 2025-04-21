@@ -16,6 +16,8 @@ import adminRoutes from "./routes/admin.routes.js";
 import connectDB from "./lib/db.js"; // Correct the import
 
 dotenv.config();
+console.log("Mongo URI:", process.env.MONGO_URI);
+
 
 // Connect to MongoDB before setting up the server
 connectDB();
