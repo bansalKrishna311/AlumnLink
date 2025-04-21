@@ -1,154 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance } from "@/lib/axios";
-import toast from "react-hot-toast";
+import { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/Landing/about' },
+  { label: 'Terms & Conditions', href: '/Landing/terms' },
+  { label: 'Contact', href: '/Landing/contact' },
+];
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
-  const handleSignUp = () => {
-    navigate('/signup');
-  };
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
 
   return (
-    <nav 
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-white shadow-lg py-2' 
-          : 'bg-white/70 backdrop-blur-md py-4'
+    <nav
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white shadow-md py-3' : 'bg-white py-4'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
-              <img
-                src="/logo copy.png"
-                alt="AlumnLink Logo"
-                className="h-8 w-auto transition-all duration-500"
-              />
-            </Link>
-          </div>
+      <div className="container w-11/12 mx-auto px-4 flex justify-between items-center">
+        {/* Logo */}
+        <Link to="/" className="text-xl font-semibold text-black">
+          Alum<span className="font-normal">Link</span>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/features" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
-              Features
-            </Link>
-            <Link to="/pricing" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
-              Pricing
-            </Link>
-            <Link to="/Request-Demo" className="text-sm font-medium text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]">
-              Contact
-            </Link>
-          </div>
-
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={handleLogin}
-              className="text-sm font-medium px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 hover:scale-105 hover:text-[#fe6019]"
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-8">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              className={`text-sm font-medium ${
+                location.pathname === link.href
+                  ? 'text-orange-500'
+                  : 'text-black hover:text-orange-500'
+              } transition-colors`}
             >
-              Login
-            </button>
-            <button
-              onClick={handleSignUp}
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-[#fe6019] text-white hover:bg-[#e54d07] transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
-            >
-              Sign Up
-            </button>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors duration-300"
-              aria-label="Toggle menu"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMobileMenuOpen ? (
-                  <path d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
+              {link.label}
+            </Link>
+          ))}
+          <Link
+            to="/get-started"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md font-medium text-sm transition-colors"
+          >
+            Get Started
+          </Link>
         </div>
 
-        {/* Mobile menu */}
-        <div className={`
-          md:hidden 
-          transition-all 
-          duration-300 
-          ease-in-out 
-          overflow-hidden
-          bg-white
-          rounded-lg
-          shadow-lg
-          mt-2
-          ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
-        `}>
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link
-              to="/features"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
-            >
-              Features
-            </Link>
-            <Link
-              to="/pricing"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
-            >
-              Pricing
-            </Link>
-            <Link
-              to="/Request-Demo"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
-            >
-              Contact
-            </Link>
-            <button
-              onClick={handleLogin}
-              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#fe6019] hover:bg-gray-50 transition-colors duration-300"
-            >
-              Login
-            </button>
-            <button
-              onClick={handleSignUp}
-              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-[#fe6019] text-white hover:bg-[#e54d07] transition-colors duration-300"
-            >
-              Sign Up
-            </button>
-          </div>
-        </div>
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-black"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <div className="md:hidden bg-white absolute top-full left-0 w-full shadow-md">
+          <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="text-black hover:text-orange-500 font-medium"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              to="/get-started"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-center font-medium"
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
