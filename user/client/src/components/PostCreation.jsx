@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { Image, Loader, Hash } from "lucide-react";
 import Select from 'react-select';
+import MentionDropdown from "./MentionDropdown";
 
 const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [content, setContent] = useState("");
