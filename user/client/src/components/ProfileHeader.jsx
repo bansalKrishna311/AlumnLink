@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3 } from "lucide-react";
+import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 // Define allowed locations
@@ -253,6 +253,16 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
           </div>
 
           {!isOwnProfile && renderLinkButton()}
+
+          {!isOwnProfile && (
+            <button
+              onClick={() => navigate(`/messages/${userData.username}`)}
+              className="bg-[#fe6019] text-white px-4 py-2 rounded-full font-semibold hover:bg-[#fe6019]/90 flex items-center"
+            >
+              <MessageSquare size={18} className="mr-2" />
+              Message
+            </button>
+          )}
 
           {isEditing && (
             <button

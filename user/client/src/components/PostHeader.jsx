@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { X, Globe, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const PostHeader = ({ 
   post, 
@@ -19,6 +20,7 @@ const PostHeader = ({
   isBookmarking,
   isBookmarked
 }) => {
+  const navigate = useNavigate();
   const isOwner = authUser?._id === post.author?._id;
   const isAdminAuthor = post.author?.headline === "AlumnLink Admin" || post.author?.headline === "AlumnLink superadmin";
   
@@ -119,6 +121,20 @@ const PostHeader = ({
                 <Globe size={15} className="mr-2.5 text-gray-500" />
                 View Post Details
               </motion.button>
+
+              {!isOwner && (
+                <motion.button
+                  whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}
+                  onClick={() => {
+                    navigate(`/messages/${post.author?.username}`);
+                    setShowOptionsMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 flex items-center text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                >
+                  <MessageSquare size={15} className="mr-2.5 text-gray-500" />
+                  Message {post.author?.name.split(' ')[0]}
+                </motion.button>
+              )}
 
               <motion.button
                 whileHover={{ backgroundColor: "rgba(243, 244, 246, 1)" }}

@@ -13,7 +13,8 @@ import {
   User,
   Calendar,
   BookOpen,
-  Code
+  Code,
+  Filter
 } from 'lucide-react';
 import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -27,6 +28,7 @@ const UserLinks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [showSvietOnly, setShowSvietOnly] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,27 +54,42 @@ const UserLinks = () => {
     }
     
     try {
-      const filtered = links.filter(link => {
-        if (!link) return false;
-        
-        // Use the safeIncludes helper for all checks
-        const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
-        const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
-        const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
-        const courseMatch = safeIncludes(link.courseName, searchQuery);
-        const batchMatch = safeIncludes(link.batch, searchQuery);
-        const rollMatch = safeIncludes(link.rollNumber, searchQuery);
-        
-        return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
-      });
+      let filtered = links;
+
+      // First filter by SVIET if enabled
+      if (showSvietOnly) {
+        filtered = filtered.filter(link => {
+          const isSviet = link.courseName && 
+            typeof link.courseName === 'string' && 
+            link.courseName.toLowerCase().includes('sviet');
+          return isSviet && link.status === 'accepted';
+        });
+      }
+      
+      // Then apply search query filter
+      if (searchQuery) {
+        filtered = filtered.filter(link => {
+          if (!link) return false;
+          
+          // Use the safeIncludes helper for all checks
+          const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
+          const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
+          const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
+          const courseMatch = safeIncludes(link.courseName, searchQuery);
+          const batchMatch = safeIncludes(link.batch, searchQuery);
+          const rollMatch = safeIncludes(link.rollNumber, searchQuery);
+          
+          return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
+        });
+      }
       
       setFilteredLinks(filtered);
-      setCurrentPage(1); // Reset to first page when search changes
+      setCurrentPage(1); // Reset to first page when filter changes
     } catch (err) {
       console.error("Error in filtering:", err);
       // In case of error, don't change the current filtered list
     }
-  }, [searchQuery, links]);
+  }, [searchQuery, links, showSvietOnly]);
 
   const fetchUserLinks = async () => {
     try {
@@ -267,6 +284,10 @@ const UserLinks = () => {
     }
   };
 
+  const toggleSvietFilter = () => {
+    setShowSvietOnly(prev => !prev);
+  };
+
   // Pagination logic with safeguards
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -375,6 +396,16 @@ const UserLinks = () => {
               
               <div className="flex gap-3">
                 <motion.button
+                  className={`px-4 py-2 bg-white border ${showSvietOnly ? 'border-[#fe6019] text-[#fe6019]' : 'border-gray-200 text-gray-600'} rounded-lg font-medium shadow-sm hover:bg-[#fff5f0] transition-colors duration-200 flex items-center gap-2`}
+                  onClick={toggleSvietFilter}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Filter size={14} />
+                  {showSvietOnly ? 'Show All' : 'Show SVIET Only'}
+                </motion.button>
+                
+                <motion.button
                   className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium shadow-sm hover:bg-amber-600 transition-colors duration-200 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   onClick={handleBulkResetToPending}
                   disabled={processing || selectedLinks.length === 0}
@@ -387,6 +418,21 @@ const UserLinks = () => {
               </div>
             </div>
           </motion.div>
+
+          {/* Status information */}
+          {showSvietOnly && (
+            <motion.div 
+              className="mb-4 p-3 bg-[#fff5f0] rounded-lg border border-[#fe6019]/20 text-sm text-gray-700"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+            >
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-emerald-500 mr-2" />
+                <span>Showing only approved alumni connections with SVIET</span>
+              </div>
+            </motion.div>
+          )}
 
           <motion.div 
             className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"

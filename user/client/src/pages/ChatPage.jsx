@@ -71,7 +71,7 @@ const ChatPage = () => {
     },
   });
 
-  // Group connections by their organizations (Link1, Link2, etc.)
+  // Group connections by user name instead of by organization
   const groupedConnections = useMemo(() => {
     if (!userConnections) return {};
     
@@ -79,19 +79,19 @@ const ChatPage = () => {
     userConnections.forEach(connection => {
       // Only include connections with accepted status
       if (connection.status === "accepted") {
-        const orgName = connection.courseName || "Other Network";
-        if (!groups[orgName]) {
-          groups[orgName] = [];
+        const userName = connection.name || "Unknown User";
+        if (!groups[userName]) {
+          groups[userName] = [];
         }
-        groups[orgName].push(connection);
+        groups[userName].push(connection);
       }
     });
     
     return groups;
   }, [userConnections]);
 
-  // Get organization names sorted alphabetically
-  const organizationNames = useMemo(() => {
+  // Get user names sorted alphabetically
+  const userNames = useMemo(() => {
     return Object.keys(groupedConnections).sort();
   }, [groupedConnections]);
 
@@ -286,18 +286,18 @@ const ChatPage = () => {
               </div>
             </div>
             
-            {/* Users linked to same admin - Replaced with organization-based grouping */}
-            {organizationNames.map((orgName, orgIndex) => (
-              <div key={orgName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+            {/* Users linked to same admin - Replaced with user-based grouping */}
+            {userNames.map((userName, userIndex) => (
+              <div key={userName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
                 <div className="p-4 border-b border-gray-100">
                   <h2 className="font-semibold text-gray-800 flex items-center">
                     <Users className="mr-2 text-[#fe6019]" size={18} />
-                    Alumni from {orgName}
+                    Connections with {userName}
                   </h2>
                 </div>
                 
                 <div className="divide-y divide-gray-100 max-h-[200px] overflow-y-auto">
-                  {groupedConnections[orgName].filter(user => 
+                  {groupedConnections[userName].filter(user => 
                     user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     user.username?.toLowerCase().includes(searchQuery.toLowerCase())
                   ).map((user) => (
@@ -349,7 +349,7 @@ const ChatPage = () => {
                     </Link>
                   ))}
                   
-                  {groupedConnections[orgName].length === 0 && (
+                  {groupedConnections[userName].length === 0 && (
                     <div className="p-4 text-center">
                       <p className="text-sm text-gray-500">No contacts available</p>
                     </div>
