@@ -7,12 +7,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import Post from "@/components/Post";
 import { Filter, ArrowLeft, Bookmark } from "lucide-react";
 
-
-
-const UserPostsPage = (isOwnProfile) => {
-    const navigate = useNavigate();
+const UserPostsPage = () => {
+  const navigate = useNavigate();
   const { username } = useParams();
   const [selectedType, setSelectedType] = useState("all");
+
+  // Fetch auth user to compare with profile being viewed
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+  });
+
+  // Determine if this is the user's own profile
+  const isOwnProfile = authUser?.username === username;
 
   // Fetch user's posts
   const { data: userPosts, isLoading } = useQuery({
@@ -33,7 +39,6 @@ const UserPostsPage = (isOwnProfile) => {
     setSelectedType(type);
   };
 
-  
   const goToSavedPosts = () => {
     navigate("/saved-posts");
   };
@@ -62,14 +67,14 @@ const UserPostsPage = (isOwnProfile) => {
             <span>Back to Profile</span>
           </Link>
           {isOwnProfile && (
-                  <button
-                    onClick={goToSavedPosts}
-                    className="flex items-center px-4 py-2 bg-[#fe6019]/10 text-[#fe6019] rounded-md hover:bg-[#fe6019]/20 transition-colors"
-                  >
-                    <Bookmark size={16} className="mr-2" />
-                    <span>View Saved Posts</span>
-                  </button>
-                )}
+            <button
+              onClick={goToSavedPosts}
+              className="flex items-center px-4 py-2 bg-[#fe6019]/10 text-[#fe6019] rounded-md hover:bg-[#fe6019]/20 transition-colors"
+            >
+              <Bookmark size={16} className="mr-2" />
+              <span>View Saved Posts</span>
+            </button>
+          )}
         </div>
 
         <motion.div 
