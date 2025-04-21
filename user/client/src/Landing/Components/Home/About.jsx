@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUserGraduate, FaNetworkWired, FaChalkboardTeacher, FaChevronRight, FaChevronLeft, FaHandshake } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const alumni = [
   {
@@ -44,6 +45,7 @@ const alumni = [
 const About = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -111,20 +113,13 @@ const About = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/signup')}
               className="bg-[#fe6019] hover:bg-[#e05515] text-white px-8 py-3 rounded-lg font-medium shadow-lg transition-all flex items-center gap-2"
             >
               Join Now
               <FaChevronRight className="text-sm" />
             </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 px-8 py-3 rounded-lg font-medium shadow transition-all flex items-center gap-2"
-            >
-              Explore Alumni
-              <FaChevronRight className="text-sm" />
-            </motion.button>
+           
           </div>
         </div>
 
