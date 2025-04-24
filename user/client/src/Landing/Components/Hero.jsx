@@ -1,9 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Briefcase, Calendar, MessageCircle, CheckCircle, BarChart2, ShieldCheck } from 'lucide-react';
-import FeatureCard, { cardVariants } from './FeatureCard';
-import SectionHeading from './SectionHeading';
+import { ArrowRight } from 'lucide-react';
 
 // Reusable component for hero banner with animated elements
 const HeroSection = ({ children }) => (
@@ -19,104 +17,8 @@ const HeroSection = ({ children }) => (
   </div>
 );
 
-// Reusable component for testimonial cards
-const TestimonialCard = ({ testimonial, index }) => (
-  <motion.div 
-    key={index}
-    variants={cardVariants}
-    initial="hidden"
-    animate="visible"
-    custom={index}
-    className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-all relative"
-  >
-    <div className="absolute top-0 right-0 transform translate-x-3 -translate-y-3 text-[#fe6019] opacity-20">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9.5 10C9.5 8.89543 8.60457 8 7.5 8H5.5C4.39543 8 3.5 8.89543 3.5 10V11C3.5 12.1046 4.39543 13 5.5 13H7.5C8.60457 13 9.5 12.1046 9.5 11V10Z" fill="currentColor" stroke="currentColor"/>
-        <path d="M9.5 17C9.5 15.8954 8.60457 15 7.5 15H5.5C4.39543 15 3.5 15.8954 3.5 17V18C3.5 19.1046 4.39543 20 5.5 20H7.5C8.60457 20 9.5 19.1046 9.5 18V17Z" fill="currentColor" stroke="currentColor"/>
-        <path d="M20.5 10C20.5 8.89543 19.6046 8 18.5 8H16.5C15.3954 8 14.5 8.89543 14.5 10V11C14.5 12.1046 15.3954 13 16.5 13H18.5C19.6046 13 20.5 12.1046 20.5 11V10Z" fill="currentColor" stroke="currentColor"/>
-        <path d="M20.5 17C20.5 15.8954 19.6046 15 18.5 15H16.5C15.3954 15 14.5 15.8954 14.5 17V18C14.5 19.1046 15.3954 20 16.5 20H18.5C19.6046 20 20.5 19.1046 20.5 18V17Z" fill="currentColor" stroke="currentColor"/>
-      </svg>
-    </div>
-    <blockquote className="text-gray-600 mb-6 relative">"{testimonial.quote}"</blockquote>
-    <div className="flex items-center gap-3">
-      <img 
-        src={testimonial.image} 
-        alt={testimonial.name} 
-        className="w-12 h-12 rounded-full object-cover border-2 border-[#fe6019]/20"
-        onError={(e) => {e.target.src = '/avatar.png'}}
-      />
-      <div>
-        <div className="font-semibold text-gray-800">{testimonial.name}</div>
-        <div className="text-sm text-[#fe6019]">{testimonial.role}</div>
-      </div>
-    </div>
-  </motion.div>
-);
-
 // Main Hero component
 const Hero = () => {
-  // Features data
-  const features = [
-    {
-      icon: <Users size={24} />,
-      title: "Alumni Directory",
-      description: "Searchable database with filters for graduation year, course, location, and industry",
-      features: ["Custom profile fields", "Privacy controls", "Export options"]
-    },
-    {
-      icon: <Calendar size={24} />,
-      title: "Events Management",
-      description: "Create, promote and manage virtual and in-person alumni gatherings",
-      features: ["Registration & ticketing", "Calendar integration", "Automated reminders"]
-    },
-    {
-      icon: <MessageCircle size={24} />,
-      title: "Discussion Forums",
-      description: "Topic-based forums for alumni to share insights, questions and opportunities",
-      features: ["Moderation tools", "Rich media support", "Email notifications"]
-    },
-    {
-      icon: <Briefcase size={24} />,
-      title: "Career Center",
-      description: "Exclusive job board connecting alumni with relevant opportunities",
-      features: ["Application tracking", "Job notifications", "Employer dashboards"]
-    },
-    {
-      icon: <BarChart2 size={24} />,
-      title: "Analytics Dashboard",
-      description: "Comprehensive metrics to track engagement and platform growth",
-      features: ["Custom reports", "Engagement scoring", "Data visualization"]
-    },
-    {
-      icon: <ShieldCheck size={24} />,
-      title: "Privacy Controls",
-      description: "Advanced security features to protect alumni data and communications",
-      features: ["Role-based access", "GDPR compliance", "Data encryption"]
-    }
-  ];
-
-  // Testimonials data
-  const testimonials = [
-    {
-      quote: "AlumnLink has transformed how we engage with our alumni. Our engagement rates have increased by 72% in just six months.",
-      name: "Dr. Sarah Johnson",
-      role: "Alumni Director, Stanford University",
-      image: "https://randomuser.me/api/portraits/women/44.jpg"
-    },
-    {
-      quote: "The analytics dashboard gives us unprecedented insights into what our alumni care about, allowing us to create more targeted content and events.",
-      name: "Michael Chang",
-      role: "VP of Alumni Relations, MIT",
-      image: "https://randomuser.me/api/portraits/men/32.jpg"
-    },
-    {
-      quote: "We've seen a 40% increase in donations since implementing AlumnLink's fundraising tools. The ROI has been remarkable.",
-      name: "Jennifer Martinez",
-      role: "Development Officer, Harvard",
-      image: "https://randomuser.me/api/portraits/women/68.jpg"
-    }
-  ];
-
   // Partner universities
   const universities = ['Harvard', 'Stanford', 'MIT', 'Oxford', 'Cambridge'];
 
@@ -296,63 +198,6 @@ const Hero = () => {
           </motion.div>
         </div>
       </HeroSection>
-
-      {/* Feature highlights */}
-      <div className="bg-white py-24">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <SectionHeading
-            badge="All-in-one platform"
-            badgeColor="gray"
-            title="Everything you need to manage your alumni network"
-            description="Stop juggling multiple tools. AlumnLink provides all the features you need to build, engage and grow your alumni community in one powerful platform."
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, i) => (
-              <FeatureCard
-                key={i}
-                index={i}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                features={feature.features}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Testimonials with logos */}
-      <div className="bg-gray-50 py-24">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <SectionHeading
-            badge="Trusted worldwide"
-            badgeColor="gray"
-            title="Loved by alumni offices everywhere"
-            description="Join hundreds of educational institutions that use AlumnLink to build stronger alumni communities."
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {testimonials.map((testimonial, i) => (
-              <TestimonialCard key={i} testimonial={testimonial} index={i} />
-            ))}
-          </div>
-
-          {/* Logos */}
-          <div className="bg-white rounded-xl p-8 border border-gray-200">
-            <div className="text-center mb-8">
-              <h3 className="text-lg font-semibold text-gray-700">Trusted by leading educational institutions</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center">
-              {universities.map((logo, i) => (
-                <div key={i} className="text-gray-400 font-bold text-xl">
-                  {logo}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
       
       {/* Custom styles for animation */}
       <style jsx>{`
