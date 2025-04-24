@@ -6,8 +6,8 @@ import Benefits from "../Components/Benefits";
 import Pricing from "../Components/Pricing";
 import FAQSection from "../Components/FAQSection";
 import CallToAction from "../Components/CallToAction";
-import Testimonials from "../Components/Testimonials";
 import FeatureGrid from "../Components/FeatureGrid";
+import Testimonials from "../Components/Testimonials";
 
 const LandHome = () => {
   // Scroll to top on component mount
@@ -47,14 +47,14 @@ const LandHome = () => {
 
           {/* How it works section */}
           <HowItWorks />
-          
-          {/* Feature Grid - Everything you need section */}
+
+          {/* Feature Grid section */}
           <FeatureGrid />
 
           {/* Benefits / Why Choose Us */}
           <Benefits />
-          
-          {/* Testimonials - Loved by alumni offices everywhere */}
+
+          {/* Testimonials section */}
           <Testimonials />
 
           {/* Pricing section */}

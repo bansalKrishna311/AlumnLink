@@ -3,44 +3,90 @@ import { motion } from 'framer-motion';
 import SectionHeading from './SectionHeading';
 
 const Testimonials = () => {
-  // Testimonial data with enhanced details
-  const testimonials = [
+  // University theme colors for testimonial cards
+  const universityColors = [
     {
-      quote: "AlumnLink has transformed how we engage with our alumni. Our engagement rates have increased by 72% in just six months.",
-      name: "Dr. Sarah Johnson",
-      title: "Alumni Director, Stanford University",
-      color: "#8c1515", // Stanford color
-      logoColor: "bg-[#8c1515]",
-      stats: "72% increase in engagement"
+      name: "Stanford University",
+      primary: "#8c1515", // Stanford red
+      secondary: "#eaafa0",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Stanford_Cardinal_logo.svg/200px-Stanford_Cardinal_logo.svg.png"
     },
     {
-      quote: "The analytics dashboard gives us unprecedented insights into what our alumni care about, allowing us to create more targeted content and events.",
-      name: "Michael Chang",
-      title: "VP of Alumni Relations, MIT",
-      color: "#a31f34", // MIT color
-      logoColor: "bg-[#a31f34]",
-      stats: "3x better event attendance"
+      name: "Massachusetts Institute of Technology",
+      primary: "#a31f34", // MIT cardinal
+      secondary: "#f4d2d8",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/200px-MIT_logo.svg.png"
     },
     {
-      quote: "We've seen a 40% increase in donations since implementing AlumnLink's fundraising tools. The ROI has been remarkable.",
-      name: "Jennifer Martinez",
-      title: "Development Officer, Harvard",
-      color: "#a51c30", // Harvard color
-      logoColor: "bg-[#a51c30]",
-      stats: "40% donation increase"
+      name: "Harvard University",
+      primary: "#a51c30", // Harvard crimson
+      secondary: "#f1c4cc",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Harvard_Crimson_logo.svg/200px-Harvard_Crimson_logo.svg.png"
+    },
+    {
+      name: "University of Oxford",
+      primary: "#002147", // Oxford blue
+      secondary: "#c4cbd6",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/200px-Oxford-University-Circlet.svg.png"
+    },
+    {
+      name: "University of Cambridge",
+      primary: "#a3c1ad", // Cambridge green
+      secondary: "#e9f0ec",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/University_of_Cambridge_coat_of_arms.svg/200px-University_of_Cambridge_coat_of_arms.svg.png"
     }
   ];
 
-  // Featured institutions with logos/colors
-  const institutions = [
-    { name: "Harvard", color: "#a51c30" },
-    { name: "Stanford", color: "#8c1515" }, 
-    { name: "MIT", color: "#a31f34" },
-    { name: "Oxford", color: "#002147" },
-    { name: "Cambridge", color: "#a3c1ad" }
+  // Testimonial data
+  const testimonials = [
+    {
+      quote: "AlumnLink has completely transformed how we engage with our alumni. The platform is intuitive and has increased our active alumni participation by 78% in just six months.",
+      name: "Dr. Elizabeth Chen",
+      title: "Alumni Relations Director",
+      university: "Stanford University",
+      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+      stats: { engagement: "78%", retention: "91%", satisfaction: "4.9/5" }
+    },
+    {
+      quote: "The analytics dashboard gives us invaluable insights into our alumni community. We've been able to tailor our programs to increase engagement and foster meaningful connections.",
+      name: "Professor James Wilson",
+      title: "Dean of Alumni Affairs",
+      university: "Massachusetts Institute of Technology",
+      avatar: "https://randomuser.me/api/portraits/men/42.jpg",
+      stats: { events: "142", attendees: "3,500+", fundraising: "$2.7M" }
+    },
+    {
+      quote: "What sets AlumnLink apart is how it seamlessly integrates with our existing systems. The career networking features have created countless opportunities for our recent graduates.",
+      name: "Sarah Johnson, Ph.D.",
+      title: "Head of Career Services",
+      university: "Harvard University",
+      avatar: "https://randomuser.me/api/portraits/women/45.jpg",
+      stats: { jobPlacements: "347", mentorships: "512", networkGrowth: "156%" }
+    },
+    {
+      quote: "The event management tools are exceptional. We've seen record attendance at our alumni gatherings since implementing AlumnLink, and the feedback has been overwhelmingly positive.",
+      name: "Dr. Michael Thompson",
+      title: "Global Alumni Coordinator",
+      university: "University of Oxford",
+      avatar: "https://randomuser.me/api/portraits/men/67.jpg",
+      stats: { eventAttendance: "89%", globalEvents: "27", participation: "4,200+" }
+    },
+    {
+      quote: "Our alumni feel more connected than ever. The discussion forums have created vibrant communities around shared interests, and the mentorship program has flourished on this platform.",
+      name: "Prof. Rebecca Martinez",
+      title: "Alumni Engagement Officer",
+      university: "University of Cambridge",
+      avatar: "https://randomuser.me/api/portraits/women/76.jpg",
+      stats: { activeUsers: "11,243", discussions: "427/month", donations: "+43%" }
+    }
   ];
 
-  // Animation variants
+  const getColorByUniversity = (universityName) => {
+    const university = universityColors.find(u => u.name === universityName);
+    return university || universityColors[0];
+  };
+
+  // Stagger animation for cards
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -52,61 +98,47 @@ const Testimonials = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { y: 50, opacity: 0 },
     visible: {
-      opacity: 1,
       y: 0,
+      opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 50,
-        damping: 10
+        stiffness: 100,
+        damping: 12
       }
     }
   };
 
-  const logoVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: i => ({
-      opacity: 1,
-      scale: 1,
-      transition: {
-        delay: i * 0.1,
-        type: "spring",
-        stiffness: 100
-      }
-    })
-  };
-
-  const statsVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
+  const statVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
     visible: {
-      opacity: 1,
       scale: 1,
+      opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 8
+        stiffness: 300,
+        damping: 15,
+        delay: 0.3
       }
     }
   };
 
   return (
-    <motion.section 
-      className="py-24 overflow-hidden bg-gradient-to-b from-white to-[#fff8f5]"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.7 }}
-    >
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
-        <SectionHeading
-          badge="Trusted worldwide"
-          badgeColor="yellow"
-          title="Loved by alumni offices everywhere"
-          description="Join hundreds of educational institutions that use AlumnLink to build stronger alumni communities."
-        />
+    <section className="py-24 bg-gradient-to-b from-white to-[#fff8f5] overflow-hidden relative">
+      {/* Decorative elements */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#ffe8de] rounded-full opacity-50 blur-3xl"></div>
+      <div className="absolute bottom-20 -left-20 w-60 h-60 bg-orange-100 rounded-full opacity-60 blur-2xl"></div>
 
-        {/* Featured stats - NEW */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+        <SectionHeading
+          badge="Testimonials"
+          badgeColor="orange"
+          title="Trusted by leading universities worldwide"
+          description="Discover how AlumnLink has transformed alumni engagement and community building for prestigious institutions across the globe."
+        />
+        
+        {/* Stat highlights */}
         <motion.div 
           className="flex flex-wrap justify-center gap-4 md:gap-8 mb-16"
           initial="hidden"
@@ -114,159 +146,155 @@ const Testimonials = () => {
           viewport={{ once: true }}
           variants={containerVariants}
         >
-          {testimonials.map((testimonial, i) => (
-            <motion.div
-              key={i}
-              variants={statsVariants}
-              className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
-              style={{ borderTop: `2px solid ${testimonial.color}` }}
-              whileHover={{ 
-                y: -5, 
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)", 
-                borderTopWidth: "3px" 
-              }}
+          <motion.div
+            variants={statVariants}
+            className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
+          >
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-[#8c1515] flex items-center justify-center text-white text-xs font-bold"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
             >
-              <motion.div 
-                className={`w-8 h-8 rounded-full ${testimonial.logoColor} flex items-center justify-center text-white text-xs font-bold`}
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: i + 1 }}
-              >
-                {testimonial.name.split(' ')[0][0]}{testimonial.name.split(' ')[1][0]}
-              </motion.div>
-              <span className="font-bold text-gray-800">{testimonial.stats}</span>
+              +
             </motion.div>
-          ))}
+            <span className="font-bold text-gray-800">91% alumni retention</span>
+          </motion.div>
+          
+          <motion.div
+            variants={statVariants}
+            className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
+          >
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-[#a31f34] flex items-center justify-center text-white text-xs font-bold"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1.5 }}
+            >
+              +
+            </motion.div>
+            <span className="font-bold text-gray-800">78% engagement increase</span>
+          </motion.div>
+          
+          <motion.div
+            variants={statVariants}
+            className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
+          >
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-[#a51c30] flex items-center justify-center text-white text-xs font-bold"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+            >
+              +
+            </motion.div>
+            <span className="font-bold text-gray-800">43% donation growth</span>
+          </motion.div>
         </motion.div>
 
+        {/* Main testimonial cards */}
         <motion.div 
-          className="grid md:grid-cols-3 gap-8 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: "-100px" }}
         >
-          {testimonials.map((testimonial, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              whileHover={{ 
-                y: -10, 
-                transition: { duration: 0.3 },
-                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-              }}
-              className="bg-white rounded-xl p-8 border border-gray-200 shadow-md relative overflow-hidden"
-              style={{ borderTop: `4px solid ${testimonial.color}` }}
-            >
-              {/* Background decoration */}
+          {testimonials.map((testimonial, index) => {
+            const university = getColorByUniversity(testimonial.university);
+            
+            return (
               <motion.div 
-                className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-5"
-                style={{ background: testimonial.color }}
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-              />
-              
-              {/* Quote decorations in top-right */}
-              <div className="absolute top-4 right-4 text-[#ffe8de] opacity-70">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 11L8 13H11V18H6V13L8 11V7H10V11ZM18 11L16 13H19V18H14V13L16 11V7H18V11Z" fill={testimonial.color} />
-                </svg>
-              </div>
-              
-              <motion.p 
-                className="text-gray-600 mb-6 relative z-10 text-lg italic"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 + (i * 0.1) }}
+                key={index}
+                className="relative bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col h-full"
+                variants={itemVariants}
+                whileHover={{ 
+                  y: -10, 
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                  transition: { duration: 0.3 }
+                }}
               >
-                "{testimonial.quote}"
-              </motion.p>
-              
-              <div className="flex items-center">
-                <motion.div 
-                  className="w-14 h-14 rounded-full mr-4 flex items-center justify-center p-0.5"
-                  style={{ background: `linear-gradient(45deg, ${testimonial.color}, #fe6019)` }}
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ 
-                    delay: 0.3 + (i * 0.1),
-                    type: "spring",
-                    stiffness: 200
-                  }}
-                >
-                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-xl font-bold" style={{ color: testimonial.color }}>
-                    {testimonial.name.split(' ')[0][0]}{testimonial.name.split(' ')[1][0]}
+                {/* Curved accent on top */}
+                <div 
+                  className="absolute top-0 left-0 right-0 h-24 rounded-b-[50%] opacity-20 -z-0"
+                  style={{ background: `linear-gradient(45deg, ${university.primary}, ${university.secondary})` }}
+                ></div>
+                
+                {/* University logo watermark */}
+                <div className="absolute top-6 right-6 w-12 h-12 opacity-20">
+                  <img 
+                    src={university.logo} 
+                    alt={university.name} 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                
+                <div className="p-8 flex flex-col flex-grow relative z-10">
+                  {/* Stylized quote mark */}
+                  <div 
+                    className="text-6xl font-serif absolute -top-2 -left-1 opacity-10"
+                    style={{ color: university.primary }}
+                  >
+                    "
                   </div>
-                </motion.div>
-                <div>
-                  <motion.div 
-                    className="font-semibold text-gray-800"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + (i * 0.1) }}
-                  >
-                    {testimonial.name}
-                  </motion.div>
-                  <motion.div 
-                    className="text-sm"
-                    style={{ color: testimonial.color }}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + (i * 0.1) }}
-                  >
-                    {testimonial.title}
-                  </motion.div>
+                  
+                  {/* Testimonial quote */}
+                  <blockquote className="text-gray-700 leading-relaxed mb-6 relative">
+                    {testimonial.quote}
+                  </blockquote>
+                  
+                  {/* Stats cards */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {Object.entries(testimonial.stats).map(([key, value], i) => (
+                      <motion.div 
+                        key={key}
+                        className="text-xs py-1 px-3 rounded-full font-medium"
+                        style={{ 
+                          background: `${university.secondary}80`,
+                          color: university.primary 
+                        }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * i + 0.5 }}
+                      >
+                        <span className="capitalize">{key}</span>: <span className="font-bold">{value}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Author info */}
+                  <div className="mt-auto flex items-center">
+                    <div 
+                      className="w-12 h-12 rounded-full overflow-hidden border-2 shadow-sm mr-4"
+                      style={{ borderColor: university.primary }}
+                    >
+                      <img 
+                        src={testimonial.avatar} 
+                        alt={testimonial.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                      <p className="text-sm text-gray-600">{testimonial.title}</p>
+                      <p 
+                        className="text-xs font-medium" 
+                        style={{ color: university.primary }}
+                      >
+                        {testimonial.university}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <motion.div
-            className="text-center text-gray-600 mb-8 font-medium text-lg"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            Trusted by leading educational institutions worldwide
-          </motion.div>
-          
-          <motion.div 
-            className="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {institutions.map((institution, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                variants={logoVariants}
-                className="flex flex-col items-center"
-                whileHover={{ scale: 1.1 }}
-              >
-                <div className="w-16 h-16 rounded-lg mb-2 flex items-center justify-center text-white font-bold text-xl"
-                  style={{ backgroundColor: institution.color }}
-                >
-                  {institution.name.charAt(0)}
-                </div>
-                <span className="font-semibold text-gray-700">{institution.name}</span>
+                
+                {/* Colored border accent at bottom */}
+                <div 
+                  className="h-1.5 w-full" 
+                  style={{ background: `linear-gradient(to right, ${university.primary}, ${university.secondary})` }}
+                ></div>
               </motion.div>
-            ))}
-          </motion.div>
-        </div>
+            );
+          })}
+        </motion.div>
       </div>
-      
-      {/* Decorative elements */}
-      <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#ffe8de] rounded-full opacity-50 blur-2xl"></div>
-      <div className="absolute top-20 -left-10 w-32 h-32 bg-orange-100 rounded-full opacity-40 blur-xl"></div>
-    </motion.section>
+    </section>
   );
 };
 
