@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Mail, Phone, MapPin, MessageSquare, Clock, CheckCircle } from 'lucide-react';
+import { axiosInstance } from '@/lib/axios';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -11,39 +12,53 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
     
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      // Use the axios instance from axios.js
+      const response = await axiosInstance.post('/contact/submit', formData);
+      
+      if (response.data.success) {
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError(err.response?.data?.message || 'Failed to submit. Please try again later.');
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-      });
       
       // Reset success message after 5 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
-    }, 1500);
+      if (isSubmitted) {
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 5000);
+      }
+    }
   };
 
   return (
     <div className="pt-28 pb-16">
       {/* Contact Hero Section */}
       <div className="bg-gradient-to-b from-[#fe6019]/5 to-white py-12">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -61,7 +76,7 @@ const Contact = () => {
 
       {/* Contact Form and Info */}
       <div className="py-16 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Contact Form */}
             <motion.div 
@@ -87,6 +102,11 @@ const Contact = () => {
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                        {error}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -254,27 +274,7 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                  <h3 className="font-semibold text-gray-800 mb-4">Connect With Us</h3>
-                  <div className="flex gap-4">
-                    {['facebook', 'twitter', 'linkedin', 'instagram'].map((platform) => (
-                      <a 
-                        key={platform}
-                        href={`https://${platform}.com/alumnlink`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1 border border-gray-200"
-                      >
-                        <img 
-                          src={`/social/${platform}.svg`} 
-                          alt={platform} 
-                          className="w-5 h-5"
-                          onError={(e) => {e.target.src = '/social/default.svg'}}
-                        />
-                      </a>
-                    ))}
-                  </div>
-                </div>
+              
               </div>
             </motion.div>
           </div>
@@ -283,7 +283,7 @@ const Contact = () => {
 
       {/* FAQ Section */}
       <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
