@@ -674,9 +674,11 @@ export const reviewPost = async (req, res) => {
 export const createAdminPost = async (req, res) => {
     try {
       const { title, content, type, jobDetails, internshipDetails, eventDetails } = req.body;
-      const image = req.file ? req.file.path : null;
+      
+      // Modified to use buffer data from multer's memory storage instead of file path
+      const imageBuffer = req.file ? req.file.buffer : null;
   
-      console.log("Received data:", { title, content, type, jobDetails, internshipDetails, eventDetails, image });
+      console.log("Received data:", { title, content, type, jobDetails, internshipDetails, eventDetails, hasImage: !!imageBuffer });
   
       let newAdminPostData = {
         author: req.user._id,
@@ -696,8 +698,10 @@ export const createAdminPost = async (req, res) => {
       }
   
       // Upload image to Cloudinary if provided
-      if (image) {
-        const imgResult = await cloudinary.uploader.upload(image);
+      if (imageBuffer) {
+        // Convert buffer to base64 for Cloudinary upload
+        const base64Image = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
+        const imgResult = await cloudinary.uploader.upload(base64Image);
         newAdminPostData.image = imgResult.secure_url;
       }
   
@@ -711,7 +715,7 @@ export const createAdminPost = async (req, res) => {
       console.error("Error in createAdminPost controller:", error);
       res.status(500).json({ message: "Server error", error: error.message });
     }
-  };
+};
 
 // Like or unlike a comment
 export const likeComment = async (req, res) => {
