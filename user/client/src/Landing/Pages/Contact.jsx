@@ -43,7 +43,7 @@ const Contact = () => {
     <div className="pt-28 pb-16">
       {/* Contact Hero Section */}
       <div className="bg-gradient-to-b from-[#fe6019]/5 to-white py-12">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ const Contact = () => {
 
       {/* Contact Form and Info */}
       <div className="py-16 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Contact Form */}
             <motion.div 
@@ -283,7 +283,7 @@ const Contact = () => {
 
       {/* FAQ Section */}
       <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container w-11/12 mx-auto px-4 md:px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
