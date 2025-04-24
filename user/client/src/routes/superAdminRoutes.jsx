@@ -10,6 +10,7 @@ import SuperAdminPage from "../superadmin/SuperAdminPage";
 import PageTitle from "../utils/PageTitle";
 import CorporateAnalysis from "@/superadmin/Corporates/CorporateAnalysis";
 import SchoolAnalysis from "@/superadmin/Schools/SchoolAnalysis";
+import ContactRequests from "@/superadmin/ContactRequests/ContactRequests";
 
 export const superAdminRoutes = [
    
@@ -106,7 +107,15 @@ export const superAdminRoutes = [
             </DefaultLayout>
         )
     },
-
+    { 
+        path: "/contact-requests", 
+        element: (
+            <DefaultLayout>
+                <PageTitle title="Contact Requests | AlumnLink" />
+                <ContactRequests />
+            </DefaultLayout>
+        )
+    },
 
     // Add additional super-admin-specific routes here if needed
 ];
