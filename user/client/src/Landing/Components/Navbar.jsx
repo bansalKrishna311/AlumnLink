@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -68,11 +68,22 @@ const Navbar = () => {
 
           {/* CTA Button Section */}
           <div className="flex-1 flex justify-end">
-            <Link
+            <Link 
               to="/Login"
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-md hover:shadow-lg"
+              className="group relative flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#fe6019] to-orange-500 px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg"
             >
-              Get Started
+              {/* Main text that slides out */}
+              <span className="transform transition-all duration-500 group-hover:translate-x-96">
+                Get Started
+              </span>
+              
+              {/* Arrow icon that slides in */}
+              <span className="absolute inset-0 flex transform items-center justify-center opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+                <ArrowRight className="h-5 w-5" />
+              </span>
+              
+              {/* Hover effect overlay */}
+              <span className="absolute inset-0 transform bg-black opacity-0 transition-all duration-300 group-hover:opacity-10" />
             </Link>
 
             {/* Mobile Menu Button */}
