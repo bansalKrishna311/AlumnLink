@@ -25,15 +25,8 @@ const contactSchema = new mongoose.Schema(
     },
     response: {
       type: String,
-      default: "",
+      default: null,
     },
-    respondedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    respondedAt: {
-      type: Date,
-    }
   },
   { timestamps: true }
 );
