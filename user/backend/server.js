@@ -11,6 +11,7 @@ import postRoutes from "./routes/post.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import LinkRoutes from "./routes/Link.route.js";
 import messageRoutes from "./routes/message.route.js";
+import contactRoutes from "./routes/contact.route.js";
 import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
