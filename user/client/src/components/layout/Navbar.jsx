@@ -42,6 +42,11 @@ const Navbar = () => {
 		}
 	}, [authUser]);
 
+	// Scroll to top when location changes
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [location.pathname]);
+
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadLinkRequestsCount = LinkRequests?.data?.length;
 
@@ -61,6 +66,11 @@ const Navbar = () => {
 		}
 	}, [isSuperAdmin, isMessagesPage, navigate]);
 
+	// Function to handle navigation and scroll to top
+	const handleNavClick = () => {
+		window.scrollTo(0, 0);
+	};
+
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10 transition-all duration-300 ease-in-out hover:shadow-lg'>
 			<div className='max-w-7xl mx-auto px-4'>
@@ -79,14 +89,14 @@ const Navbar = () => {
 								</SheetContent>
 							</Sheet>
 						)}
-						<Link to='/' className="transform transition-transform duration-300 hover:scale-105">
+						<Link to='/' className="transform transition-transform duration-300 hover:scale-105" onClick={handleNavClick}>
 							<img className='h-8 rounded hover:animate-none' src='/logo copy.png' alt='AlumnLink' />
 						</Link>
 					</div>
 					<div className='flex items-center gap-2 md:gap-6'>
 						{authUser ? (
 							<>
-								<Link to={"/"} className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110'>
+								<Link to={"/"} className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110' onClick={handleNavClick}>
 										<Home 
 											size={20} 
 											fill={isHomePage ? "#fe6019" : "none"} 
@@ -94,7 +104,7 @@ const Navbar = () => {
 										/>
 										<span className={`text-xs text-black hidden md:block ${isHomePage ? "font-semibold" : ""} transition-all duration-300`}>Home</span>
 								</Link>
-								<Link to='/network' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>	
+								<Link to='/network' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative' onClick={handleNavClick}>	
 									<Users 
 										size={20} 
 										fill={isNetworkPage ? "#fe6019" : "none"}
@@ -111,7 +121,7 @@ const Navbar = () => {
 										</span>
 									)}
 								</Link>						
-								<Link to='/notifications' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
+								<Link to='/notifications' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative' onClick={handleNavClick}>
 									<Bell 
 										size={20} 
 										fill={isNotificationsPage ? "#fe6019" : "none"}
@@ -131,7 +141,7 @@ const Navbar = () => {
 								
 								{/* Only show messaging for non-superadmin users */}
 								{!isSuperAdmin && (
-									<Link to='/messages' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative'>
+									<Link to='/messages' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative' onClick={handleNavClick}>
 										<MessageSquare 
 											size={20} 
 											fill={isMessagesPage ? "#fe6019" : "none"}
@@ -144,6 +154,7 @@ const Navbar = () => {
 								<Link
 									to={`/profile/${authUser.username}`}
 									className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110'
+									onClick={handleNavClick}
 								>
 										<User 
 											size={20} 
@@ -183,10 +194,10 @@ const Navbar = () => {
 							</>
 						) : (
 							<>
-								<Link to='/login' className='btn btn-ghost text-[#fe6019] transition-all duration-300 hover:scale-105 hover:bg-[#fe6019]'>
+								<Link to='/login' className='btn btn-ghost text-[#fe6019] transition-all duration-300 hover:scale-105 hover:bg-[#fe6019]' onClick={handleNavClick}>
 									Sign In
 								</Link>
-								<Link to='/signup' className='btn btn-primary bg-[#fe6019] hover:bg-[#fe6019] border-[#fe6019] transition-all duration-300 hover:scale-105 hover:shadow-md'>
+								<Link to='/signup' className='btn btn-primary bg-[#fe6019] hover:bg-[#fe6019] border-[#fe6019] transition-all duration-300 hover:scale-105 hover:shadow-md' onClick={handleNavClick}>
 									Join now
 								</Link>
 							</>

@@ -24,7 +24,15 @@ const Navbar = () => {
 
   useEffect(() => {
     setIsOpen(false);
+    // Scroll to top when the location changes
+    window.scrollTo(0, 0);
   }, [location]);
+
+  // Function to handle link clicks
+  const handleNavLinkClick = () => {
+    // Scroll to top when a navbar link is clicked
+    window.scrollTo(0, 0);
+  };
 
   return (
     <nav
@@ -38,7 +46,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo Section */}
           <div className="flex-1">
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center" onClick={handleNavLinkClick}>
               <img 
                 src="/logo copy.png" 
                 alt="AlumLink Logo" 
@@ -54,6 +62,7 @@ const Navbar = () => {
                 <Link
                   key={link.href}
                   to={link.href}
+                  onClick={handleNavLinkClick}
                   className={`text-sm font-medium ${
                     location.pathname === link.href
                       ? 'text-orange-500 border-b-2 border-orange-500 pb-1'
@@ -70,6 +79,7 @@ const Navbar = () => {
           <div className="flex-1 flex justify-end">
             <Link 
               to="/Login"
+              onClick={handleNavLinkClick}
               className="group relative flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#fe6019] to-orange-500 px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg"
             >
               {/* Main text that slides out */}
@@ -104,6 +114,7 @@ const Navbar = () => {
                 <Link
                   key={link.href}
                   to={link.href}
+                  onClick={handleNavLinkClick}
                   className={`text-gray-700 hover:text-orange-500 font-medium px-4 py-2 rounded-md ${
                     location.pathname === link.href
                       ? 'bg-orange-50 text-orange-500'
