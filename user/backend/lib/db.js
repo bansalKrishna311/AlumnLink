@@ -1,41 +1,72 @@
 // db.js
 import mongoose from 'mongoose';
 
-// Track the connection state
-let isConnected = false;
+// Cache the database connection
+let cachedConnection = null;
+let isConnecting = false;
 
 const connectDB = async () => {
-	if (isConnected) {
-		console.log('Using existing database connection');
-		return;
-	}
+  // If we have a cached connection, use it
+  if (cachedConnection) {
+    return cachedConnection;
+  }
 
-	try {
-		// Set mongoose options optimized for serverless environments
-		const options = {
-			serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-			socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-		};
+  // If already connecting, wait for that connection
+  if (isConnecting) {
+    // Wait for the existing connection attempt to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return connectDB();
+  }
 
-		// Connect to MongoDB
-		const conn = await mongoose.connect(process.env.MONGO_URI, options);
-		
-		isConnected = true;
-		console.log(`MongoDB Connected: ${conn.connection.host}`);
-		
-		// Handle connection errors after initial connection
-		mongoose.connection.on('error', (err) => {
-			console.log('MongoDB connection error:', err);
-			isConnected = false;
-		});
-		
-		return conn;
-	} catch (error) {
-		console.error(`MongoDB Connection Error: ${error.message}`);
-		// Don't exit process in serverless environment
-		isConnected = false;
-		throw error;
-	}
+  // Set connecting flag
+  isConnecting = true;
+
+  try {
+    // Set strict connection timeout for Vercel
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
+      // These settings help with Vercel serverless functions
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      maxIdleTimeMS: 30000
+    };
+
+    // Start connecting
+    const conn = await mongoose.connect(process.env.MONGO_URI, options);
+    
+    // Cache the connection
+    cachedConnection = conn;
+    
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Add event listeners for reconnection
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB disconnected');
+      cachedConnection = null;
+    });
+    
+    mongoose.connection.on('error', err => {
+      console.error('MongoDB connection error:', err);
+      cachedConnection = null;
+    });
+    
+    return conn;
+  } catch (error) {
+    // Reset cached connection on error
+    cachedConnection = null;
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    
+    // Don't throw in production to prevent function crashes
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Failed to connect to MongoDB, but continuing execution');
+      return null;
+    } else {
+      throw error;
+    }
+  } finally {
+    isConnecting = false;
+  }
 };
 
 export default connectDB;

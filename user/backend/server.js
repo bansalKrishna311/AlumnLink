@@ -15,59 +15,16 @@ import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
-import connectDB from "./lib/db.js"; // Correct the import
+import connectDB from "./lib/db.js";
 
 dotenv.config();
 
-// For quick response in serverless environment
-let isConnected = false;
-let connectionPromise = null;
-
-// Modified connect function with timeout
-const connectToDatabase = async () => {
-  if (isConnected) {
-    return Promise.resolve();
-  }
-  
-  if (!connectionPromise) {
-    connectionPromise = connectDB()
-      .then(() => {
-        isConnected = true;
-        console.log('MongoDB Connected successfully');
-      })
-      .catch(err => {
-        connectionPromise = null;
-        console.error('MongoDB connection error:', err);
-        throw err;
-      });
-  }
-  
-  return connectionPromise;
-};
-
+// Initialize the app immediately
 const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
-// Optimized maintenance tasks function
-const runMaintenanceTasks = async () => {
-  // Only run on 1% of requests to minimize impact
-  if (Math.random() < 0.01) {
-    // Use a timeout to ensure the main request doesn't wait for this
-    setTimeout(async () => {
-      try {
-        await Promise.all([
-          cleanupOldLinkRequests(),
-          notifyExpiringRequests()
-        ]);
-        console.log('Maintenance tasks completed');
-      } catch (err) {
-        console.error('Error in maintenance tasks:', err);
-      }
-    }, 100);
-  }
-};
-
+// Set up middleware first without waiting for DB connection
 // CORS configuration
 if (process.env.NODE_ENV !== "production") {
   app.use(
@@ -86,40 +43,89 @@ if (process.env.NODE_ENV !== "production") {
     })
   );
 }
-  
-app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
+
+// Set reasonable body size limits
+app.use(express.json({ limit: "2mb" })); 
 app.use(cookieParser());
 
-// Connect to DB middleware - ensures connection before handling requests
-app.use(async (req, res, next) => {
-  try {
-    // Use a timeout promise to ensure we don't hang
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('DB connection timeout')), 5000);
-    });
-    
-    await Promise.race([connectToDatabase(), timeoutPromise]);
-    
-    // Only trigger maintenance on non-critical paths
-    if (!req.path.includes('/auth') && !req.path.includes('/users') && req.method === 'GET') {
-      runMaintenanceTasks();
-    }
-    
-    next();
-  } catch (error) {
-    console.error('Database connection error in middleware:', error);
-    res.status(500).send('Server Error: Database connection failed');
-  }
+// Health check endpoint that doesn't require DB
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "AlumnLink API is healthy" });
 });
 
-// Health check endpoint - responds immediately
+// Connect to database lazily - only when needed
+let dbPromise = null;
+const getDbConnection = () => {
+  if (!dbPromise) {
+    dbPromise = connectDB().catch(err => {
+      console.error('Failed to connect to database:', err);
+      dbPromise = null;
+      throw err;
+    });
+  }
+  return dbPromise;
+};
+
+// Middleware to handle database connection
+const withDb = async (req, res, next) => {
+  // Skip DB connection for health check
+  if (req.path === '/health') {
+    return next();
+  }
+
+  try {
+    // Set a timeout for the DB connection
+    const connectionPromise = getDbConnection();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('DB connection timeout')), 3000)
+    );
+
+    await Promise.race([connectionPromise, timeoutPromise]);
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return res.status(503).json({ 
+      error: 'Database connection failed', 
+      message: 'Service temporarily unavailable' 
+    });
+  }
+};
+
+// Apply the DB connection middleware to all routes
+app.use(withDb);
+
+// Maintenance tasks - executed asynchronously and very rarely
+const runMaintenanceTasks = () => {
+  if (Math.random() < 0.005) { // 0.5% chance of running
+    console.log('Scheduling maintenance tasks...');
+    // Run completely detached
+    setTimeout(async () => {
+      try {
+        await Promise.all([
+          cleanupOldLinkRequests(),
+          notifyExpiringRequests()
+        ]);
+        console.log('Maintenance tasks completed successfully');
+      } catch (err) {
+        console.error('Error in maintenance tasks:', err);
+      }
+    }, 100);
+  }
+};
+
+// Root endpoint with minimal processing
 app.get("/", (req, res) => {
+  runMaintenanceTasks();
   res.send("AlumnLink API is running");
 });
 
+// API routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", verifySession, userRoutes);
-app.use("/api/v1/posts", verifySession, postRoutes);
+app.use("/api/v1/posts", verifySession, (req, res, next) => {
+  runMaintenanceTasks();
+  next();
+}, postRoutes);
 app.use("/api/v1/notifications", verifySession, notificationRoutes);
 app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
@@ -127,13 +133,17 @@ app.use('/api/v1/messages', verifySession, messageRoutes);
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Auto-cleanup scheduler initialized for old link requests');
+  // Connect to DB immediately in development
+  connectDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log('Auto-cleanup scheduler initialized');
+    });
   });
 }
 
 // Export for Vercel serverless deployment
+// In production, we export the serverless handler without connecting to DB first
 export default process.env.NODE_ENV === "production"
   ? serverless(app)
   : app;
