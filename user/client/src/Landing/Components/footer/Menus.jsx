@@ -1,36 +1,39 @@
 export const PRODUCTS = [
-  { name: "Drag And Drop", link: "#" },
-  { name: "Visual Studio X", link: "#" },
-  { name: "Easy Content", link: "#" },
+  { name: "Alumni Directory", link: "#" },
+  { name: "Events Platform", link: "#" },
+  { name: "Networking Tools", link: "#" },
+  { name: "Career Center", link: "#" },
+  { name: "Fundraising Portal", link: "#" },
 ];
 
 export const RESOURCES = [
-  { name: "Industries and tools", link: "#" },
-  { name: "Use cases", link: "#" },
+  { name: "Success Stories", link: "#" },
   { name: "Blog", link: "#" },
-  { name: "Online event", link: "#" },
-  { name: "Nostrud exercitation", link: "#" },
+  { name: "Guides & Tutorials", link: "#" },
+  { name: "Webinars", link: "#" },
+  { name: "API Documentation", link: "#" },
 ];
 
 export const COMPANY = [
-  { name: "Diversity & inclusion", link: "#" },
-  { name: "About us", link: "#" },
-  { name: "Press", link: "#" },
-  { name: "Customer Stories", link: "#" },
-  { name: "Online communities", link: "#" },
+  { name: "About AlumnLink", link: "#" },
+  { name: "Our Team", link: "#" },
+  { name: "Careers", link: "#" },
+  { name: "Press Kit", link: "#" },
+  { name: "Contact Us", link: "#" },
 ];
 
 export const SUPPORT = [
-  { name: "Documentation", link: "#" },
-  { name: "Tutorials & guides", link: "#" },
-  { name: "Webinars", link: "#" },
-  { name: "Open-source", link: "#" },
+  { name: "Help Center", link: "#" },
+  { name: "Community Forum", link: "#" },
+  { name: "Platform Status", link: "#" },
+  { name: "Request a Demo", link: "#" },
+  { name: "Privacy & Security", link: "#" },
 ];
 
 export const Icons = [
-  { name: "logo-facebook", link: "#" },
-  { name: "logo-twitter", link: "#" },
-  { name: "logo-github", link: "#" },
-  { name: "logo-AlumnLink", link: "#" },
-  { name: "logo-instagram", link: "#" },
+  { name: "fa-facebook", link: "#" },
+  { name: "fa-twitter", link: "#" },
+  { name: "fa-linkedin", link: "#" },
+  { name: "fa-instagram", link: "#" },
+  { name: "fa-youtube", link: "#" },
 ];
