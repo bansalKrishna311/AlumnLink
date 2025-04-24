@@ -7,32 +7,32 @@ const Testimonials = () => {
   const universityColors = [
     {
       name: "Stanford University",
-      primary: "#8c1515", // Stanford red
-      secondary: "#eaafa0",
+      primary: "#fe6019", // AlumnLink primary orange
+      secondary: "#ffd9c7", // Light orange variant
       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Stanford_Cardinal_logo.svg/200px-Stanford_Cardinal_logo.svg.png"
     },
     {
       name: "Massachusetts Institute of Technology",
-      primary: "#a31f34", // MIT cardinal
-      secondary: "#f4d2d8",
+      primary: "#ff7a3d", // Slightly lighter orange
+      secondary: "#ffe2d3", // Very light orange
       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/200px-MIT_logo.svg.png"
     },
     {
       name: "Harvard University",
-      primary: "#a51c30", // Harvard crimson
-      secondary: "#f1c4cc",
+      primary: "#e85000", // Darker orange
+      secondary: "#ffc5a8", // Peachy orange
       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Harvard_Crimson_logo.svg/200px-Harvard_Crimson_logo.svg.png"
     },
     {
       name: "University of Oxford",
-      primary: "#002147", // Oxford blue
-      secondary: "#c4cbd6",
+      primary: "#ff4d00", // Vibrant orange
+      secondary: "#ffccb8", // Soft peachy orange
       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/200px-Oxford-University-Circlet.svg.png"
     },
     {
       name: "University of Cambridge",
-      primary: "#a3c1ad", // Cambridge green
-      secondary: "#e9f0ec",
+      primary: "#ff8c4d", // Light warm orange
+      secondary: "#ffede3", // Very light peach
       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/University_of_Cambridge_coat_of_arms.svg/200px-University_of_Cambridge_coat_of_arms.svg.png"
     }
   ];
@@ -151,7 +151,7 @@ const Testimonials = () => {
             className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
           >
             <motion.div 
-              className="w-8 h-8 rounded-full bg-[#8c1515] flex items-center justify-center text-white text-xs font-bold"
+              className="w-8 h-8 rounded-full bg-[#fe6019] flex items-center justify-center text-white text-xs font-bold"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
             >
@@ -165,7 +165,7 @@ const Testimonials = () => {
             className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
           >
             <motion.div 
-              className="w-8 h-8 rounded-full bg-[#a31f34] flex items-center justify-center text-white text-xs font-bold"
+              className="w-8 h-8 rounded-full bg-[#ff7a3d] flex items-center justify-center text-white text-xs font-bold"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1.5 }}
             >
@@ -179,7 +179,7 @@ const Testimonials = () => {
             className="bg-white px-6 py-4 rounded-full shadow-md border border-gray-100 flex items-center gap-3"
           >
             <motion.div 
-              className="w-8 h-8 rounded-full bg-[#a51c30] flex items-center justify-center text-white text-xs font-bold"
+              className="w-8 h-8 rounded-full bg-[#e85000] flex items-center justify-center text-white text-xs font-bold"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
             >
