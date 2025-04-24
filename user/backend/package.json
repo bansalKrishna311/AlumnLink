@@ -5,12 +5,16 @@
 	"main": "server.js",
 	"scripts": {
 		"dev": "nodemon server.js",
-		"start": "node server.js"
+		"start": "node server.js",
+		"vercel-build": "echo 'Building for Vercel deployment'"
 	},
 	"keywords": [],
 	"author": "",
 	"type": "module",
 	"license": "ISC",
+	"engines": {
+		"node": ">=18.x"
+	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",
 		"cloudinary": "^2.4.0",

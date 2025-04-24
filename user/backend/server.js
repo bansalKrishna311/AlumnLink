@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
+import serverless from "serverless-http";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
@@ -17,63 +18,63 @@ import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.
 import connectDB from "./lib/db.js"; // Correct the import
 
 dotenv.config();
-console.log("Mongo URI:", process.env.MONGO_URI);
 
-
-// Connect to MongoDB before setting up the server
+// Connect to MongoDB
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
-// Schedule cleanup and notification tasks to run daily at midnight
-const scheduleCleanupTasks = () => {
-    const now = new Date();
-    const night = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() + 1, // tomorrow
-        0, 0, 0 // midnight
-    );
-    const timeToMidnight = night.getTime() - now.getTime();
-
-    // First cleanup at next midnight
-    setTimeout(() => {
-        Promise.all([
-            cleanupOldLinkRequests(),
-            notifyExpiringRequests()
-        ]).catch(err => console.error('Error in scheduled tasks:', err));
-
-        // Then setup daily interval
-        setInterval(() => {
-            Promise.all([
-                cleanupOldLinkRequests(),
-                notifyExpiringRequests()
-            ]).catch(err => console.error('Error in scheduled tasks:', err));
-        }, 24 * 60 * 60 * 1000);
-    }, timeToMidnight);
+// In serverless environment, we can't use traditional scheduling
+// This function will be triggered on API calls instead
+const runMaintenanceTasks = async () => {
+  // Only run maintenance tasks occasionally (e.g., 5% of requests)
+  // to avoid overloading the system
+  if (Math.random() < 0.05) {
+    try {
+      await Promise.all([
+        cleanupOldLinkRequests(),
+        notifyExpiringRequests()
+      ]);
+      console.log('Maintenance tasks completed');
+    } catch (err) {
+      console.error('Error in maintenance tasks:', err);
+    }
+  }
 };
 
-// Start the cleanup schedule
-scheduleCleanupTasks();
+// Middleware to trigger maintenance tasks on some requests
+app.use(async (req, res, next) => {
+  // Don't await this - let it run in the background
+  runMaintenanceTasks();
+  next();
+});
 
+// CORS configuration
 if (process.env.NODE_ENV !== "production") {
-	app.use(
-		cors({
-			origin: (origin, callback) => {
-				callback(null, origin || "*"); // Allow all origins
-			},
-			credentials: true,
-		})
-	);
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        callback(null, origin || "*"); // Allow all origins
+      },
+      credentials: true,
+    })
+  );
+} else {
+  app.use(
+    cors({
+      origin: process.env.CLIENT_URL || 'https://alumnlink.vercel.app',
+      credentials: true,
+    })
+  );
 }
-	
+  
 app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-    res.send("Hello, World!");
+  res.send("AlumnLink API is running");
 });
 
 app.use("/api/v1/auth", authRoutes);
@@ -84,15 +85,15 @@ app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
 app.use('/api/v1/messages', verifySession, messageRoutes);
 
-if (process.env.NODE_ENV === "production") {
-	app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-	app.get("*", (req, res) => {
-		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-	});
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Auto-cleanup scheduler initialized for old link requests');
+  });
 }
 
-app.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`);
-	console.log('Auto-cleanup scheduler initialized for old link requests');
-});
+// Export for Vercel serverless deployment
+export default process.env.NODE_ENV === "production"
+  ? serverless(app)
+  : app;
