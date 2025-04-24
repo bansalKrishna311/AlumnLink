@@ -63,22 +63,7 @@ const Testimonials = () => {
       avatar: "https://randomuser.me/api/portraits/women/45.jpg",
       stats: { jobPlacements: "347", mentorships: "512", networkGrowth: "156%" }
     },
-    {
-      quote: "The event management tools are exceptional. We've seen record attendance at our alumni gatherings since implementing AlumnLink, and the feedback has been overwhelmingly positive.",
-      name: "Dr. Michael Thompson",
-      title: "Global Alumni Coordinator",
-      university: "University of Oxford",
-      avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-      stats: { eventAttendance: "89%", globalEvents: "27", participation: "4,200+" }
-    },
-    {
-      quote: "Our alumni feel more connected than ever. The discussion forums have created vibrant communities around shared interests, and the mentorship program has flourished on this platform.",
-      name: "Prof. Rebecca Martinez",
-      title: "Alumni Engagement Officer",
-      university: "University of Cambridge",
-      avatar: "https://randomuser.me/api/portraits/women/76.jpg",
-      stats: { activeUsers: "11,243", discussions: "427/month", donations: "+43%" }
-    }
+    
   ];
 
   const getColorByUniversity = (universityName) => {
