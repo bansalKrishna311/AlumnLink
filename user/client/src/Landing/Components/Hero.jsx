@@ -14,33 +14,32 @@ const Hero = () => {
         <div className="absolute top-1/2 -left-20 w-72 h-72 bg-gradient-to-br from-pink-100 to-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-4000"></div>
         
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Hero content */}
-            <div className="flex-1 space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
-                className="space-y-5"
-              >
-                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm py-2 px-4 rounded-full shadow-sm mb-4 border border-[#fe6019]/10">
-                  <span className="animate-pulse h-2 w-2 rounded-full bg-[#fe6019]"></span>
-                  <span className="text-sm font-medium text-gray-600">Alumni Networking Reimagined</span>
-                </div>
-                
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-                  Reconnect Your <span className="bg-gradient-to-r from-[#fe6019] to-orange-600 bg-clip-text text-transparent">Alumni Network</span>
-                </h1>
-                <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
-                  The complete platform for educational institutions to build, engage, and grow their alumni community in one powerful dashboard.
-                </p>
-              </motion.div>
+          {/* Hero content - now in top-bottom layout */}
+          <div className="flex flex-col items-center text-center">
+            {/* Top section - Text content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="max-w-4xl mx-auto space-y-5 mb-16"
+            >
+              <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm py-2 px-4 rounded-full shadow-sm mb-4 border border-[#fe6019]/10">
+                <span className="animate-pulse h-2 w-2 rounded-full bg-[#fe6019]"></span>
+                <span className="text-sm font-medium text-gray-600">Alumni Networking Reimagined</span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
+                Reconnect Your <span className="bg-gradient-to-r from-[#fe6019] to-orange-600 bg-clip-text text-transparent">Alumni Network</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+                The complete platform for educational institutions to build, engage, and grow their alumni community in one powerful dashboard.
+              </p>
 
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
               >
                 <Link
                   to="/login"
@@ -65,7 +64,7 @@ const Hero = () => {
                 className="pt-6"
               >
                 <p className="text-sm text-gray-500 mb-3">Trusted by educational institutions worldwide</p>
-                <div className="flex flex-wrap items-center gap-6">
+                <div className="flex flex-wrap items-center justify-center gap-6">
                   {['Harvard', 'Stanford', 'MIT', 'Oxford', 'Cambridge'].map((university, i) => (
                     <div key={i} className="text-gray-400 font-semibold text-sm">
                       {university} UNIVERSITY
@@ -73,14 +72,14 @@ const Hero = () => {
                   ))}
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
 
-            {/* Hero image/dashboard preview */}
+            {/* Bottom section - Dashboard preview */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex-1 relative"
+              className="w-full max-w-5xl mx-auto"
             >
               <div className="relative bg-white p-2 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                 {/* Mockup UI */}
