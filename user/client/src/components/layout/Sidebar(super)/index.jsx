@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from "@/lib/axios";
-import { LogOut } from 'lucide-react';
+import { LogOut, MessageSquare } from 'lucide-react';
 import Logo from '/logo-white.png'; // Update this path to your logo
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -291,6 +291,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     </>
                   )}
                 </SidebarLinkGroup>
+
+                {/* Contact Requests Link */}
+                <li>
+                  <NavLink
+                    to="/contact-requests"
+                    className={({ isActive }) =>
+                      'group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ' +
+                      (isActive && 'bg-slate-700')
+                    }
+                  >
+                    <MessageSquare size={20} />
+                    Contact Requests
+                  </NavLink>
+                </li>
+
                 <li>
                   <NavLink
                     to="/create-admin"
