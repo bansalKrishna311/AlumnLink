@@ -19,37 +19,54 @@ import connectDB from "./lib/db.js"; // Correct the import
 
 dotenv.config();
 
-// Connect to MongoDB
-connectDB();
+// For quick response in serverless environment
+let isConnected = false;
+let connectionPromise = null;
+
+// Modified connect function with timeout
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return Promise.resolve();
+  }
+  
+  if (!connectionPromise) {
+    connectionPromise = connectDB()
+      .then(() => {
+        isConnected = true;
+        console.log('MongoDB Connected successfully');
+      })
+      .catch(err => {
+        connectionPromise = null;
+        console.error('MongoDB connection error:', err);
+        throw err;
+      });
+  }
+  
+  return connectionPromise;
+};
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
-// In serverless environment, we can't use traditional scheduling
-// This function will be triggered on API calls instead
+// Optimized maintenance tasks function
 const runMaintenanceTasks = async () => {
-  // Only run maintenance tasks occasionally (e.g., 5% of requests)
-  // to avoid overloading the system
-  if (Math.random() < 0.05) {
-    try {
-      await Promise.all([
-        cleanupOldLinkRequests(),
-        notifyExpiringRequests()
-      ]);
-      console.log('Maintenance tasks completed');
-    } catch (err) {
-      console.error('Error in maintenance tasks:', err);
-    }
+  // Only run on 1% of requests to minimize impact
+  if (Math.random() < 0.01) {
+    // Use a timeout to ensure the main request doesn't wait for this
+    setTimeout(async () => {
+      try {
+        await Promise.all([
+          cleanupOldLinkRequests(),
+          notifyExpiringRequests()
+        ]);
+        console.log('Maintenance tasks completed');
+      } catch (err) {
+        console.error('Error in maintenance tasks:', err);
+      }
+    }, 100);
   }
 };
-
-// Middleware to trigger maintenance tasks on some requests
-app.use(async (req, res, next) => {
-  // Don't await this - let it run in the background
-  runMaintenanceTasks();
-  next();
-});
 
 // CORS configuration
 if (process.env.NODE_ENV !== "production") {
@@ -73,6 +90,29 @@ if (process.env.NODE_ENV !== "production") {
 app.use(express.json({ limit: "5mb" })); // parse JSON request bodies
 app.use(cookieParser());
 
+// Connect to DB middleware - ensures connection before handling requests
+app.use(async (req, res, next) => {
+  try {
+    // Use a timeout promise to ensure we don't hang
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('DB connection timeout')), 5000);
+    });
+    
+    await Promise.race([connectToDatabase(), timeoutPromise]);
+    
+    // Only trigger maintenance on non-critical paths
+    if (!req.path.includes('/auth') && !req.path.includes('/users') && req.method === 'GET') {
+      runMaintenanceTasks();
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Database connection error in middleware:', error);
+    res.status(500).send('Server Error: Database connection failed');
+  }
+});
+
+// Health check endpoint - responds immediately
 app.get("/", (req, res) => {
   res.send("AlumnLink API is running");
 });
