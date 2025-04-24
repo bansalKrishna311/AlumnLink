@@ -72,7 +72,7 @@ const LandHome = () => {
 
       {/* How it works section */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,7 +150,7 @@ const LandHome = () => {
 
       {/* Benefits / Why Choose Us */}
       <section className="py-24 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
@@ -317,7 +317,7 @@ const LandHome = () => {
 
       {/* Pricing section */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -414,7 +414,7 @@ const LandHome = () => {
 
       {/* FAQ Section */}
       <section className="py-24 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -489,7 +489,7 @@ const LandHome = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full filter blur-3xl opacity-40"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full filter blur-3xl opacity-40"></div>
         
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center text-white">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}

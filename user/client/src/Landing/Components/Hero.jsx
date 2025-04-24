@@ -13,7 +13,7 @@ const Hero = () => {
         <div className="absolute -bottom-32 -left-40 w-96 h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-2000"></div>
         <div className="absolute top-1/2 -left-20 w-72 h-72 bg-gradient-to-br from-pink-100 to-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-4000"></div>
         
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Hero content */}
             <div className="flex-1 space-y-8">
@@ -191,7 +191,7 @@ const Hero = () => {
 
       {/* Feature highlights */}
       <div className="bg-white py-24">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -274,7 +274,7 @@ const Hero = () => {
 
       {/* Testimonials with logos */}
       <div className="bg-gray-50 py-24">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -365,7 +365,7 @@ const Hero = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full filter blur-3xl opacity-50"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full filter blur-3xl opacity-50"></div>
         
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center text-white">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
