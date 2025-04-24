@@ -3,7 +3,16 @@ import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from "@/lib/axios";
-import { LogOut, MessageSquare } from 'lucide-react';
+import { 
+  LogOut, 
+  MessageSquare, 
+  Building, 
+  Briefcase, 
+  School, 
+  BarChart, 
+  List, 
+  UserPlus 
+} from 'lucide-react';
 import Logo from '/logo-white.png'; // Update this path to your logo
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -62,21 +71,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       {/* Sidebar */}
       <aside
         ref={sidebar}
-        className={`absolute left-0 top-0 z-50 flex h-screen w-64 flex-col overflow-y-hidden bg-slate-800 text-white duration-300 ease-linear lg:static lg:translate-x-0 ${
+        className={`absolute left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-slate-800 text-white duration-300 ease-linear lg:static lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } border-r border-slate-700`}
       >
         {/* SIDEBAR HEADER */}
-        <div className="flex items-center justify-between align-middle gap-2 px-6 py-5.5 lg:py-6.5">
-          <img src={Logo} alt="Logo" className="h-10 w-auto mt-10 ml-3" />
+        <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5 border-b border-slate-700">
+          <div className="flex items-center">
+            <img src={Logo} alt="Logo" className="h-12 w-auto mt-2 ml-3" />
+          </div>
           <button
             ref={trigger}
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-controls="sidebar"
             aria-expanded={sidebarOpen}
-            className="block lg:hidden p-2 text-gray-400 hover:text-gray-500"
+            className="block lg:hidden p-2 text-gray-400 hover:text-gray-300 transition-colors"
           >
-            {/* Icon for mobile toggle */}
             <svg
               className="w-6 h-6"
               fill="none"
@@ -97,26 +107,27 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="flex flex-col flex-grow overflow-y-auto duration-300 ease-linear">
           {/* Sidebar Menu */}
-          <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
+          <nav className="mt-2 py-4 px-4 lg:px-6">
             <div>
-              <ul className="mb-6 flex flex-col gap-1.5">
+              <ul className="mb-6 flex flex-col gap-2">
                 {/* Institutes Dropdown */}
                 <SidebarLinkGroup activeCondition={pathname.includes('institutes')}>
                   {(handleClick, open) => (
                     <>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
-                          pathname.includes('institutes') && 'bg-slate-700'
+                        className={`group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
+                          pathname.includes('institutes') && 'bg-slate-700 text-white'
                         }`}
                         onClick={(e) => {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        Institutes
+                        <Building size={20} className="text-slate-400 group-hover:text-white" />
+                        <span>Institutes</span>
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current transition-transform duration-200 ${
                             open && 'rotate-180'
                           }`}
                           width="20"
@@ -135,26 +146,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       <div
                         className={`translate transform overflow-hidden ${!open && 'hidden'}`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-4 flex flex-col gap-2 pl-6">
                           <li>
                             <NavLink
                               to="/Institute-Analysis"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
-                             Institute Analysis
+                              <BarChart size={18} className="text-slate-400 group-hover:text-white" />
+                              Institute Analysis
                             </NavLink>
                           </li>
                           <li>
                             <NavLink
                               to="/Institute-List"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
+                              <List size={18} className="text-slate-400 group-hover:text-white" />
                               Manage Institutes
                             </NavLink>
                           </li>
@@ -164,23 +177,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   )}
                 </SidebarLinkGroup>
 
-                {/* Admins Dropdown */}
+                {/* Corporates Dropdown */}
                 <SidebarLinkGroup activeCondition={pathname.includes('admins')}>
                   {(handleClick, open) => (
                     <>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
-                          pathname.includes('admins') && 'bg-slate-700'
+                        className={`group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
+                          pathname.includes('admins') && 'bg-slate-700 text-white'
                         }`}
                         onClick={(e) => {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        Corporates
+                        <Briefcase size={20} className="text-slate-400 group-hover:text-white" />
+                        <span>Corporates</span>
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current transition-transform duration-200 ${
                             open && 'rotate-180'
                           }`}
                           width="20"
@@ -199,26 +213,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       <div
                         className={`translate transform overflow-hidden ${!open && 'hidden'}`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-4 flex flex-col gap-2 pl-6">
                           <li>
                             <NavLink
                               to="/corporate-Analysis"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
-                              Corporate analysiss
+                              <BarChart size={18} className="text-slate-400 group-hover:text-white" />
+                              Corporate Analysis
                             </NavLink>
                           </li>
                           <li>
                             <NavLink
                               to="/corporate-List"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
+                              <List size={18} className="text-slate-400 group-hover:text-white" />
                               Manage Corporates
                             </NavLink>
                           </li>
@@ -234,17 +250,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     <>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
-                          pathname.includes('School') && 'bg-slate-700'
+                        className={`group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
+                          pathname.includes('School') && 'bg-slate-700 text-white'
                         }`}
                         onClick={(e) => {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        School
+                        <School size={20} className="text-slate-400 group-hover:text-white" />
+                        <span>Schools</span>
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current transition-transform duration-200 ${
                             open && 'rotate-180'
                           }`}
                           width="20"
@@ -263,15 +280,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       <div
                         className={`translate transform overflow-hidden ${!open && 'hidden'}`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-4 flex flex-col gap-2 pl-6">
                           <li>
                             <NavLink
                               to="/School-Analysis"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
+                              <BarChart size={18} className="text-slate-400 group-hover:text-white" />
                               Schools Analysis
                             </NavLink>
                           </li>
@@ -279,10 +297,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                             <NavLink
                               to="/School-List"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-3 rounded-md px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white bg-slate-700/50 rounded-lg')
                               }
                             >
+                              <List size={18} className="text-slate-400 group-hover:text-white" />
                               Manage Schools
                             </NavLink>
                           </li>
@@ -292,28 +311,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   )}
                 </SidebarLinkGroup>
 
+                <div className="my-2 h-px bg-slate-700/50"></div>
+
                 {/* Contact Requests Link */}
                 <li>
                   <NavLink
                     to="/contact-requests"
                     className={({ isActive }) =>
-                      'group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ' +
-                      (isActive && 'bg-slate-700')
+                      'group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ' +
+                      (isActive && 'bg-slate-700 text-white')
                     }
                   >
-                    <MessageSquare size={20} />
-                    Contact Requests
+                    <MessageSquare size={20} className="text-slate-400 group-hover:text-white" />
+                    <span>Contact Requests</span>
                   </NavLink>
                 </li>
 
                 <li>
                   <NavLink
                     to="/create-admin"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ${
-                      pathname === '/rest' && 'bg-slate-700'
-                    }`}
+                    className={({ isActive }) =>
+                      'group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-300 duration-300 ease-in-out hover:bg-slate-700 ' +
+                      (isActive && 'bg-slate-700 text-white')
+                    }
                   >
-                    Add a new admin
+                    <UserPlus size={20} className="text-slate-400 group-hover:text-white" />
+                    <span>Add New Admin</span>
                   </NavLink>
                 </li>
 
@@ -323,12 +346,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </nav>
         </div>
         
-        <div className="absolute bottom-0 left-0 w-full px-4 py-4">
+        <div className="mt-auto px-6 py-6 border-t border-slate-700">
           <button
             onClick={() => logout()}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-red-600 text-white text-lg font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-red-600 text-white text-base font-medium rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-800"
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
             <span>Sign Out</span>
           </button>
         </div>
@@ -336,10 +359,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       {/* Navbar when Sidebar is closed and only for small screens */}
       {!sidebarOpen && (
-        <div className="fixed top-0 left-0 right-0 z-40 bg-slate-800 text-white flex items-center justify-between p-4 lg:hidden">
+        <div className="fixed top-0 left-0 right-0 z-40 bg-slate-800 text-white flex items-center justify-between p-4 lg:hidden shadow-md">
           <button
-            onClick={() => setSidebarOpen(true)} // Toggle sidebar on click
-            className="text-gray-400 hover:text-gray-500"
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-300 hover:text-white transition-colors"
           >
             <svg
               className="w-6 h-6"
