@@ -66,8 +66,25 @@ const Pricing = () => {
     }
   ];
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3
+      }
+    }
+  };
+
   return (
-    <section className="py-24 overflow-hidden">
+    <motion.section 
+      className="py-24 overflow-hidden"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.7 }}
+    >
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
         <SectionHeading
           badge="Simple, transparent pricing"
@@ -76,33 +93,76 @@ const Pricing = () => {
           description="All plans include a 14-day free trial with no credit card required. Cancel anytime."
         />
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <motion.div 
+          className="grid md:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
           {pricingTiers.map((tier, i) => (
             <PricingTier key={i} tier={tier} index={i} />
           ))}
-        </div>
+        </motion.div>
 
         <motion.div 
           className="mt-12 bg-white rounded-xl p-8 text-center max-w-4xl mx-auto shadow-sm border border-gray-200"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ 
+            duration: 0.6, 
+            delay: 0.8,
+            type: "spring",
+            stiffness: 50
+          }}
+          whileHover={{ 
+            y: -10,
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}
         >
-          <h3 className="text-xl font-bold mb-2 text-gray-800">Need a custom solution?</h3>
-          <p className="text-gray-600 mb-4">
-            Contact our sales team to discuss your specific requirements and get a customized quote.
-          </p>
-          <Link
-            to="/landing/contact"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+          <motion.h3 
+            className="text-xl font-bold mb-2 text-gray-800"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.9 }}
           >
-            Contact Sales
-            <ArrowRight size={16} />
-          </Link>
+            Need a custom solution?
+          </motion.h3>
+          <motion.p 
+            className="text-gray-600 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 1.0 }}
+          >
+            Contact our sales team to discuss your specific requirements and get a customized quote.
+          </motion.p>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 1.1 }}
+          >
+            <Link
+              to="/landing/contact"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+            >
+              Contact Sales
+              <motion.span
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 0.5 }}
+              >
+                <ArrowRight size={16} />
+              </motion.span>
+            </Link>
+          </motion.div>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
