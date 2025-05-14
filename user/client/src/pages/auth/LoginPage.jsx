@@ -39,12 +39,14 @@ const LoginPage = () => {
 
   const handleForgotPassword = () => {
     navigate("/forgot-password");
-  };
-  const handleLinkedin = () => {
+  };  const handleLinkedin = () => {
+    // Get the current hostname for the API server
+    const apiUrl = new URL(axiosInstance.defaults.baseURL).origin;
+    
     const params = new URLSearchParams({
       response_type: "code",
       client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
-      redirect_uri: "http://139.59.66.21:4000/api/v1/auth/linkedinCallback",
+      redirect_uri: `${apiUrl}/api/v1/auth/linkedinCallback`,
       scope: "openid email profile",
     });
     window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
