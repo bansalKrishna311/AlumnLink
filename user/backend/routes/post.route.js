@@ -25,7 +25,13 @@ import Post from "../models/post.model.js"; // Added import for Post model
 const router = express.Router();
 
 import multer from 'multer';    
-const upload = multer({ dest: 'uploads/' });
+// Use memory storage instead of disk storage for Vercel serverless environment
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    }
+});
 
 // Getting posts
 router.get("/", protectRoute, getFeedPosts);

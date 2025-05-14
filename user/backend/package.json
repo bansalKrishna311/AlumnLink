@@ -1,17 +1,20 @@
 {
-	"name": "User-end",
+	"name": "alumnlink-backend",
 	"version": "1.0.0",
-	"description": "",
-	"main": "backend/server.js",
+	"description": "Backend for AlumnLink application",
+	"main": "server.js",
 	"scripts": {
-		"dev": "nodemon backend/server.js",
-		"start": "node backend/server.js",
-		"build": "npm install && npm install --prefix client && npm run build --prefix client"
+		"dev": "nodemon server.js",
+		"start": "node server.js",
+		"vercel-build": "echo 'Building for Vercel deployment'"
 	},
 	"keywords": [],
 	"author": "",
 	"type": "module",
 	"license": "ISC",
+	"engines": {
+		"node": ">=18.x"
+	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",
 		"cloudinary": "^2.4.0",

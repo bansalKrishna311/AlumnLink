@@ -1,21 +1,18 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Components/Navbar";
-import Hero from "./Components/Hero";
-import Footer from "./Components/Footer";
+import StickyFooter from "./Components/footer/StickyFooter";
 
 const Layout = () => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen overflow-hidden">
       <Navbar />
       
-     <main>
-     <Outlet />
-     </main>
-     
+      <main className="flex-grow">
+        <Outlet />
+      </main>
       
-      <Footer/>
-      {/* <Hero /> */}
-    </>
+      <StickyFooter />
+    </div>
   );
 };
 

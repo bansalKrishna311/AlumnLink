@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Navbar from "./Navbar";
 
 const Layout = ({ children }) => {
@@ -9,6 +10,11 @@ const Layout = ({ children }) => {
                      location.pathname === "/signup" || 
                      location.pathname === "/forgot-password" || 
                      location.pathname.startsWith("/reset-password/");
+
+  // Scroll to top when the route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <div className='min-h-screen bg-base-100'>
