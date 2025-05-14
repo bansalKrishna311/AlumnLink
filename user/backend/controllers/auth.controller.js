@@ -86,8 +86,7 @@ export const signup = async (req, res) => {
 			adminType: role === "admin" ? adminType : undefined, // Set adminType only if role is admin
 			headline,
 			location // Assign calculated headline
-		});
-		await user.save();
+		});		await user.save();
 
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 		const session = new Session({ userId: user._id, token });
@@ -96,9 +95,8 @@ export const signup = async (req, res) => {
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "none",  // Changed from strict to none for cross-domain
-			secure: true,      // Required when sameSite is 'none'
-			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
+			sameSite: "lax",  // Changed to lax to work with redirects
+			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
 
 		res.status(201).json({ message: "User registered successfully" });
@@ -123,8 +121,7 @@ export const login = async (req, res) => {
 		if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
 		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
+		if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 
 		const session = new Session({ userId: user._id, token });
 		await session.save();
@@ -132,9 +129,8 @@ export const login = async (req, res) => {
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "none",  // Changed from strict to none for cross-domain
-			secure: true,      // Required when sameSite is 'none'
-			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
+			sameSite: "lax",  // Changed to lax to work with redirects
+			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
 
 		res.json({ message: "Logged in successfully" });
@@ -144,12 +140,15 @@ export const login = async (req, res) => {
 	}
 };
 
-export const logout = async (req, res) => {
-	try {
+export const logout = async (req, res) => {	try {
 		const token = req.cookies["jwt-AlumnLink"];
 		if (token) {
 			await Session.deleteOne({ token });
-			res.clearCookie("jwt-AlumnLink");
+			res.clearCookie("jwt-AlumnLink", {
+				httpOnly: true,
+				sameSite: "lax",
+				secure: false
+			});
 		}
 		res.json({ message: "Logged out successfully" });
 	} catch (error) {
@@ -335,17 +334,15 @@ export const linkedInCallback = async (req, res) => {
 			});
 			await user.save();
 		}
-
 		// Step 5: Generate token & store session
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 		await Session.create({ userId: user._id, token });
-		// Step 6: Set cookie with less restrictive sameSite for cross-domain cookies
+		// Step 6: Set cookie with appropriate settings for HTTP
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "none",  // Changed from strict to none for cross-domain
-			secure: true,      // Required when sameSite is 'none'
-			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
+			sameSite: "lax",  // Changed to lax to work with redirects
+			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
 
 		console.log("Redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
