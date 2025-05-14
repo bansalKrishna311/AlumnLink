@@ -40,12 +40,14 @@ const LoginPage = () => {
   const handleForgotPassword = () => {
     navigate("/forgot-password");
   };  const handleLinkedin = () => {
-    // Get the current hostname for the API server
-    const apiUrl = new URL(axiosInstance.defaults.baseURL).origin;
+    // Hardcoded values for the deployment environment
+    const apiUrl = "http://139.59.66.21:4000";
+    // Using the LinkedIn client ID directly from backend environment
+    const clientId = "86ptgh7utqprm7";
     
     const params = new URLSearchParams({
       response_type: "code",
-      client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
+      client_id: clientId,
       redirect_uri: `${apiUrl}/api/v1/auth/linkedinCallback`,
       scope: "openid email profile",
     });
