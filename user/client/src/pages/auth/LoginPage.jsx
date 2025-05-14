@@ -40,18 +40,32 @@ const LoginPage = () => {
   const handleForgotPassword = () => {
     navigate("/forgot-password");
   };  const handleLinkedin = () => {
-    // Use the exact redirect URI registered in LinkedIn Developer Console
-    const redirectUri = "http://139.59.66.21:4000/api/v1/auth/linkedinCallback";
-    // Using the LinkedIn client ID directly from backend environment
-    const clientId = "86ptgh7utqprm7";
-    
-    const params = new URLSearchParams({
-      response_type: "code",
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      scope: "openid email profile",
-    });
-    window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+    try {
+      toast.loading("Redirecting to LinkedIn...");
+      
+      // Use the exact redirect URI registered in LinkedIn Developer Console
+      const redirectUri = "http://139.59.66.21:4000/api/v1/auth/linkedinCallback";
+      // Using the LinkedIn client ID directly from backend environment
+      const clientId = "86ptgh7utqprm7";
+      
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: "openid email profile",
+        state: new Date().getTime().toString(), // Add state parameter for security
+      });
+      
+      // Log for debugging purposes
+      console.log("LinkedIn OAuth URL:", `https://www.linkedin.com/oauth/v2/authorization?${params}`);
+      console.log("LinkedIn redirect URI:", redirectUri);
+      
+      // Redirect to LinkedIn OAuth page
+      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+    } catch (error) {
+      toast.error("Failed to connect to LinkedIn. Please try again.");
+      console.error("LinkedIn redirect error:", error);
+    }
   };
 
   return (

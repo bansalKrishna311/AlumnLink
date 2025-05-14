@@ -375,15 +375,30 @@ export const linkedInCallback = async (req, res) => {
 };
 
 const getLinkedInUserData = async (accessToken) => {
-	const response = await fetch('https://api.linkedin.com/v2/userinfo', {
-		method: 'get',
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-		},
-	});
-	if (!response.ok) {
-		throw new Error(response.statusText);
+	console.log("Fetching user data from LinkedIn API...");
+	try {
+		const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+			method: 'get',
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+		
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error("LinkedIn userinfo API error:", response.status, errorText);
+			throw new Error(`LinkedIn userinfo API error: ${response.status} - ${errorText}`);
+		}
+		
+		const userData = await response.json();
+		console.log("LinkedIn user data retrieved successfully:", {
+			name: userData.name || "Not provided",
+			email_provided: userData.email ? "Yes" : "No",
+			picture_provided: userData.picture ? "Yes" : "No"
+		});
+		return userData;
+	} catch (error) {
+		console.error("Error getting LinkedIn user data:", error.message);
+		throw error;
 	}
-	const userData = await response.json();
-	return userData;
 };
