@@ -146,6 +146,7 @@ export const logout = async (req, res) => {	try {
 			await Session.deleteOne({ token });
 			res.clearCookie("jwt-AlumnLink", {
 				httpOnly: true,
+				path: "/",       // Must match the path used when setting the cookie
 				sameSite: "lax",
 				secure: false
 			});
@@ -238,26 +239,37 @@ export const getAccessToken = async(code) => {
 	console.log("LinkedIn OAuth Parameters:", {
 		redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
 		client_id: process.env.LINKEDIN_CLIENT_ID,
+		client_secret: process.env.LINKEDIN_CLIENT_SECRET ? "Present (masked)" : "Missing",
+		code_length: code ? code.length : 0
 	});
 	
-	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-		},
-		body: new URLSearchParams({
-			grant_type: 'authorization_code',
-			code : code,
-			redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
-			client_id: process.env.LINKEDIN_CLIENT_ID,
-			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
-		}),
-	});
-	if(!response.ok) {
-		throw new Error(response.statusText);
+	try {
+		const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({
+				grant_type: 'authorization_code',
+				code: code,
+				redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
+				client_id: process.env.LINKEDIN_CLIENT_ID,
+				client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+			}),
+		});
+		
+		if(!response.ok) {
+			const errorText = await response.text();
+			console.error("LinkedIn API Error:", response.status, errorText);
+			throw new Error(`LinkedIn API Error: ${response.status} - ${errorText}`);
+		}
+		
+		const accessToken = await response.json();
+		return accessToken;
+	} catch (error) {
+		console.error("Error getting LinkedIn access token:", error.message);
+		throw error;
 	}
-	const accessToken = await response.json();
-	return accessToken
 }
 
 export const linkedInCallback = async (req, res) => {
@@ -333,20 +345,24 @@ export const linkedInCallback = async (req, res) => {
 				profilePicture: profilePictureUrl,
 			});
 			await user.save();
-		}
-		// Step 5: Generate token & store session
+		}		// Step 5: Generate token & store session
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 		await Session.create({ userId: user._id, token });
+		
 		// Step 6: Set cookie with appropriate settings for HTTP
+		console.log("Setting authentication cookie for user:", user._id.toString());
+		
+		// Setting cookie for Digital Ocean with IP address
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
+			path: "/",        // Make cookie available for all paths
 			sameSite: "lax",  // Changed to lax to work with redirects
 			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
-
 		console.log("Redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
-		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');} catch (error) {
+		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
+	} catch (error) {
 		console.error("LinkedIn callback error:", error);
 		console.error("Error details:", error.message);
 		
