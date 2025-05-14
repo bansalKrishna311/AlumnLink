@@ -87,7 +87,6 @@ export const signup = async (req, res) => {
 			headline,
 			location // Assign calculated headline
 		});
-
 		await user.save();
 
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
@@ -97,8 +96,9 @@ export const signup = async (req, res) => {
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			sameSite: "none",  // Changed from strict to none for cross-domain
+			secure: true,      // Required when sameSite is 'none'
+			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
 		});
 
 		res.status(201).json({ message: "User registered successfully" });
@@ -124,7 +124,6 @@ export const login = async (req, res) => {
 
 		const isMatch = await bcrypt.compare(password, user.password);
 		if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 
 		const session = new Session({ userId: user._id, token });
@@ -133,8 +132,9 @@ export const login = async (req, res) => {
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			sameSite: "none",  // Changed from strict to none for cross-domain
+			secure: true,      // Required when sameSite is 'none'
+			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
 		});
 
 		res.json({ message: "Logged in successfully" });
@@ -339,16 +339,17 @@ export const linkedInCallback = async (req, res) => {
 		// Step 5: Generate token & store session
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 		await Session.create({ userId: user._id, token });
-
-		// Step 6: Set cookie
+		// Step 6: Set cookie with less restrictive sameSite for cross-domain cookies
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			sameSite: "none",  // Changed from strict to none for cross-domain
+			secure: true,      // Required when sameSite is 'none'
+			domain: '139.59.66.21', // Set domain explicitly to allow sharing between subdomains
 		});
 
-		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');	} catch (error) {
+		console.log("Redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
+		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');} catch (error) {
 		console.error("LinkedIn callback error:", error);
 		console.error("Error details:", error.message);
 		
