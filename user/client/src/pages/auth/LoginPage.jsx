@@ -40,7 +40,6 @@ const LoginPage = () => {
   const handleForgotPassword = () => {
     navigate("/forgot-password");
   };
-
   const handleLinkedin = () => {
     const params = new URLSearchParams({
       response_type: "code",

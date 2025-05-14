@@ -335,7 +335,7 @@ export const linkedInCallback = async (req, res) => {
 			secure: process.env.NODE_ENV === "production",
 		});
 
-		return res.redirect('http://139.59.66.21:5173/');
+		return res.redirect('http://139.59.66.21:5000/');
 	} catch (error) {
 		console.error("LinkedIn callback error:", error);
 
