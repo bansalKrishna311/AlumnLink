@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
 import { Loader, Eye, EyeOff, User, Lock, Linkedin } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Login from "/Login.png";
 import icon from "/login-icon.webp";
 import Input from "./components/Input"; // Adjust the import path as needed
@@ -17,6 +17,36 @@ const LoginPage = () => {
   const [isForgotLoading, setIsForgotLoading] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Check for LinkedIn auth errors on page load
+  useEffect(() => {
+    const authError = searchParams.get('auth_error');
+    if (authError) {
+      let errorMessage = "LinkedIn authentication failed.";
+      
+      switch(authError) {
+        case 'linkedin_token_failed':
+          errorMessage = "Failed to get access token from LinkedIn.";
+          break;
+        case 'linkedin_data_failed':
+          errorMessage = "Could not retrieve your profile from LinkedIn.";
+          break;
+        case 'linkedin_missing_email':
+          errorMessage = "LinkedIn did not provide your email address.";
+          break;
+        case 'user_creation_failed':
+          errorMessage = "Failed to create user account with LinkedIn data.";
+          break;
+        default:
+          errorMessage = "LinkedIn authentication failed. Please try again.";
+      }
+      
+      toast.error(errorMessage);
+      // Clear the error from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [searchParams]);
 
   const { mutate: loginMutation, isLoading } = useMutation({
     mutationFn: (userData) => axiosInstance.post("/auth/login", userData),
@@ -41,27 +71,34 @@ const LoginPage = () => {
     navigate("/forgot-password");
   };  const handleLinkedin = () => {
     try {
-      toast.loading("Redirecting to LinkedIn...");
+      const toastId = toast.loading("Redirecting to LinkedIn...");
       
       // Use the exact redirect URI registered in LinkedIn Developer Console
       const redirectUri = "http://139.59.66.21:4000/api/v1/auth/linkedinCallback";
       // Using the LinkedIn client ID directly from backend environment
       const clientId = "86ptgh7utqprm7";
       
+      // Generate a state parameter for CSRF protection
+      const state = crypto.randomUUID ? crypto.randomUUID() : new Date().getTime().toString();
+      // Store the state parameter to verify later
+      sessionStorage.setItem('linkedinAuthState', state);
+      
       const params = new URLSearchParams({
         response_type: "code",
         client_id: clientId,
         redirect_uri: redirectUri,
         scope: "openid email profile",
-        state: new Date().getTime().toString(), // Add state parameter for security
+        state: state,
       });
       
       // Log for debugging purposes
       console.log("LinkedIn OAuth URL:", `https://www.linkedin.com/oauth/v2/authorization?${params}`);
       console.log("LinkedIn redirect URI:", redirectUri);
       
-      // Redirect to LinkedIn OAuth page
-      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+      // Redirect to LinkedIn OAuth page after a short delay to ensure the toast is seen
+      setTimeout(() => {
+        window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+      }, 800);
     } catch (error) {
       toast.error("Failed to connect to LinkedIn. Please try again.");
       console.error("LinkedIn redirect error:", error);

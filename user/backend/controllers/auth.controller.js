@@ -235,15 +235,28 @@ export const resetPassword = async (req, res) => {
 };
 
 export const getAccessToken = async(code) => {	
-	// Log the LinkedIn OAuth parameters for troubleshooting
+	// Log the LinkedIn OAuth parameters for troubleshooting (with sanitized output)
+	const clientSecret = process.env.LINKEDIN_CLIENT_SECRET || "";
+	const hasLeadingSpace = clientSecret.startsWith(' ');
+	const hasTrailingSpace = clientSecret.endsWith(' ');
+	
 	console.log("LinkedIn OAuth Parameters:", {
 		redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
 		client_id: process.env.LINKEDIN_CLIENT_ID,
-		client_secret: process.env.LINKEDIN_CLIENT_SECRET ? "Present (masked)" : "Missing",
+		client_secret_status: process.env.LINKEDIN_CLIENT_SECRET ? 
+			`Present, length ${clientSecret.length}${hasLeadingSpace ? ", has leading space!" : ""}${hasTrailingSpace ? ", has trailing space!" : ""}` : "Missing",
 		code_length: code ? code.length : 0
 	});
 	
+	if (!process.env.LINKEDIN_CLIENT_ID || !process.env.LINKEDIN_CLIENT_SECRET || !process.env.LINKEDIN_REDIRECT_URI) {
+		throw new Error("Missing required LinkedIn OAuth configuration. Check environment variables.");
+	}
+	
+	// Trim any whitespace from the client secret (common issue)
+	const trimmedSecret = clientSecret.trim();
+	
 	try {
+		console.log("Making request to LinkedIn access token endpoint...");
 		const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
 			method: 'POST',
 			headers: {
@@ -254,17 +267,27 @@ export const getAccessToken = async(code) => {
 				code: code,
 				redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
 				client_id: process.env.LINKEDIN_CLIENT_ID,
-				client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+				client_secret: trimmedSecret, // Use trimmed secret to avoid authentication issues
 			}),
 		});
 		
 		if(!response.ok) {
 			const errorText = await response.text();
 			console.error("LinkedIn API Error:", response.status, errorText);
+			console.error("Details: ", {
+				status: response.status,
+				statusText: response.statusText,
+				headers: Object.fromEntries([...response.headers.entries()]),
+			});
 			throw new Error(`LinkedIn API Error: ${response.status} - ${errorText}`);
 		}
 		
 		const accessToken = await response.json();
+		console.log("Access token obtained successfully:", {
+			token_type: accessToken.token_type,
+			expires_in: accessToken.expires_in,
+			scope: accessToken.scope,
+		});
 		return accessToken;
 	} catch (error) {
 		console.error("Error getting LinkedIn access token:", error.message);
@@ -274,7 +297,7 @@ export const getAccessToken = async(code) => {
 
 export const linkedInCallback = async (req, res) => {
 	try {
-		const { code } = req.query;
+		const { code, state } = req.query;
 		console.log("LinkedIn callback received with code:", code ? "Valid code received" : "No code received");
 
 		if (!code) {
@@ -286,15 +309,32 @@ export const linkedInCallback = async (req, res) => {
 		
 		// Step 1: Get access token from LinkedIn
 		console.log("Getting access token from LinkedIn...");
-		const accessToken = await getAccessToken(code);
-		console.log("Access token received successfully");
+		try {
+			var accessToken = await getAccessToken(code);
+			console.log("Access token received successfully");
+		} catch (tokenError) {
+			console.error("Failed to get LinkedIn access token:", tokenError.message);
+			if (!res.headersSent) {
+				return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/'}?auth_error=linkedin_token_failed`);
+			}
+			return;
+		}
 
 		// Step 2: Get LinkedIn user data
 		console.log("Fetching LinkedIn user data...");
-		const userdata = await getLinkedInUserData(accessToken.access_token);
+		try {
+			var userdata = await getLinkedInUserData(accessToken.access_token);
+		} catch (dataError) {
+			console.error("Failed to get LinkedIn user data:", dataError.message);
+			if (!res.headersSent) {
+				return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/'}?auth_error=linkedin_data_failed`);
+			}
+			return;
+		}
 
 		if (!userdata || !userdata.email) {
-			return res.status(400).json({ message: "Failed to fetch user data from LinkedIn" });
+			console.error("LinkedIn did not return email data");
+			return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/'}?auth_error=linkedin_missing_email`);
 		}
 
 		// Step 3: Upload profile picture to Cloudinary (if it exists)
@@ -336,16 +376,25 @@ export const linkedInCallback = async (req, res) => {
 			const salt = await bcrypt.genSalt(10);
 			const hashedPassword = await bcrypt.hash(securePassword, salt);
 			
-			user = new User({
-				name: userdata.name,
-				email: userdata.email,
-				username: userdata.email.split("@")[0],
-				password: hashedPassword, // Store hashed password
-				role: "user",
-				profilePicture: profilePictureUrl,
-			});
-			await user.save();
-		}		// Step 5: Generate token & store session
+			try {
+				user = new User({
+					name: userdata.name,
+					email: userdata.email,
+					username: userdata.email.split("@")[0],
+					password: hashedPassword, // Store hashed password
+					role: "user",
+					profilePicture: profilePictureUrl,
+					location: "Bengaluru", // Default location since it's required
+				});
+				await user.save();
+				console.log("Created new user from LinkedIn:", user.email);
+			} catch (userError) {
+				console.error("Failed to create user:", userError.message);
+				return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/'}?auth_error=user_creation_failed`);
+			}
+		}
+		
+		// Step 5: Generate token & store session
 		const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
 		await Session.create({ userId: user._id, token });
 		
@@ -354,13 +403,15 @@ export const linkedInCallback = async (req, res) => {
 		
 		// Setting cookie for Digital Ocean with IP address
 		res.cookie("jwt-AlumnLink", token, {
-			httpOnly: true,
+			httpOnly: true, 
 			maxAge: 3 * 24 * 60 * 60 * 1000,
 			path: "/",        // Make cookie available for all paths
 			sameSite: "lax",  // Changed to lax to work with redirects
 			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
-		console.log("Redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
+		
+		// Log success and redirect
+		console.log("LinkedIn auth successful - redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
 		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
 	} catch (error) {
 		console.error("LinkedIn callback error:", error);
@@ -369,33 +420,51 @@ export const linkedInCallback = async (req, res) => {
 		// Add redirect to error page if there's an issue
 		if (!res.headersSent) {
 			// Redirect to frontend with error parameter
-			return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000'}?auth_error=linkedin_failed`);
+			return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/'}?auth_error=linkedin_general_error`);
 		}
 	}
 };
 
 const getLinkedInUserData = async (accessToken) => {
 	console.log("Fetching user data from LinkedIn API...");
+	if (!accessToken) {
+		throw new Error("Access token is required to fetch user data");
+	}
+	
 	try {
+		console.log("Making request to LinkedIn userinfo endpoint...");
 		const response = await fetch('https://api.linkedin.com/v2/userinfo', {
 			method: 'get',
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
+				Accept: 'application/json',
 			},
 		});
 		
 		if (!response.ok) {
 			const errorText = await response.text();
 			console.error("LinkedIn userinfo API error:", response.status, errorText);
+			console.error("Response headers:", Object.fromEntries([...response.headers.entries()]));
 			throw new Error(`LinkedIn userinfo API error: ${response.status} - ${errorText}`);
 		}
 		
 		const userData = await response.json();
 		console.log("LinkedIn user data retrieved successfully:", {
 			name: userData.name || "Not provided",
-			email_provided: userData.email ? "Yes" : "No",
-			picture_provided: userData.picture ? "Yes" : "No"
+			email_provided: userData.email ? "Yes" : "No", 
+			email_domain: userData.email ? userData.email.split('@')[1] : "N/A",
+			picture_provided: userData.picture ? "Yes" : "No",
+			sub: userData.sub ? "Provided" : "Not provided",
 		});
+		
+		// Validate necessary data
+		if (!userData.email) {
+			console.error("LinkedIn API did not return user email");
+		}
+		if (!userData.name) {
+			console.warn("LinkedIn API did not return user name");
+		}
+		
 		return userData;
 	} catch (error) {
 		console.error("Error getting LinkedIn user data:", error.message);
