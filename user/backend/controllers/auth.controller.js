@@ -234,7 +234,14 @@ export const resetPassword = async (req, res) => {
 	}
 };
 
-export const getAccessToken = async(code) => {	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+export const getAccessToken = async(code) => {	
+	// Log the LinkedIn OAuth parameters for troubleshooting
+	console.log("LinkedIn OAuth Parameters:", {
+		redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
+		client_id: process.env.LINKEDIN_CLIENT_ID,
+	});
+	
+	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
@@ -257,15 +264,22 @@ export const getAccessToken = async(code) => {	const response = await fetch('htt
 export const linkedInCallback = async (req, res) => {
 	try {
 		const { code } = req.query;
+		console.log("LinkedIn callback received with code:", code ? "Valid code received" : "No code received");
 
 		if (!code) {
 			return res.status(400).json({ message: "Authorization code is required" });
 		}
 
+		// Log the request origin for debugging
+		console.log("Request origin:", req.headers.origin || req.headers.referer || "Unknown origin");
+		
 		// Step 1: Get access token from LinkedIn
+		console.log("Getting access token from LinkedIn...");
 		const accessToken = await getAccessToken(code);
+		console.log("Access token received successfully");
 
 		// Step 2: Get LinkedIn user data
+		console.log("Fetching LinkedIn user data...");
 		const userdata = await getLinkedInUserData(accessToken.access_token);
 
 		if (!userdata || !userdata.email) {
@@ -334,12 +348,14 @@ export const linkedInCallback = async (req, res) => {
 			secure: process.env.NODE_ENV === "production",
 		});
 
-		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
-	} catch (error) {
+		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');	} catch (error) {
 		console.error("LinkedIn callback error:", error);
-
+		console.error("Error details:", error.message);
+		
+		// Add redirect to error page if there's an issue
 		if (!res.headersSent) {
-			return res.status(500).json({ message: "Internal server error" });
+			// Redirect to frontend with error parameter
+			return res.redirect(`${process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000'}?auth_error=linkedin_failed`);
 		}
 	}
 };
