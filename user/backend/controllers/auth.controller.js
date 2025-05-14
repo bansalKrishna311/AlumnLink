@@ -234,8 +234,7 @@ export const resetPassword = async (req, res) => {
 	}
 };
 
-export const getAccessToken = async(code) => {
-	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+export const getAccessToken = async(code) => {	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
@@ -243,7 +242,7 @@ export const getAccessToken = async(code) => {
 		body: new URLSearchParams({
 			grant_type: 'authorization_code',
 			code : code,
-			redirect_uri: `http://139.59.66.21:4000/api/v1/auth/linkedinCallback`,
+			redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
 			client_id: process.env.LINKEDIN_CLIENT_ID,
 			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
 		}),
@@ -335,7 +334,7 @@ export const linkedInCallback = async (req, res) => {
 			secure: process.env.NODE_ENV === "production",
 		});
 
-		return res.redirect('http://139.59.66.21:5000/');
+		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
 	} catch (error) {
 		console.error("LinkedIn callback error:", error);
 
