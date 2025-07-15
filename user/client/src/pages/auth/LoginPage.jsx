@@ -69,6 +69,7 @@ const LoginPage = () => {
 
   const handleForgotPassword = () => {
     navigate("/forgot-password");
+<<<<<<< HEAD
   };  const handleLinkedin = () => {
     try {
       const toastId = toast.loading("Redirecting to LinkedIn...");
@@ -103,6 +104,18 @@ const LoginPage = () => {
       toast.error("Failed to connect to LinkedIn. Please try again.");
       console.error("LinkedIn redirect error:", error);
     }
+=======
+  };
+
+  const handleLinkedin = () => {
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
+      redirect_uri: "http://139.59.66.21:4000/api/v1/auth/linkedinCallback",
+      scope: "openid email profile",
+    });
+    window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+>>>>>>> 3578c41c4e37160480a71fd1642b5055d8cbf87d
   };
 
   return (

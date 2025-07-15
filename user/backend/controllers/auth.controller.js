@@ -234,6 +234,7 @@ export const resetPassword = async (req, res) => {
 	}
 };
 
+<<<<<<< HEAD
 export const getAccessToken = async(code) => {	
 	// Log the LinkedIn OAuth parameters for troubleshooting (with sanitized output)
 	const clientSecret = process.env.LINKEDIN_CLIENT_SECRET || "";
@@ -246,6 +247,21 @@ export const getAccessToken = async(code) => {
 		client_secret_status: process.env.LINKEDIN_CLIENT_SECRET ? 
 			`Present, length ${clientSecret.length}${hasLeadingSpace ? ", has leading space!" : ""}${hasTrailingSpace ? ", has trailing space!" : ""}` : "Missing",
 		code_length: code ? code.length : 0
+=======
+export const getAccessToken = async(code) => {
+	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: new URLSearchParams({
+			grant_type: 'authorization_code',
+			code : code,
+			redirect_uri: `http://139.59.66.21:4000/api/v1/auth/linkedinCallback`,
+			client_id: process.env.LINKEDIN_CLIENT_ID,
+			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+		}),
+>>>>>>> 3578c41c4e37160480a71fd1642b5055d8cbf87d
 	});
 	
 	if (!process.env.LINKEDIN_CLIENT_ID || !process.env.LINKEDIN_CLIENT_SECRET || !process.env.LINKEDIN_REDIRECT_URI) {
@@ -409,10 +425,15 @@ export const linkedInCallback = async (req, res) => {
 			sameSite: "lax",  // Changed to lax to work with redirects
 			secure: false,    // Set to false because you're using HTTP not HTTPS
 		});
+<<<<<<< HEAD
 		
 		// Log success and redirect
 		console.log("LinkedIn auth successful - redirecting to:", process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
 		return res.redirect(process.env.CLIENT_REDIRECT_URL || 'http://139.59.66.21:5000/');
+=======
+
+		return res.redirect('http://139.59.66.21:5173/');
+>>>>>>> 3578c41c4e37160480a71fd1642b5055d8cbf87d
 	} catch (error) {
 		console.error("LinkedIn callback error:", error);
 		console.error("Error details:", error.message);
