@@ -243,7 +243,7 @@ export const getAccessToken = async(code) => {
 		body: new URLSearchParams({
 			grant_type: 'authorization_code',
 			code : code,
-			redirect_uri: `https://api.alumnlink.com//api/v1/auth/linkedinCallback`,
+			redirect_uri: `https://api.alumnlink.com/api/v1/auth/linkedinCallback`,
 			client_id: process.env.LINKEDIN_CLIENT_ID,
 			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
 		}),
