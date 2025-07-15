@@ -39,7 +39,7 @@ if (process.env.NODE_ENV !== "production") {
 } else {
   app.use(
     cors({
-      origin: process.env.CLIENT_URL || 'https://alumnlink.vercel.app',
+      origin: process.env.CLIENT_URL || 'https://alumnlink.com',
       credentials: true,
     })
   );
