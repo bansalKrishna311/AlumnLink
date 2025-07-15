@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
 
 // Define all post types with their respective UI configurations based on the actual model
 const POST_TYPES = {
@@ -83,7 +84,6 @@ const PostRequests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPosts, setSelectedPosts] = useState([]);
   const [processing, setProcessing] = useState(false);
-  const [filteredPosts, setFilteredPosts] = useState([]);
   const [previewPost, setPreviewPost] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   
@@ -92,27 +92,34 @@ const PostRequests = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   
   const queryClient = useQueryClient();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-  // Fetch pending posts
-  const { data: pendingPosts, isLoading } = useQuery({
-    queryKey: ["pendingPosts"],
+  // Fetch pending posts with server-side pagination
+  const { data: responseData, isLoading } = useQuery({
+    queryKey: ["pendingPosts", currentPage, itemsPerPage],
     queryFn: async () => {
       try {
-        const res = await axiosInstance.get("/posts/admin/pending");
+        const res = await axiosInstance.get(`/posts/admin/pending?page=${currentPage}&limit=${itemsPerPage}`);
         return res.data;
       } catch (err) {
         // Return empty array instead of showing error for 404
         if (err.response && err.response.status === 404) {
-          return [];
+          return { success: true, data: [], pagination: { totalPages: 0, currentPage: 1, totalItems: 0 } };
         }
         throw err;
       }
     }
   });
+
+  // Extract data and pagination info
+  const pendingPosts = responseData?.success ? responseData.data : (Array.isArray(responseData) ? responseData : []);
+  const pagination = responseData?.pagination || {};
+
+  // Client-side filtering for search and type (applied to current page only)
+  const [filteredPosts, setFilteredPosts] = useState([]);
 
   // Update filtered posts when search query or pendingPosts change
   useEffect(() => {
@@ -121,40 +128,56 @@ const PostRequests = () => {
       return;
     }
     
-    const filtered = pendingPosts.filter(post => {
-      const matchesType = selectedType === "all" || post.type === selectedType;
-      
-      // If no search query, just filter by type
-      if (!searchQuery.trim()) return matchesType;
-      
-      // Search in author name, content, and type-specific fields
+    let filtered = [...pendingPosts];
+    
+    // Apply type filter
+    if (selectedType !== 'all') {
+      filtered = filtered.filter(post => post.type === selectedType);
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim() !== '') {
       const searchLower = searchQuery.toLowerCase();
-      const nameMatch = post.author?.name?.toLowerCase().includes(searchLower);
-      const contentMatch = post.content?.toLowerCase().includes(searchLower);
       
-      // Type-specific field searching
-      let detailsMatch = false;
-      if (post.type === "job" && post.jobDetails) {
-        detailsMatch = 
-          (post.jobDetails.companyName || "").toLowerCase().includes(searchLower) || 
-          (post.jobDetails.jobTitle || "").toLowerCase().includes(searchLower) || 
-          (post.jobDetails.jobLocation || "").toLowerCase().includes(searchLower);
-      } else if (post.type === "internship" && post.internshipDetails) {
-        detailsMatch = 
-          (post.internshipDetails.companyName || "").toLowerCase().includes(searchLower) || 
-          (post.internshipDetails.internshipDuration || "").toLowerCase().includes(searchLower);
-      } else if (post.type === "event" && post.eventDetails) {
-        detailsMatch = 
-          (post.eventDetails.eventName || "").toLowerCase().includes(searchLower) || 
-          (post.eventDetails.eventLocation || "").toLowerCase().includes(searchLower);
-      }
-      
-      return matchesType && (nameMatch || contentMatch || detailsMatch);
-    });
+      filtered = filtered.filter(post => {
+        const nameMatch = post.author?.name?.toLowerCase().includes(searchLower);
+        const contentMatch = post.content?.toLowerCase().includes(searchLower);
+        
+        // Type-specific field searching
+        let detailsMatch = false;
+        if (post.type === "job" && post.jobDetails) {
+          detailsMatch = 
+            (post.jobDetails.companyName || "").toLowerCase().includes(searchLower) || 
+            (post.jobDetails.jobTitle || "").toLowerCase().includes(searchLower) || 
+            (post.jobDetails.jobLocation || "").toLowerCase().includes(searchLower);
+        } else if (post.type === "internship" && post.internshipDetails) {
+          detailsMatch = 
+            (post.internshipDetails.companyName || "").toLowerCase().includes(searchLower) || 
+            (post.internshipDetails.internshipDuration || "").toLowerCase().includes(searchLower);
+        } else if (post.type === "event" && post.eventDetails) {
+          detailsMatch = 
+            (post.eventDetails.eventName || "").toLowerCase().includes(searchLower) || 
+            (post.eventDetails.eventLocation || "").toLowerCase().includes(searchLower);
+        }
+        
+        return nameMatch || contentMatch || detailsMatch;
+      });
+    }
     
     setFilteredPosts(filtered);
-    setCurrentPage(1); // Reset to first page when filter changes
   }, [pendingPosts, searchQuery, selectedType]);
+
+  // Use filtered posts for display, but use server pagination for navigation
+  const currentItems = filteredPosts;
+  
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    setSelectedPosts([]); // Clear selections when changing pages
+    // Reset filters when changing pages to show server-side results
+    setSelectedType("all");
+    setSearchQuery('');
+  };
 
   // Handle click outside modal to close it
   useEffect(() => {
@@ -373,14 +396,6 @@ const PostRequests = () => {
       </div>
     );
   };
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Animation variants
   const containerVariants = {
@@ -722,63 +737,18 @@ const PostRequests = () => {
               )}
 
               {/* Pagination controls */}
-              {filteredPosts.length > itemsPerPage && (
+              {pagination.totalPages > 1 && (
                 <motion.div 
                   className="flex justify-center mt-6"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <div className="flex space-x-1">
-                    <motion.button
-                      className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </motion.button>
-                    
-                    {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-                      let pageNumber;
-                      if (totalPages <= 5) {
-                        pageNumber = index + 1;
-                      } else if (currentPage <= 3) {
-                        pageNumber = index + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNumber = totalPages - 4 + index;
-                      } else {
-                        pageNumber = currentPage - 2 + index;
-                      }
-                      
-                      return (
-                        <motion.button
-                          key={pageNumber}
-                          className={`h-9 w-9 rounded-md border ${
-                            currentPage === pageNumber 
-                              ? 'bg-[#fe6019] text-white border-[#fe6019]' 
-                              : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
-                          }`}
-                          onClick={() => paginate(pageNumber)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          {pageNumber}
-                        </motion.button>
-                      );
-                    })}
-                    
-                    <motion.button
-                      className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </motion.button>
-                  </div>
+                  <Pagination
+                    currentPage={pagination.currentPage || currentPage}
+                    totalPages={pagination.totalPages || 1}
+                    onPageChange={handlePageChange}
+                  />
                 </motion.div>
               )}
             </>

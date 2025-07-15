@@ -4,6 +4,7 @@ import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { User, MapPin, Calendar, BookOpen, Code, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import Pagination from "@/components/Pagination";
 
 const ManageUsers = () => {
   const [requests, setRequests] = useState([]);
@@ -13,6 +14,13 @@ const ManageUsers = () => {
   const [page, setPage] = useState(1);
   const [selectedRequests, setSelectedRequests] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalRequests: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -20,12 +28,20 @@ const ManageUsers = () => {
         setLoading(true);
         const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
         setRequests(response.data.data);
+        setPagination(response.data.pagination);
         setError(null);
       } catch (error) {
         console.error("Error fetching requests:", error);
         // Handle 404 specifically as "no data" rather than an error
         if (error.response && error.response.status === 404) {
           setRequests([]);
+          setPagination({
+            currentPage: 1,
+            totalPages: 1,
+            totalRequests: 0,
+            hasNextPage: false,
+            hasPreviousPage: false
+          });
           setError(null);
         } else {
           setError("Unable to connect to the server. Please try again later.");
@@ -46,6 +62,12 @@ const ManageUsers = () => {
         prevRequests.filter((request) => request._id !== id)
       );
       toast.success(`Request ${status === "Approved" ? "approved" : "rejected"} successfully!`);
+      
+      // Update pagination after removing item
+      setPagination(prev => ({
+        ...prev,
+        totalRequests: Math.max(0, prev.totalRequests - 1)
+      }));
     } catch (error) {
       console.error("Error updating request status:", error);
       toast.error("Error updating request status.");
@@ -83,6 +105,12 @@ const ManageUsers = () => {
       );
       
       setSelectedRequests([]);
+      
+      // Update pagination after removing items
+      setPagination(prev => ({
+        ...prev,
+        totalRequests: Math.max(0, prev.totalRequests - successCount.value)
+      }));
       
       if (successCount.value > 0) {
         toast.success(`${successCount.value} request${successCount.value > 1 ? 's' : ''} ${status === "Approved" ? "approved" : "rejected"} successfully!`);
@@ -391,6 +419,22 @@ const ManageUsers = () => {
               >
                 Clear selection
               </button>
+            </motion.div>
+          )}
+          
+          {/* Pagination Component */}
+          {pagination.totalPages > 1 && (
+            <motion.div
+              className="mt-6 flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(newPage) => setPage(newPage)}
+              />
             </motion.div>
           )}
         </>

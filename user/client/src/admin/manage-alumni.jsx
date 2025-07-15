@@ -18,6 +18,7 @@ import {
 import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
 
 const UserLinks = () => {
   const [links, setLinks] = useState([]);
@@ -30,7 +31,12 @@ const UserLinks = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1,
+    pageSize: 10
+  });
 
   // Helper function to safely convert to string and check if it includes search query
   const safeIncludes = (value, query) => {
@@ -42,47 +48,41 @@ const UserLinks = () => {
 
   useEffect(() => {
     fetchUserLinks();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
-    // Safely filter links based on search query with type checking
-    if (!links || !Array.isArray(links) || links.length === 0) {
-      setFilteredLinks([]);
-      return;
+    // Reset to first page when search changes
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchUserLinks();
     }
-    
-    try {
-      let filtered = links;
-      
-      // Apply search query filter
-      if (searchQuery) {
-        filtered = filtered.filter(link => {
-          if (!link) return false;
-          
-          // Use the safeIncludes helper for all checks
-          const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
-          const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
-          const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
-          const courseMatch = safeIncludes(link.courseName, searchQuery);
-          const batchMatch = safeIncludes(link.batch, searchQuery);
-          const rollMatch = safeIncludes(link.rollNumber, searchQuery);
-          
-          return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
-        });
-      }
-      
-      setFilteredLinks(filtered);
-      setCurrentPage(1); // Reset to first page when filter changes
-    } catch (err) {
-      console.error("Error in filtering:", err);
-      // In case of error, don't change the current filtered list
-    }
-  }, [searchQuery, links]);
+  }, [searchQuery]);
 
   const fetchUserLinks = async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/links');
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
+      
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      const response = await axiosInstance.get(`/links?${params}`);
+      
+      // Handle pagination data from headers
+      const totalCount = parseInt(response.headers['x-total-count'] || '0');
+      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
+      
+      setPagination({
+        totalCount,
+        totalPages,
+        currentPage: parseInt(response.headers['x-current-page'] || currentPage),
+        pageSize: 10
+      });
       
       // Ensure we have valid data before setting state
       if (response && response.data && Array.isArray(response.data)) {
@@ -101,6 +101,12 @@ const UserLinks = () => {
       if (err.response && err.response.status === 404) {
         setLinks([]);
         setFilteredLinks([]);
+        setPagination({
+          totalCount: 0,
+          totalPages: 0,
+          currentPage: 1,
+          pageSize: 10
+        });
         setError(null);
       } else {
         setError("Unable to connect to the server. Please try again later.");
@@ -257,10 +263,10 @@ const UserLinks = () => {
   };
 
   const toggleAllSelection = () => {
-    if (selectedLinks.length === currentItems.length) {
+    if (selectedLinks.length === filteredLinks.length) {
       setSelectedLinks([]);
     } else {
-      setSelectedLinks(currentItems.map(link => link._id));
+      setSelectedLinks(filteredLinks.map(link => link._id));
     }
   };
 
@@ -271,14 +277,6 @@ const UserLinks = () => {
       console.error("Error in search:", err);
     }
   };
-
-  // Pagination logic with safeguards
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredLinks?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.max(1, Math.ceil((filteredLinks?.length || 0) / itemsPerPage));
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Animation variants
   const containerVariants = {
@@ -408,7 +406,7 @@ const UserLinks = () => {
                         <input 
                           type="checkbox" 
                           className="form-checkbox rounded border-gray-300 text-[#fe6019] focus:ring focus:ring-[#fe6019]/20 h-5 w-5 cursor-pointer"
-                          checked={currentItems.length > 0 && selectedLinks.length === currentItems.length}
+                          checked={filteredLinks.length > 0 && selectedLinks.length === filteredLinks.length}
                           onChange={toggleAllSelection}
                         />
                       </label>
@@ -428,8 +426,8 @@ const UserLinks = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {currentItems.length > 0 ? (
-                  currentItems.map((link, index) => (
+                {filteredLinks.length > 0 ? (
+                  filteredLinks.map((link, index) => (
                     <motion.tr 
                       key={link._id || Math.random().toString()} 
                       className={`hover:bg-[#fff5f0] transition-all duration-200 ${
@@ -547,63 +545,18 @@ const UserLinks = () => {
           )}
 
           {/* Pagination controls */}
-          {filteredLinks.length > itemsPerPage && (
+          {pagination.totalPages > 1 && (
             <motion.div 
               className="flex justify-center mt-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="flex space-x-1">
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </motion.button>
-                
-                {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = index + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + index;
-                  } else {
-                    pageNumber = currentPage - 2 + index;
-                  }
-                  
-                  return (
-                    <motion.button
-                      key={pageNumber}
-                      className={`h-9 w-9 rounded-md border ${
-                        currentPage === pageNumber 
-                          ? 'bg-[#fe6019] text-white border-[#fe6019]' 
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
-                      }`}
-                      onClick={() => paginate(pageNumber)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {pageNumber}
-                    </motion.button>
-                  );
-                })}
-                
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </motion.button>
-              </div>
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(newPage) => setCurrentPage(newPage)}
+              />
             </motion.div>
           )}
         </>

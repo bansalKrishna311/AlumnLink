@@ -24,6 +24,7 @@ import {
 import { FaSearch } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
 
 // Define all post types with their respective UI configurations based on the actual model
 const POST_TYPES = {
@@ -84,11 +85,8 @@ const RejectedPosts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPosts, setSelectedPosts] = useState([]);
   const [processing, setProcessing] = useState(false);
-  const [filteredPosts, setFilteredPosts] = useState([]);
   const [previewPost, setPreviewPost] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   
   // Add ref for modal content
   const modalContentRef = useRef(null);
@@ -99,12 +97,12 @@ const RejectedPosts = () => {
   
   const queryClient = useQueryClient();
 
-  // Fetch rejected posts
-  const { data: rejectedPosts, isLoading: fetchingPosts, error: fetchError } = useQuery({
-    queryKey: ['rejectedPosts'],
+  // Fetch rejected posts with server-side pagination
+  const { data: responseData, isLoading: fetchingPosts, error: fetchError } = useQuery({
+    queryKey: ['rejectedPosts', currentPage, itemsPerPage],
     queryFn: async () => {
       try {
-        const response = await axiosInstance.get('/posts/admin/rejected');
+        const response = await axiosInstance.get(`/posts/admin/rejected?page=${currentPage}&limit=${itemsPerPage}`);
         return response.data;
       } catch (error) {
         console.error("Error fetching rejected posts:", error);
@@ -113,9 +111,26 @@ const RejectedPosts = () => {
     },
     onError: (error) => {
       console.error("Error fetching rejected posts:", error);
-      setError("Failed to load rejected posts. Please try again later.");
     }
   });
+
+  // Extract data and pagination info
+  const rejectedPosts = responseData?.success ? responseData.data : (Array.isArray(responseData) ? responseData : []);
+  const pagination = responseData?.pagination || {};
+  
+  // Fallback pagination calculation if backend doesn't provide it
+  const totalItems = rejectedPosts.length;
+  const totalPages = Math.max(Math.ceil(totalItems / itemsPerPage), 1);
+  const finalPagination = {
+    currentPage: currentPage,
+    totalPages: pagination.totalPages || totalPages,
+    totalItems: pagination.totalItems || totalItems,
+    hasNextPage: currentPage < (pagination.totalPages || totalPages),
+    hasPrevPage: currentPage > 1
+  };
+
+  // Client-side filtering for search and type (applied to current page only)
+  const [filteredPosts, setFilteredPosts] = useState([]);
 
   // Update filtered posts when rejected posts data changes or filters change
   useEffect(() => {
@@ -137,19 +152,19 @@ const RejectedPosts = () => {
       }
       
       setFilteredPosts(filtered);
-      setIsLoading(false);
     }
   }, [rejectedPosts, selectedType, searchQuery]);
 
-  // Calculate pagination
-  const totalPages = Math.ceil((filteredPosts?.length || 0) / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPosts?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  // Use filtered posts for display, but use server pagination for navigation
+  const currentItems = filteredPosts || [];
   
   // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+    setSelectedPosts([]); // Clear selections when changing pages
+    // Reset filters when changing pages to show server-side results
+    setSelectedType("all");
+    setSearchQuery('');
   };
 
   // Handle restoring a post to pending status
@@ -163,7 +178,7 @@ const RejectedPosts = () => {
       });
       
       toast.success("Post has been restored to pending status");
-      queryClient.invalidateQueries({ queryKey: ['rejectedPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['rejectedPosts', currentPage, itemsPerPage] });
       
       // Remove from selected posts if it was selected
       setSelectedPosts(prev => prev.filter(id => id !== postId));
@@ -300,7 +315,7 @@ const RejectedPosts = () => {
     }
   };
 
-  if (isLoading || fetchingPosts) {
+  if (fetchingPosts) {
     return (
       <div className="flex justify-center items-center h-screen">
         <motion.div 
@@ -316,14 +331,14 @@ const RejectedPosts = () => {
     );
   }
 
-  if (error || fetchError) {
+  if (fetchError) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center p-4">
         <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Rejected Posts</h2>
-        <p className="text-gray-600 mb-4">{error || "Something went wrong. Please try again later."}</p>
+        <p className="text-gray-600 mb-4">Something went wrong. Please try again later.</p>
         <button 
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['rejectedPosts'] })}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['rejectedPosts', currentPage, itemsPerPage] })}
           className="px-4 py-2 bg-[#fe6019] text-white rounded-md flex items-center gap-2 hover:bg-[#e55a17] transition-colors"
         >
           <RotateCcw className="w-4 h-4" /> Retry
@@ -590,65 +605,18 @@ const RejectedPosts = () => {
           )}
 
           {/* Pagination controls */}
-          {totalPages > 1 && (
-            <motion.div 
-              className="flex justify-center mt-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="flex space-x-1">
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </motion.button>
-                
-                {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = index + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + index;
-                  } else {
-                    pageNumber = currentPage - 2 + index;
-                  }
-                  
-                  return (
-                    <motion.button
-                      key={pageNumber}
-                      className={`h-9 w-9 rounded-md border ${
-                        currentPage === pageNumber 
-                          ? 'bg-[#fe6019] text-white border-[#fe6019]' 
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
-                      }`}
-                      onClick={() => handlePageChange(pageNumber)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {pageNumber}
-                    </motion.button>
-                  );
-                })}
-                
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
+          <motion.div 
+            className="flex justify-center mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Pagination
+              currentPage={finalPagination.currentPage}
+              totalPages={finalPagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          </motion.div>
         </>
       )}
 

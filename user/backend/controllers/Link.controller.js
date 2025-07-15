@@ -318,18 +318,33 @@ export const getUserLinks = async (req, res) => {
 export const getRejectedLinks = async (req, res) => {
     try {
         const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        // Find all link requests where the user is either the sender or recipient and the status is 'pending'
+        // Find all link requests where the user is either the sender or recipient and the status is 'rejected'
         const linkRequests = await LinkRequest.find({
             $or: [
                 { sender: userId },
                 { recipient: userId }
             ],
-            status: 'rejected' // Only fetch link requests with status 'pending'
+            status: 'rejected' // Only fetch link requests with status 'rejected'
         })
         .populate('sender', 'name username location profilePicture headline')
         .populate('recipient', 'name username location profilePicture headline')
-        .sort({ createdAt: -1 }); // Sort by newest first
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .skip(skip)
+        .limit(limit);
+
+        const totalItems = await LinkRequest.countDocuments({
+            $or: [
+                { sender: userId },
+                { recipient: userId }
+            ],
+            status: 'rejected'
+        });
+
+        const totalPages = Math.ceil(totalItems / limit);
 
         // Transform the data to include connection type (sent/received)
         const transformedLinks = linkRequests.map(request => ({
@@ -344,12 +359,22 @@ export const getRejectedLinks = async (req, res) => {
             updatedAt: request.updatedAt
         }));
 
-        res.json(transformedLinks);
+        res.json({
+            success: true,
+            data: transformedLinks,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        });
     } catch (error) {
-        console.error("Error in getUserLinks controller:", error);
+        console.error("Error in getRejectedLinks controller:", error);
         res.status(500).json({ 
             success: false,
-            message: "Failed to fetch user links",
+            message: "Failed to fetch rejected links",
             error: error.message 
         });
     }
