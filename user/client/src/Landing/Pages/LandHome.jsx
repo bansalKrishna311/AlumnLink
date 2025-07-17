@@ -8,6 +8,7 @@ import FAQSection from "../Components/FAQSection";
 import CallToAction from "../Components/CallToAction";
 import FeatureGrid from "../Components/FeatureGrid";
 import Testimonials from "../Components/Testimonials";
+import AlumnGPT from "../Components/AlumnGPT";
 
 const LandHome = () => {
   // Scroll to top on component mount
@@ -73,6 +74,9 @@ const LandHome = () => {
             secondaryButtonLink="/landing/contact"
           />
         </motion.div>
+
+        {/* AlumnGPT Chatbot */}
+        <AlumnGPT />
 
         {/* Custom styles for animation */}
         <style jsx>{`
