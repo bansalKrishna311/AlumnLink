@@ -16,6 +16,9 @@ import Terms from './Landing/Pages/Terms';
 import Contact from './Landing/Pages/Contact';
 import ProfilePage from "./pages/ProfilePage";
 import UserPostsPage from "./pages/UserPostsPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import ErrorBoundary from "./components/ErrorBoundary";
+import Test404Page from "./pages/Test404Page";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({
@@ -51,7 +54,7 @@ function App() {
     };
 
     return (
-        <>
+        <ErrorBoundary>
             <Routes>
            
             <Route path="/Landing" element={<Layout />}>
@@ -59,12 +62,16 @@ function App() {
   <Route path="about" element={<About />} /> {/* /Landing/about */}
   <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
   <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
+  <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
 </Route>
 
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
                 <Route path="/forgot-password" element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />} />
                 <Route path="/reset-password/:token" element={<PasswordResetPage />} />
+                
+                {/* Temporary test route for 404 functionality */}
+                <Route path="/test-404" element={<Test404Page />} />
                 
                 {/* Render role-specific routes */}
                 {authUser ? (
@@ -74,9 +81,12 @@ function App() {
                 ) : (
                     <Route path="*" element={<Navigate to="/Landing" />} />
                 )}
+                
+                {/* 404 Not Found route - should be the last route */}
+                {authUser && <Route path="*" element={<NotFoundPage />} />}
             </Routes>
             <Toaster />
-        </>
+        </ErrorBoundary>
     );
 }
 
