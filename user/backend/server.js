@@ -16,7 +16,9 @@ import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
-import connectDB from "./lib/db.js";
+import connectDB, { isDbConnected, reconnectDB } from "./lib/db.js";
+import dbMonitor from "./utils/dbMonitor.js";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -50,24 +52,43 @@ app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 // Health check endpoint that doesn't require DB
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", message: "AlumnLink API is healthy" });
+app.get("/health", async (req, res) => {
+  const dbStatus = dbMonitor.getStatus();
+  res.status(200).json({ 
+    status: "ok", 
+    message: "AlumnLink API is healthy",
+    database: dbStatus,
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Connect to database lazily - only when needed
-let dbPromise = null;
-const getDbConnection = () => {
-  if (!dbPromise) {
-    dbPromise = connectDB().catch(err => {
-      console.error('Failed to connect to database:', err);
-      dbPromise = null;
-      throw err;
-    });
-  }
-  return dbPromise;
-};
+// Database status endpoint for monitoring
+app.get("/api/db-status", async (req, res) => {
+  const status = dbMonitor.getStatus();
+  res.status(status.isConnected ? 200 : 503).json(status);
+});
 
-// Middleware to handle database connection
+// Connection statistics endpoint
+app.get("/api/connection-stats", async (req, res) => {
+  const stats = {
+    status: dbMonitor.getStatus(),
+    mongoose: {
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      name: mongoose.connection.name,
+      collections: Object.keys(mongoose.connection.collections || {}),
+    },
+    server: {
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      version: process.version,
+    },
+    timestamp: new Date().toISOString()
+  };
+  res.json(stats);
+});
+
+// Enhanced database middleware with retry logic
 const withDb = async (req, res, next) => {
   // Skip DB connection for health check
   if (req.path === '/health') {
@@ -75,19 +96,24 @@ const withDb = async (req, res, next) => {
   }
 
   try {
-    // Set a timeout for the DB connection
-    const connectionPromise = getDbConnection();
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('DB connection timeout')), 3000)
-    );
-
-    await Promise.race([connectionPromise, timeoutPromise]);
+    // Check if DB is connected, if not, try to reconnect
+    if (!isDbConnected()) {
+      console.log('Database not connected, attempting to reconnect...');
+      await reconnectDB();
+    }
+    
+    // Double-check connection
+    if (!isDbConnected()) {
+      throw new Error('Failed to establish database connection');
+    }
+    
     next();
   } catch (error) {
     console.error('Database connection failed:', error);
     return res.status(503).json({ 
       error: 'Database connection failed', 
-      message: 'Service temporarily unavailable' 
+      message: 'Service temporarily unavailable. Please try again later.',
+      timestamp: new Date().toISOString()
     });
   }
 };
@@ -136,16 +162,37 @@ app.use('/api/v1/contact', contactRoutes);
 // For local development
 if (process.env.NODE_ENV !== "production") {
   // Connect to DB immediately in development
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log('Auto-cleanup scheduler initialized');
+  connectDB()
+    .then(() => {
+      // Start database monitoring
+      dbMonitor.startMonitoring();
+      
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log('Auto-cleanup scheduler initialized');
+        console.log('Database connection established');
+        console.log('Database monitoring started');
+      });
+    })
+    .catch((err) => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
     });
-  });
+} else {
+  // In production (Vercel), establish connection immediately
+  connectDB()
+    .then(() => {
+      // Start database monitoring in production too
+      dbMonitor.startMonitoring();
+      console.log('Production database connection established');
+    })
+    .catch(err => {
+      console.error('Failed to connect to database in production:', err);
+    });
 }
 
 // Export for Vercel serverless deployment
-// In production, we export the serverless handler without connecting to DB first
+// In production, we export the serverless handler with established DB connection
 export default process.env.NODE_ENV === "production"
   ? serverless(app)
   : app;
