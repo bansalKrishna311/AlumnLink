@@ -16,7 +16,7 @@ import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
-import connectDB, { isDbConnected, reconnectDB } from "./lib/db.js";
+import connectDB, { isDbConnected, reconnectDB, setupEventListeners } from "./lib/db.js";
 import dbMonitor from "./utils/dbMonitor.js";
 import mongoose from "mongoose";
 
@@ -88,34 +88,21 @@ app.get("/api/connection-stats", async (req, res) => {
   res.json(stats);
 });
 
-// Enhanced database middleware with retry logic
+// Enhanced database middleware with simpler logic
 const withDb = async (req, res, next) => {
   // Skip DB connection for health check
   if (req.path === '/health') {
     return next();
   }
 
-  try {
-    // Check if DB is connected, if not, try to reconnect
-    if (!isDbConnected()) {
-      console.log('Database not connected, attempting to reconnect...');
-      await reconnectDB();
-    }
-    
-    // Double-check connection
-    if (!isDbConnected()) {
-      throw new Error('Failed to establish database connection');
-    }
-    
-    next();
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    return res.status(503).json({ 
-      error: 'Database connection failed', 
-      message: 'Service temporarily unavailable. Please try again later.',
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      error: 'Database unavailable. Try again later.',
       timestamp: new Date().toISOString()
     });
   }
+  
+  next();
 };
 
 // Apply the DB connection middleware to all routes
@@ -161,34 +148,39 @@ app.use('/api/v1/contact', contactRoutes);
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
-  // Connect to DB immediately in development
-  connectDB()
-    .then(() => {
-      // Start database monitoring
-      dbMonitor.startMonitoring();
+  // Connect to DB and start monitoring
+  const start = async () => {
+    try {
+      await connectDB();
+      dbMonitor.start(); // Starts reconnection monitor
       
       app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log('Auto-cleanup scheduler initialized');
-        console.log('Database connection established');
-        console.log('Database monitoring started');
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log('✅ Database connection established');
+        console.log('🔄 Auto-cleanup scheduler initialized');
+        console.log('📡 Database monitoring started');
       });
-    })
-    .catch((err) => {
-      console.error('Failed to start server:', err);
+    } catch (err) {
+      console.error('💥 Failed to start server:', err);
       process.exit(1);
-    });
+    }
+  };
+  
+  start();
 } else {
-  // In production (Vercel), establish connection immediately
-  connectDB()
-    .then(() => {
-      // Start database monitoring in production too
-      dbMonitor.startMonitoring();
-      console.log('Production database connection established');
-    })
-    .catch(err => {
-      console.error('Failed to connect to database in production:', err);
-    });
+  // In production (Vercel), establish connection and start monitoring
+  const initProduction = async () => {
+    try {
+      await connectDB();
+      dbMonitor.start(); // Starts reconnection monitor
+      console.log('✅ Production database connection established');
+      console.log('📡 Database monitoring started');
+    } catch (err) {
+      console.error('💥 Failed to connect to database in production:', err);
+    }
+  };
+  
+  initProduction();
 }
 
 // Export for Vercel serverless deployment

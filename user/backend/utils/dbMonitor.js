@@ -1,112 +1,79 @@
-// Database monitoring utility
+import {
+  reconnectDB,
+  setupEventListeners
+} from '../lib/db.js';
 import mongoose from 'mongoose';
-import { isDbConnected, reconnectDB } from '../lib/db.js';
 
-class DatabaseMonitor {
+class DBMonitor {
   constructor() {
-    this.isMonitoring = false;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 3; // Reduced from 5 to 3
-    this.reconnectDelay = 5000; // Start with 5 seconds instead of 1
-    this.maxReconnectDelay = 60000; // Max 1 minute instead of 30 seconds
+    this.maxAttempts = 10;
+    this.reconnectDelay = 3000; // 3 seconds
+    this.reconnecting = false;
   }
 
-  startMonitoring() {
-    if (this.isMonitoring) return;
-    
-    this.isMonitoring = true;
-    console.log('Database monitoring started');
-    
-    // Monitor connection every 2 minutes instead of 30 seconds
-    this.monitorInterval = setInterval(() => {
-      this.checkConnection();
-    }, 120000);
-    
-    // Set up mongoose event listeners
-    this.setupEventListeners();
+  start() {
+    setupEventListeners();
+    this.monitor();
   }
 
-  stopMonitoring() {
-    this.isMonitoring = false;
-    if (this.monitorInterval) {
-      clearInterval(this.monitorInterval);
-    }
-    console.log('Database monitoring stopped');
-  }
-
-  setupEventListeners() {
+  monitor() {
     mongoose.connection.on('disconnected', () => {
-      console.warn('MongoDB disconnected - attempting to reconnect...');
       this.handleDisconnection();
     });
 
     mongoose.connection.on('error', (err) => {
-      console.error('MongoDB error:', err);
-      this.handleDisconnection();
+      console.error('❌ MongoDB error detected in monitor:', err);
+    });
+
+    mongoose.connection.on('connected', () => {
+      // Reset reconnection attempts on successful connection
+      this.reconnectAttempts = 0;
+      this.reconnecting = false;
     });
 
     mongoose.connection.on('reconnected', () => {
-      console.log('MongoDB reconnected successfully');
+      // Reset reconnection attempts on successful reconnection
       this.reconnectAttempts = 0;
-      this.reconnectDelay = 1000; // Reset delay
+      this.reconnecting = false;
     });
   }
 
-  async checkConnection() {
-    if (!isDbConnected()) {
-      console.log('Connection check failed - attempting reconnection');
-      await this.handleDisconnection();
-    }
-  }
-
   async handleDisconnection() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached. Manual intervention required.');
-      return;
+    if (this.reconnecting) return;
+    this.reconnecting = true;
+
+    while (this.reconnectAttempts < this.maxAttempts) {
+      try {
+        console.log(`🔁 Attempting MongoDB reconnection... (${this.reconnectAttempts + 1})`);
+        await reconnectDB();
+        console.log('✅ MongoDB reconnected successfully');
+        this.reconnectAttempts = 0;
+        break;
+      } catch (err) {
+        this.reconnectAttempts++;
+        console.error(`❌ Reconnection attempt ${this.reconnectAttempts} failed`);
+        await new Promise(res => setTimeout(res, this.reconnectDelay));
+      }
     }
 
-    this.reconnectAttempts++;
-    console.log(`Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-
-    try {
-      // Wait before attempting reconnection
-      await new Promise(resolve => setTimeout(resolve, this.reconnectDelay));
-      
-      await reconnectDB();
-      console.log('Database reconnection successful');
-      
-      // Reset attempts on successful reconnection
-      this.reconnectAttempts = 0;
-      this.reconnectDelay = 1000;
-      
-    } catch (error) {
-      console.error(`Reconnection attempt ${this.reconnectAttempts} failed:`, error.message);
-      
-      // Exponential backoff with jitter
-      this.reconnectDelay = Math.min(
-        this.reconnectDelay * 2 + Math.random() * 1000,
-        this.maxReconnectDelay
-      );
+    if (this.reconnectAttempts >= this.maxAttempts) {
+      console.error('💥 Max MongoDB reconnection attempts reached. Manual intervention required.');
     }
+
+    this.reconnecting = false;
   }
 
   getStatus() {
     return {
-      isConnected: isDbConnected(),
+      isConnected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState,
       reconnectAttempts: this.reconnectAttempts,
-      isMonitoring: this.isMonitoring,
-      connectionState: mongoose.connection.readyState,
-      connectionStates: {
-        0: 'disconnected',
-        1: 'connected',
-        2: 'connecting',
-        3: 'disconnecting'
-      }
+      reconnecting: this.reconnecting,
+      maxAttempts: this.maxAttempts,
+      timestamp: new Date().toISOString()
     };
   }
 }
 
-// Create singleton instance
-const dbMonitor = new DatabaseMonitor();
-
-export default dbMonitor;
+export default new DBMonitor();
