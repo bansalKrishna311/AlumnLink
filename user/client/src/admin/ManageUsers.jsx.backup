@@ -1,4 +1,73 @@
-import React, { useState, useEffect } from "react";
+import Rea  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [selectedRequests, setSelectedRequests] = useState([]);
+  const [processing, setProcessing] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalRequests: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      setSearchQuery(query);
+      setPage(1); // Reset to first page when searching
+    }, 300),
+    []
+  );
+
+  const fetchRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (searchQuery) {
+        setIsSearching(true);
+      }
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '10'
+      });
+      
+      if (searchQuery && searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
+      }
+      
+      const response = await axiosInstance.get(`/api/Link/link-requests?${params}`);
+      setRequests(response.data);
+      
+      // Extract pagination from headers
+      const totalCount = parseInt(response.headers['x-total-count'] || '0');
+      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
+      const currentPage = parseInt(response.headers['x-current-page'] || '1');
+      
+      setPagination({
+        currentPage,
+        totalPages,
+        totalRequests: totalCount,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1
+      });
+      
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      setError("Failed to fetch requests");
+      setRequests([]);
+    } finally {
+      setLoading(false);
+      setIsSearching(false);
+    }
+  }, [page, searchQuery]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]); useEffect } from "react";
 import { FaCheck, FaTimes, FaSearch, FaCheckSquare } from "react-icons/fa";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
@@ -127,7 +196,14 @@ const ManageUsers = () => {
     }
   };
 
-  const handleSearchChange = (e) => setSearchTerm(e.target.value.toLowerCase());
+  const handleSearchChange = useCallback((query) => {
+    debouncedSearch(query);
+  }, [debouncedSearch]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    setPage(1);
+  }, []);
 
   const toggleRequestSelection = (id) => {
     setSelectedRequests(prev => 
@@ -145,11 +221,8 @@ const ManageUsers = () => {
     }
   };
 
-  const filteredRequests = requests.filter(
-    (request) =>
-      request?.sender?.name?.toLowerCase().includes(searchTerm) ||
-      request?.rollNumber?.toLowerCase().includes(searchTerm)
-  );
+  // Remove the client-side filtering since we now use server-side search
+  // const filteredRequests = requests.filter(...)
 
   const containerVariants = {
     hidden: { opacity: 0 },

@@ -217,6 +217,7 @@ export const getUserLinks = async (req, res) => {
         const skip = (page - 1) * limit;
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder || 'desc';
+        const search = req.query.search; // Get search query
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -226,17 +227,121 @@ export const getUserLinks = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Construct a filter to count total items (for pagination)
-        const countQuery = {
+        // Build base query
+        const baseQuery = {
             $or: [{ sender: userId }, { recipient: userId }],
             status: "accepted",
         };
-        
-        // Get total count for pagination headers
-        const totalCount = await LinkRequest.countDocuments(countQuery);
+
+        // If search is provided, use a simpler aggregation approach
+        if (search && search.trim()) {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            
+            // Build aggregation pipeline with search
+            const pipeline = [
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'sender',
+                        foreignField: '_id',
+                        as: 'senderData'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'recipient',
+                        foreignField: '_id',
+                        as: 'recipientData'
+                    }
+                },
+                {
+                    $unwind: '$senderData'
+                },
+                {
+                    $unwind: '$recipientData'
+                },
+                {
+                    $addFields: {
+                        otherUser: {
+                            $cond: {
+                                if: { $eq: ['$sender', userId] },
+                                then: '$recipientData',
+                                else: '$senderData'
+                            }
+                        }
+                    }
+                },
+                {
+                    $match: {
+                        $or: [
+                            { 'otherUser.name': searchRegex },
+                            { 'otherUser.username': searchRegex },
+                            { 'otherUser.email': searchRegex },
+                            { 'otherUser.location': searchRegex },
+                            { rollNumber: searchRegex },
+                            { batch: searchRegex },
+                            { courseName: searchRegex }
+                        ]
+                    }
+                },
+                { $sort: { createdAt: -1 } }
+            ];
+
+            // Get total count
+            const countPipeline = [...pipeline, { $count: 'total' }];
+            const countResult = await LinkRequest.aggregate(countPipeline);
+            const totalCount = countResult.length > 0 ? countResult[0].total : 0;
+
+            // Add pagination
+            pipeline.push({ $skip: skip });
+            pipeline.push({ $limit: limit });
+
+            // Execute aggregation
+            const linkRequests = await LinkRequest.aggregate(pipeline);
+
+            // Transform data
+            const transformedLinks = linkRequests.map((request) => {
+                const otherUser = request.otherUser;
+                
+                return {
+                    _id: request._id,
+                    connection: request.sender.equals(userId) ? "sent" : "received",
+                    user: otherUser,
+                    name: otherUser.name,
+                    username: otherUser.username,
+                    location: otherUser.location,
+                    profilePicture: otherUser.profilePicture,
+                    headline: otherUser.headline,
+                    skills: otherUser.skills,
+                    experience: otherUser.experience,
+                    education: otherUser.education,
+                    rollNumber: request.rollNumber,
+                    batch: request.batch,
+                    courseName: request.courseName,
+                    status: request.status,
+                    createdAt: request.createdAt,
+                    updatedAt: request.updatedAt,
+                };
+            });
+
+            const totalPages = Math.ceil(totalCount / limit);
+
+            // Set pagination headers
+            res.set('X-Total-Count', totalCount.toString());
+            res.set('X-Total-Pages', totalPages.toString());
+            res.set('X-Current-Page', page.toString());
+            res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
+
+            return res.json(transformedLinks);
+        }
+
+        // No search - use simpler query
+        const totalCount = await LinkRequest.countDocuments(baseQuery);
         
         // Fetch all accepted link requests with pagination
-        const linkRequests = await LinkRequest.find(countQuery)
+        const linkRequests = await LinkRequest.find(baseQuery)
             .populate("sender", "name username location profilePicture headline skills experience education")
             .populate("recipient", "name username location profilePicture headline skills experience education")
             .sort(sortOptions)
@@ -244,12 +349,20 @@ export const getUserLinks = async (req, res) => {
             .limit(limit);
 
         if (!linkRequests || linkRequests.length === 0) {
+            const totalPages = Math.ceil(totalCount / limit);
+            
+            // Set pagination headers even for empty results
+            res.set('X-Total-Count', totalCount.toString());
+            res.set('X-Total-Pages', totalPages.toString());
+            res.set('X-Current-Page', page.toString());
+            res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
+            
             return res.status(404).json({ 
                 success: false, 
                 message: "No links found",
                 pagination: {
-                    totalCount: 0,
-                    totalPages: 0,
+                    totalCount,
+                    totalPages,
                     currentPage: page,
                     pageSize: limit
                 }
@@ -285,22 +398,11 @@ export const getUserLinks = async (req, res) => {
                 };
             });
 
-        if (transformedLinks.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "No valid links found",
-                pagination: {
-                    totalCount: 0,
-                    totalPages: 0,
-                    currentPage: page,
-                    pageSize: limit
-                }
-            });
-        }
+        const totalPages = Math.ceil(totalCount / limit);
 
         // Set pagination headers
         res.set('X-Total-Count', totalCount.toString());
-        res.set('X-Total-Pages', Math.ceil(totalCount / limit).toString());
+        res.set('X-Total-Pages', totalPages.toString());
         res.set('X-Current-Page', page.toString());
         res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
 
@@ -318,18 +420,33 @@ export const getUserLinks = async (req, res) => {
 export const getRejectedLinks = async (req, res) => {
     try {
         const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        // Find all link requests where the user is either the sender or recipient and the status is 'pending'
+        // Find all link requests where the user is either the sender or recipient and the status is 'rejected'
         const linkRequests = await LinkRequest.find({
             $or: [
                 { sender: userId },
                 { recipient: userId }
             ],
-            status: 'rejected' // Only fetch link requests with status 'pending'
+            status: 'rejected' // Only fetch link requests with status 'rejected'
         })
         .populate('sender', 'name username location profilePicture headline')
         .populate('recipient', 'name username location profilePicture headline')
-        .sort({ createdAt: -1 }); // Sort by newest first
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .skip(skip)
+        .limit(limit);
+
+        const totalItems = await LinkRequest.countDocuments({
+            $or: [
+                { sender: userId },
+                { recipient: userId }
+            ],
+            status: 'rejected'
+        });
+
+        const totalPages = Math.ceil(totalItems / limit);
 
         // Transform the data to include connection type (sent/received)
         const transformedLinks = linkRequests.map(request => ({
@@ -344,12 +461,22 @@ export const getRejectedLinks = async (req, res) => {
             updatedAt: request.updatedAt
         }));
 
-        res.json(transformedLinks);
+        res.json({
+            success: true,
+            data: transformedLinks,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        });
     } catch (error) {
-        console.error("Error in getUserLinks controller:", error);
+        console.error("Error in getRejectedLinks controller:", error);
         res.status(500).json({ 
             success: false,
-            message: "Failed to fetch user links",
+            message: "Failed to fetch rejected links",
             error: error.message 
         });
     }

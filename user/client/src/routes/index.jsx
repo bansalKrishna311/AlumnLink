@@ -21,6 +21,7 @@ import NotificationsPage from "@/pages/NotificationsPage";
 import SearchPage from "@/pages/SearchPage";
 import HashtagPage from "@/pages/HashtagPage";
 import TrendingHashtagsPage from "@/pages/TrendingHashtagsPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -174,5 +175,9 @@ export const router = createBrowserRouter([
         <PostCreationPage />
       </DashboardLayout>
     ),
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);

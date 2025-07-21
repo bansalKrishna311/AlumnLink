@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { axiosInstance } from '@/lib/axios';
 import { 
   UserCircle2, 
@@ -18,80 +18,61 @@ import {
 import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
+import SearchBar from "@/components/SearchBar";
+import HighlightedText from "@/components/HighlightedText";
 
 const UserLinks = () => {
   const [links, setLinks] = useState([]);
-  const [filteredLinks, setFilteredLinks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1,
+    pageSize: 10
+  });
 
-  // Helper function to safely convert to string and check if it includes search query
-  const safeIncludes = (value, query) => {
-    if (value === null || value === undefined) return false;
-    
-    const stringValue = typeof value === 'string' ? value : String(value);
-    return stringValue.toLowerCase().includes(query.toLowerCase());
-  };
-
-  useEffect(() => {
-    fetchUserLinks();
-  }, []);
-
-  useEffect(() => {
-    // Safely filter links based on search query with type checking
-    if (!links || !Array.isArray(links) || links.length === 0) {
-      setFilteredLinks([]);
-      return;
-    }
-    
-    try {
-      let filtered = links;
-      
-      // Apply search query filter
-      if (searchQuery) {
-        filtered = filtered.filter(link => {
-          if (!link) return false;
-          
-          // Use the safeIncludes helper for all checks
-          const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
-          const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
-          const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
-          const courseMatch = safeIncludes(link.courseName, searchQuery);
-          const batchMatch = safeIncludes(link.batch, searchQuery);
-          const rollMatch = safeIncludes(link.rollNumber, searchQuery);
-          
-          return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
-        });
-      }
-      
-      setFilteredLinks(filtered);
-      setCurrentPage(1); // Reset to first page when filter changes
-    } catch (err) {
-      console.error("Error in filtering:", err);
-      // In case of error, don't change the current filtered list
-    }
-  }, [searchQuery, links]);
-
-  const fetchUserLinks = async () => {
+  const fetchUserLinks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/links');
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
+      
+      // Add search query to server request if it exists
+      if (debouncedSearchQuery && debouncedSearchQuery.trim()) {
+        params.append('search', debouncedSearchQuery.trim());
+      }
+      
+      const response = await axiosInstance.get(`/links?${params}`);
+      
+      // Handle pagination data from headers
+      const totalCount = parseInt(response.headers['x-total-count'] || '0');
+      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
+      
+      setPagination({
+        totalCount,
+        totalPages,
+        currentPage: parseInt(response.headers['x-current-page'] || currentPage),
+        pageSize: 10
+      });
       
       // Ensure we have valid data before setting state
       if (response && response.data && Array.isArray(response.data)) {
         setLinks(response.data);
-        setFilteredLinks(response.data);
         setError(null);
       } else {
         setLinks([]);
-        setFilteredLinks([]);
         setError("Received invalid data format");
       }
       setIsLoading(false);
@@ -100,14 +81,39 @@ const UserLinks = () => {
       // Handle 404 specifically as "no data" rather than an error
       if (err.response && err.response.status === 404) {
         setLinks([]);
-        setFilteredLinks([]);
+        setPagination({
+          totalCount: 0,
+          totalPages: 0,
+          currentPage: 1,
+          pageSize: 10
+        });
         setError(null);
       } else {
         setError("Unable to connect to the server. Please try again later.");
       }
       setIsLoading(false);
     }
-  };
+  }, [currentPage, debouncedSearchQuery]);
+
+  // Debounce search query and handle search changes
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setIsSearching(false);
+      // Reset to page 1 when starting a new search
+      if (searchQuery && currentPage !== 1) {
+        setCurrentPage(1);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch data when dependencies change
+  useEffect(() => {
+    fetchUserLinks();
+  }, [fetchUserLinks]);
 
   const handleStatusUpdate = async (id, status) => {
     try {
@@ -132,9 +138,8 @@ const UserLinks = () => {
     try {
       await axiosInstance.put(`/links/reset-to-pending/${id}`);
       
-      // Remove the item from both links and filteredLinks arrays
+      // Remove the item from the links array
       setLinks(prevLinks => prevLinks.filter(link => link._id !== id));
-      setFilteredLinks(prevLinks => prevLinks.filter(link => link._id !== id));
       
       toast.success("Connection reset to pending status successfully!");
     } catch (error) {
@@ -257,28 +262,23 @@ const UserLinks = () => {
   };
 
   const toggleAllSelection = () => {
-    if (selectedLinks.length === currentItems.length) {
+    if (selectedLinks.length === links.length) {
       setSelectedLinks([]);
     } else {
-      setSelectedLinks(currentItems.map(link => link._id));
+      setSelectedLinks(links.map(link => link._id));
     }
   };
 
-  const handleSearchChange = (e) => {
-    try {
-      setSearchQuery(e.target.value);
-    } catch (err) {
-      console.error("Error in search:", err);
-    }
-  };
+  const handleSearchChange = useCallback((query) => {
+    setSearchQuery(query);
+  }, []);
 
-  // Pagination logic with safeguards
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredLinks?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.max(1, Math.ceil((filteredLinks?.length || 0) / itemsPerPage));
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    // Reset pagination when clearing search
+    setCurrentPage(1);
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -365,17 +365,49 @@ const UserLinks = () => {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <div className="relative max-w-md w-full">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search by name, roll number, batch..."
-                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-transparent transition-all duration-200 bg-white shadow-sm"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
+              <div className="max-w-md w-full">
+                <SearchBar
+                  placeholder="Search by name, roll number, batch, course..."
+                  onSearch={handleSearchChange}
+                  onClear={handleClearSearch}
+                  initialValue={searchQuery}
+                  className="w-full"
+                  size="md"
+                  showClearButton={true}
+                  debounceDelay={0}
                 />
+                {isSearching && (
+                  <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
+                    <motion.div 
+                      className="w-3 h-3 border border-gray-300 border-t-[#fe6019] rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    Searching across all pages...
+                  </div>
+                )}
+                {searchQuery && !isSearching && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    {pagination.totalCount > 0 ? (
+                      <>
+                        Found {pagination.totalCount} result{pagination.totalCount !== 1 ? 's' : ''} for "{searchQuery}"
+                        {pagination.totalPages > 1 && (
+                          <span className="text-gray-500"> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                        )}
+                      </>
+                    ) : (
+                      `No results found for "${searchQuery}"`
+                    )}
+                  </div>
+                )}
+                {!searchQuery && pagination.totalCount > 0 && (
+                  <div className="mt-2 text-sm text-gray-500">
+                    Showing {pagination.totalCount} total connections
+                    {pagination.totalPages > 1 && (
+                      <span> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div className="flex gap-3">
@@ -408,7 +440,7 @@ const UserLinks = () => {
                         <input 
                           type="checkbox" 
                           className="form-checkbox rounded border-gray-300 text-[#fe6019] focus:ring focus:ring-[#fe6019]/20 h-5 w-5 cursor-pointer"
-                          checked={currentItems.length > 0 && selectedLinks.length === currentItems.length}
+                          checked={links.length > 0 && selectedLinks.length === links.length}
                           onChange={toggleAllSelection}
                         />
                       </label>
@@ -428,8 +460,8 @@ const UserLinks = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {currentItems.length > 0 ? (
-                  currentItems.map((link, index) => (
+                {links.length > 0 ? (
+                  links.map((link, index) => (
                     <motion.tr 
                       key={link._id || Math.random().toString()} 
                       className={`hover:bg-[#fff5f0] transition-all duration-200 ${
@@ -463,41 +495,57 @@ const UserLinks = () => {
                             <User size={18} className="text-[#fe6019]" />
                           )}
                           <div>
-                            <span className="text-sm text-gray-900 font-medium block">{link.user?.name || "Unknown User"}</span>
-                            <span className="text-xs text-gray-500">@{link.user?.username || "username"}</span>
+                            <HighlightedText
+                              text={link.user?.name || "Unknown User"}
+                              searchTerm={searchQuery}
+                              className="text-sm text-gray-900 font-medium block"
+                            />
+                            <HighlightedText
+                              text={`@${link.user?.username || "username"}`}
+                              searchTerm={searchQuery}
+                              className="text-xs text-gray-500"
+                            />
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <Code size={18} className="text-[#fe6019]" />
-                          <span className="text-sm text-gray-600">
-                            {typeof link.rollNumber === 'string' ? link.rollNumber : String(link.rollNumber) || 'N/A'}
-                          </span>
+                          <HighlightedText
+                            text={typeof link.rollNumber === 'string' ? link.rollNumber : String(link.rollNumber) || 'N/A'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600"
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <Calendar size={18} className="text-[#fe6019]" />
-                          <span className="text-sm text-gray-600">
-                            {typeof link.batch === 'string' ? link.batch : String(link.batch) || 'N/A'}
-                          </span>
+                          <HighlightedText
+                            text={typeof link.batch === 'string' ? link.batch : String(link.batch) || 'N/A'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600"
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <BookOpen size={18} className="text-[#fe6019]" />
-                          <span className="text-sm text-gray-600">
-                            {typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
-                          </span>
+                          <HighlightedText
+                            text={typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600"
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <MapPin size={18} className="text-[#fe6019]" />
-                          <span className="text-sm text-gray-600">
-                            {link.user?.location || 'N/A'}
-                          </span>
+                          <HighlightedText
+                            text={link.user?.location || 'N/A'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600"
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -518,8 +566,8 @@ const UserLinks = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
-                      No connections found
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 italic">
+                      {searchQuery ? `No connections found matching "${searchQuery}"` : "No connections found"}
                     </td>
                   </tr>
                 )}
@@ -547,63 +595,18 @@ const UserLinks = () => {
           )}
 
           {/* Pagination controls */}
-          {filteredLinks.length > itemsPerPage && (
+          {pagination.totalPages > 1 && (
             <motion.div 
               className="flex justify-center mt-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="flex space-x-1">
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </motion.button>
-                
-                {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = index + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + index;
-                  } else {
-                    pageNumber = currentPage - 2 + index;
-                  }
-                  
-                  return (
-                    <motion.button
-                      key={pageNumber}
-                      className={`h-9 w-9 rounded-md border ${
-                        currentPage === pageNumber 
-                          ? 'bg-[#fe6019] text-white border-[#fe6019]' 
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
-                      }`}
-                      onClick={() => paginate(pageNumber)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {pageNumber}
-                    </motion.button>
-                  );
-                })}
-                
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </motion.button>
-              </div>
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(newPage) => setCurrentPage(newPage)}
+              />
             </motion.div>
           )}
         </>

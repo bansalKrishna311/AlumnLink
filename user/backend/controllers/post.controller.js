@@ -514,6 +514,37 @@ export const reactToPost = async (req, res) => {
 export const getPendingPosts = async (req, res) => {
     try {
         const userId = req.user.id; // Extract the logged-in user's ID
+        
+        // Check if this is an admin request
+        if (req.user.isAdmin) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
+
+            // Get all pending posts for admin
+            const posts = await Post.find({ status: "pending" })
+                .populate("author", "name username profilePicture headline")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            const totalItems = await Post.countDocuments({ status: "pending" });
+            const totalPages = Math.ceil(totalItems / limit);
+
+            return res.status(200).json({
+                success: true,
+                data: posts,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1
+                }
+            });
+        }
+
+        // Regular user flow - get only their linked posts
         const objectId = new mongoose.Types.ObjectId(userId);
 
         // Query to find posts with status "pending" where the user is in the links array
@@ -1184,15 +1215,34 @@ export const getRecentAdminPosts = async (req, res) => {
 // Get all rejected posts for admin view
 export const getRejectedPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     // Find all posts with status "rejected"
     const rejectedPosts = await Post.find({ status: "rejected" })
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
       .populate("adminId", "name username") // Populate admin who rejected the post
-      .sort({ reviewedAt: -1 }); // Most recently reviewed first
-    
-    res.status(200).json(rejectedPosts);
+      .sort({ reviewedAt: -1 }) // Most recently reviewed first
+      .skip(skip)
+      .limit(limit);
+
+    const totalItems = await Post.countDocuments({ status: "rejected" });
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      success: true,
+      data: rejectedPosts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    });
   } catch (error) {
     console.error("Error in getRejectedPosts controller:", error);
     res.status(500).json({ message: "Server error" });

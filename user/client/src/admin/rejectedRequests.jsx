@@ -20,6 +20,7 @@ import {
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
 
 const RejectedRequests = () => {
   const [links, setLinks] = useState([]);
@@ -32,7 +33,11 @@ const RejectedRequests = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
+  });
 
   // Helper function to safely convert to string and check if it includes search query
   const safeIncludes = (value, query) => {
@@ -43,55 +48,73 @@ const RejectedRequests = () => {
 
   useEffect(() => {
     fetchUserLinks();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
-    if (!links || !Array.isArray(links) || links.length === 0) {
-      setFilteredLinks([]);
-      return;
-    }
-    
-    try {
-      const filtered = links.filter(link => {
-        if (!link) return false;
-        
-        const nameMatch = link.user && safeIncludes(link.user.name, searchQuery);
-        const usernameMatch = link.user && safeIncludes(link.user.username, searchQuery);
-        const locationMatch = link.user && safeIncludes(link.user.location, searchQuery);
-        const courseMatch = safeIncludes(link.courseName, searchQuery);
-        const batchMatch = safeIncludes(link.batch, searchQuery);
-        const rollMatch = safeIncludes(link.rollNumber, searchQuery);
-        
-        return nameMatch || usernameMatch || locationMatch || courseMatch || batchMatch || rollMatch;
-      });
-      
-      setFilteredLinks(filtered);
+    // Reset to first page when search changes
+    if (currentPage !== 1) {
       setCurrentPage(1);
-    } catch (err) {
-      console.error("Error in filtering:", err);
+    } else {
+      fetchUserLinks();
     }
-  }, [searchQuery, links]);
+  }, [searchQuery]);
 
   const fetchUserLinks = async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/links/rejected');
-      if (response && response.data && Array.isArray(response.data)) {
-        setLinks(response.data);
-        setFilteredLinks(response.data);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
+      
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      const response = await axiosInstance.get(`/links/rejected?${params}`);
+      
+      if (response && response.data) {
+        if (response.data.data && Array.isArray(response.data.data)) {
+          // Handle paginated response
+          setLinks(response.data.data);
+          setFilteredLinks(response.data.data);
+          setPagination({
+            currentPage: response.data.pagination.currentPage,
+            totalPages: response.data.pagination.totalPages,
+            totalItems: response.data.pagination.totalItems
+          });
+        } else if (Array.isArray(response.data)) {
+          // Handle non-paginated response (fallback)
+          setLinks(response.data);
+          setFilteredLinks(response.data);
+          setPagination({
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: response.data.length
+          });
+        }
         setError(null);
       } else {
         setLinks([]);
         setFilteredLinks([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0
+        });
         setError("Received invalid data format");
       }
       setIsLoading(false);
     } catch (err) {
-      console.error("Error fetching rejected connections:", err);
-      // Handle 404 specifically as "no data" rather than an error
+      console.error("Error fetching rejected links:", err);
       if (err.response && err.response.status === 404) {
         setLinks([]);
         setFilteredLinks([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0
+        });
         setError(null);
       } else {
         setError("Unable to connect to the server. Please try again later.");
@@ -225,10 +248,10 @@ const RejectedRequests = () => {
   };
 
   const toggleAllSelection = () => {
-    if (selectedLinks.length === currentItems.length) {
+    if (selectedLinks.length === filteredLinks.length) {
       setSelectedLinks([]);
     } else {
-      setSelectedLinks(currentItems.map(link => link._id));
+      setSelectedLinks(filteredLinks.map(link => link._id));
     }
   };
 
@@ -239,14 +262,6 @@ const RejectedRequests = () => {
       console.error("Error in search:", err);
     }
   };
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredLinks?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.max(1, Math.ceil((filteredLinks?.length || 0) / itemsPerPage));
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Animation variants
   const containerVariants = {
@@ -381,7 +396,7 @@ const RejectedRequests = () => {
                         <input 
                           type="checkbox" 
                           className="form-checkbox rounded border-gray-300 text-[#fe6019] focus:ring focus:ring-[#fe6019]/20 h-5 w-5 cursor-pointer"
-                          checked={currentItems.length > 0 && selectedLinks.length === currentItems.length}
+                          checked={filteredLinks.length > 0 && selectedLinks.length === filteredLinks.length}
                           onChange={toggleAllSelection}
                         />
                       </label>
@@ -401,8 +416,8 @@ const RejectedRequests = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {currentItems.length > 0 ? (
-                  currentItems.map((link, index) => (
+                {filteredLinks.length > 0 ? (
+                  filteredLinks.map((link, index) => (
                     <motion.tr 
                       key={link._id || Math.random().toString()} 
                       className={`hover:bg-[#fff5f0] transition-all duration-200 ${
@@ -529,63 +544,18 @@ const RejectedRequests = () => {
           )}
 
           {/* Pagination controls */}
-          {filteredLinks.length > itemsPerPage && (
+          {pagination.totalPages > 1 && (
             <motion.div 
               className="flex justify-center mt-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="flex space-x-1">
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </motion.button>
-                
-                {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = index + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + index;
-                  } else {
-                    pageNumber = currentPage - 2 + index;
-                  }
-                  
-                  return (
-                    <motion.button
-                      key={pageNumber}
-                      className={`h-9 w-9 rounded-md border ${
-                        currentPage === pageNumber 
-                          ? 'bg-[#fe6019] text-white border-[#fe6019]' 
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-[#fff5f0]'
-                      }`}
-                      onClick={() => paginate(pageNumber)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {pageNumber}
-                    </motion.button>
-                  );
-                })}
-                
-                <motion.button
-                  className="p-2 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#fff5f0] disabled:opacity-50"
-                  onClick={() => paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </motion.button>
-              </div>
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(newPage) => setCurrentPage(newPage)}
+              />
             </motion.div>
           )}
         </>

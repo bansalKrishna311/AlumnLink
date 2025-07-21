@@ -46,6 +46,7 @@ const LoginPage = () => {
       response_type: "code",
       client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
       redirect_uri: "http://139.59.66.21:4000/api/v1/auth/linkedinCallback",
+      redirect_uri: "https://api.alumnlink.com/api/v1/auth/linkedinCallback",
       scope: "openid email profile",
     });
     window.location.href = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
