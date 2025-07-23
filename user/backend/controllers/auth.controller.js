@@ -235,41 +235,62 @@ export const resetPassword = async (req, res) => {
 };
 
 export const getAccessToken = async(code) => {
-	const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-		},
-		body: new URLSearchParams({
-			grant_type: 'authorization_code',
-			code : code,
-			redirect_uri: `http://localhost:4000/api/v1/auth/linkedinCallback`,
-			client_id: process.env.LINKEDIN_CLIENT_ID,
-			client_secret: process.env.LINKEDIN_CLIENT_SECRET,
-		}),
-	});
-	if(!response.ok) {
-		throw new Error(response.statusText);
+	try {
+		const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({
+				grant_type: 'authorization_code',
+				code : code,
+				redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
+				client_id: process.env.LINKEDIN_CLIENT_ID,
+				client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+			}),
+		});
+		
+		if(!response.ok) {
+			const errorText = await response.text();
+			console.error('LinkedIn access token error:', errorText);
+			throw new Error(`LinkedIn OAuth error: ${response.status} - ${errorText}`);
+		}
+		
+		const accessToken = await response.json();
+		return accessToken;
+	} catch (error) {
+		console.error('Error getting LinkedIn access token:', error);
+		throw error;
 	}
-	const accessToken = await response.json();
-	return accessToken
 }
 
 export const linkedInCallback = async (req, res) => {
 	try {
-		const { code } = req.query;
+		const { code, error: linkedinError, error_description } = req.query;
+
+		// Check for LinkedIn OAuth errors
+		if (linkedinError) {
+			console.error('LinkedIn OAuth error:', linkedinError, error_description);
+			return res.redirect(`${process.env.CLIENT_REDIRECT_URL}?error=linkedin_oauth_failed&message=${encodeURIComponent(error_description || linkedinError)}`);
+		}
 
 		if (!code) {
+			console.error('No authorization code received from LinkedIn');
 			return res.status(400).json({ message: "Authorization code is required" });
 		}
 
+		console.log('LinkedIn callback received code:', code.substring(0, 10) + '...');
+
 		// Step 1: Get access token from LinkedIn
 		const accessToken = await getAccessToken(code);
+		console.log('LinkedIn access token received successfully');
 
 		// Step 2: Get LinkedIn user data
 		const userdata = await getLinkedInUserData(accessToken.access_token);
+		console.log('LinkedIn user data received for email:', userdata?.email);
 
 		if (!userdata || !userdata.email) {
+			console.error('Failed to fetch user data from LinkedIn:', userdata);
 			return res.status(400).json({ message: "Failed to fetch user data from LinkedIn" });
 		}
 
@@ -331,30 +352,88 @@ export const linkedInCallback = async (req, res) => {
 		res.cookie("jwt-AlumnLink", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 			secure: process.env.NODE_ENV === "production",
+			domain: process.env.NODE_ENV === "production" ? ".alumnlink.com" : undefined
 		});
 
-		return res.redirect('http://localhost:5173/');
+		console.log('LinkedIn auth successful, redirecting to:', process.env.CLIENT_REDIRECT_URL);
+		return res.redirect(process.env.CLIENT_REDIRECT_URL);
 	} catch (error) {
 		console.error("LinkedIn callback error:", error);
 
 		if (!res.headersSent) {
-			return res.status(500).json({ message: "Internal server error" });
+			return res.redirect(`${process.env.CLIENT_REDIRECT_URL}?error=linkedin_auth_failed&message=${encodeURIComponent(error.message)}`);
 		}
 	}
 };
 
-const getLinkedInUserData = async (accessToken) => {
-	const response = await fetch('https://api.linkedin.com/v2/userinfo', {
-		method: 'get',
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-		},
-	});
-	if (!response.ok) {
-		throw new Error(response.statusText);
+// LinkedIn OAuth initiation endpoint
+export const initiateLinkedInAuth = async (req, res) => {
+	try {
+		const params = new URLSearchParams({
+			response_type: 'code',
+			client_id: process.env.LINKEDIN_CLIENT_ID,
+			redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
+			scope: 'openid email profile',
+			state: crypto.randomBytes(16).toString('hex') // CSRF protection
+		});
+		
+		const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+		console.log('Initiating LinkedIn auth with URL:', linkedinAuthUrl);
+		res.redirect(linkedinAuthUrl);
+	} catch (error) {
+		console.error("LinkedIn auth initiation error:", error);
+		res.status(500).json({ message: "Failed to initiate LinkedIn authentication" });
 	}
-	const userData = await response.json();
-	return userData;
+};
+
+// Debug endpoint to check LinkedIn configuration
+export const debugLinkedInConfig = async (req, res) => {
+	try {
+		const config = {
+			clientId: process.env.LINKEDIN_CLIENT_ID ? 'Set' : 'Not set',
+			clientSecret: process.env.LINKEDIN_CLIENT_SECRET ? 'Set' : 'Not set',
+			redirectUri: process.env.LINKEDIN_REDIRECT_URI,
+			clientRedirectUrl: process.env.CLIENT_REDIRECT_URL,
+			nodeEnv: process.env.NODE_ENV
+		};
+		
+		res.json({ 
+			message: "LinkedIn configuration debug info",
+			config: config
+		});
+	} catch (error) {
+		console.error("Debug endpoint error:", error);
+		res.status(500).json({ message: "Debug endpoint failed" });
+	}
+};
+
+const getLinkedInUserData = async (accessToken) => {
+	try {
+		const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${accessToken}`,
+				'Content-Type': 'application/json',
+			},
+		});
+		
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error('LinkedIn userinfo error:', response.status, errorText);
+			throw new Error(`LinkedIn API error: ${response.status} - ${errorText}`);
+		}
+		
+		const userData = await response.json();
+		console.log('LinkedIn user data received:', {
+			name: userData.name,
+			email: userData.email,
+			picture: userData.picture ? 'present' : 'not present'
+		});
+		return userData;
+	} catch (error) {
+		console.error('Error fetching LinkedIn user data:', error);
+		throw error;
+	}
 };

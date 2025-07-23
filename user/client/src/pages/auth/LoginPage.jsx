@@ -42,10 +42,13 @@ const LoginPage = () => {
   };
 
   const handleLinkedin = () => {
+    // Option 1: Use backend endpoint (recommended for better security)
+    // window.location.href = `${import.meta.env.VITE_BACKEND_URL || 'https://api.alumnlink.com'}/api/v1/auth/linkedin`;
+    
+    // Option 2: Direct LinkedIn OAuth (current implementation)
     const params = new URLSearchParams({
       response_type: "code",
       client_id: import.meta.env.VITE_LINKEDIN_CLIENT_ID,
-      redirect_uri: "http://139.59.66.21:4000/api/v1/auth/linkedinCallback",
       redirect_uri: "https://api.alumnlink.com/api/v1/auth/linkedinCallback",
       scope: "openid email profile",
     });
