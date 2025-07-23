@@ -12,11 +12,21 @@ import notificationRoutes from "./routes/notification.route.js";
 import LinkRoutes from "./routes/Link.route.js";
 import messageRoutes from "./routes/message.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import leadRoutes from "./routes/lead.route.js";
 import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
-import connectDB from "./lib/db.js";
+import connectDB, { updateLastActivity, isConnectionHealthy } from "./lib/db.js";
+import keepAliveService from "./lib/keepAlive.js";
+import databaseMonitor from "./lib/dbMonitor.js";
+import m0Optimizer from "./lib/m0TierOptimizer.js";
+import {
+  dbActivityMiddleware,
+  dbHealthMiddleware,
+  queryOptimizationMiddleware,
+  connectionPoolMiddleware
+} from "./middleware/dbActivity.middleware.js";
 
 dotenv.config();
 
@@ -49,9 +59,46 @@ if (process.env.NODE_ENV !== "production") {
 app.use(express.json({ limit: "2mb" })); 
 app.use(cookieParser());
 
+// Add database optimization middleware
+app.use(connectionPoolMiddleware);
+app.use(queryOptimizationMiddleware);
+app.use(dbHealthMiddleware);
+
 // Health check endpoint that doesn't require DB
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", message: "AlumnLink API is healthy" });
+  const healthStatus = {
+    status: "ok",
+    message: "AlumnLink API is healthy",
+    timestamp: new Date().toISOString(),
+    dbHealth: isConnectionHealthy(),
+    keepAlive: keepAliveService.getStats()
+  };
+  res.status(200).json(healthStatus);
+});
+
+// MongoDB connection status endpoint with M0 optimization stats
+app.get("/health/db", async (req, res) => {
+  try {
+    const dbConnection = await getDbConnection();
+    const isHealthy = isConnectionHealthy();
+    
+    res.status(200).json({
+      status: isHealthy ? "healthy" : "unhealthy",
+      connection: dbConnection ? "connected" : "disconnected",
+      keepAlive: keepAliveService.getStats(),
+      performance: databaseMonitor.getStats(),
+      m0Optimization: m0Optimizer.getStats(),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "error",
+      message: error.message,
+      keepAlive: keepAliveService.getStats(),
+      m0Optimization: m0Optimizer.getStats(),
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Connect to database lazily - only when needed
@@ -67,10 +114,10 @@ const getDbConnection = () => {
   return dbPromise;
 };
 
-// Middleware to handle database connection
+// Middleware to handle database connection with activity tracking
 const withDb = async (req, res, next) => {
-  // Skip DB connection for health check
-  if (req.path === '/health') {
+  // Skip DB connection for health check endpoints
+  if (req.path === '/health' || req.path === '/health/db') {
     return next();
   }
 
@@ -78,22 +125,28 @@ const withDb = async (req, res, next) => {
     // Set a timeout for the DB connection
     const connectionPromise = getDbConnection();
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('DB connection timeout')), 3000)
+      setTimeout(() => reject(new Error('DB connection timeout')), 5000)
     );
 
     await Promise.race([connectionPromise, timeoutPromise]);
+    
+    // Track database activity
+    updateLastActivity();
+    
     next();
   } catch (error) {
     console.error('Database connection failed:', error);
     return res.status(503).json({ 
       error: 'Database connection failed', 
-      message: 'Service temporarily unavailable' 
+      message: 'Service temporarily unavailable',
+      retryAfter: 30 // seconds
     });
   }
 };
 
-// Apply the DB connection middleware to all routes
+// Apply the DB connection middleware to all routes except health checks
 app.use(withDb);
+app.use(dbActivityMiddleware);
 
 // Maintenance tasks - executed asynchronously and very rarely
 const runMaintenanceTasks = () => {
@@ -132,15 +185,41 @@ app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
 app.use('/api/v1/messages', verifySession, messageRoutes);
 app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/leads', verifySession, leadRoutes);
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
   // Connect to DB immediately in development
   connectDB().then(() => {
+    // Start monitoring services in development
+    keepAliveService.start();
+    databaseMonitor.startMonitoring();
+    m0Optimizer.init();
+    
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log('Auto-cleanup scheduler initialized');
+      console.log('MongoDB keep-alive service started');
+      console.log('Database performance monitoring started');
+      console.log('M0 Tier Optimizer initialized');
     });
+  }).catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
+} else {
+  // In production (serverless), start services when first request comes in
+  let servicesStarted = false;
+  
+  app.use((req, res, next) => {
+    if (!servicesStarted) {
+      servicesStarted = true;
+      keepAliveService.start();
+      databaseMonitor.startMonitoring();
+      m0Optimizer.init();
+      console.log('Database services started for production');
+    }
+    next();
   });
 }
 

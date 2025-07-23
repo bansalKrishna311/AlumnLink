@@ -11,6 +11,8 @@ import PageTitle from "../utils/PageTitle";
 import CorporateAnalysis from "@/superadmin/Corporates/CorporateAnalysis";
 import SchoolAnalysis from "@/superadmin/Schools/SchoolAnalysis";
 import ContactRequests from "@/superadmin/ContactRequests/ContactRequests";
+import LeadManagement from "../superadmin/LeadManagement/LeadManagement";
+import LeadDashboard from "../superadmin/LeadManagement/LeadDashboard";
 
 export const superAdminRoutes = [
    
@@ -113,6 +115,24 @@ export const superAdminRoutes = [
             <DefaultLayout>
                 <PageTitle title="Contact Requests | AlumnLink" />
                 <ContactRequests />
+            </DefaultLayout>
+        )
+    },
+    { 
+        path: "/lead-management", 
+        element: (
+            <DefaultLayout>
+                <PageTitle title="Lead Management | AlumnLink" />
+                <LeadManagement />
+            </DefaultLayout>
+        )
+    },
+    { 
+        path: "/lead-dashboard", 
+        element: (
+            <DefaultLayout>
+                <PageTitle title="Lead Dashboard | AlumnLink" />
+                <LeadDashboard />
             </DefaultLayout>
         )
     },
