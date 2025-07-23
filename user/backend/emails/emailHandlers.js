@@ -16,7 +16,7 @@ export const sendWelcomeEmail = async (email, name, profileUrl) => {
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "Welcome to AlumnLink",
+			subject: "Welcome to AlumnLink – Your Alumni Community Awaits!",
 			html: createWelcomeEmailTemplate(name, profileUrl),
 			category: "welcome",
 		});
@@ -40,7 +40,7 @@ export const sendCommentNotificationEmail = async (
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "New Comment on Your Post",
+			subject: "Someone commented on your post in AlumnLink!",
 			html: createCommentNotificationEmailTemplate(recipientName, commenterName, postUrl, commentContent),
 			category: "comment_notification",
 		});
@@ -57,7 +57,7 @@ export const sendLinkAcceptedEmail = async (senderEmail, senderName, recipientNa
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: `${recipientName} accepted your Link request`,
+			subject: `Your alumni connection with ${recipientName} is live!`,
 			html: createLinkAcceptedEmailTemplate(senderName, recipientName, profileUrl),
 			category: "Link_accepted",
 		});
@@ -69,8 +69,8 @@ export const sendResetPasswordEmail = async (email, name, resetUrl) => {
 		await mailtrapClient.send({
 			from: sender,
 			to: [{ email }],
-			subject: "Reset Your Password",
-			html: `<p>Hi ${name},</p><p>Please click the link below to reset your password:</p><a href="${resetUrl}">Reset Password</a>`,
+			subject: "Reset Your AlumnLink Password",
+			html: `<p>Hi ${name},</p><p>To keep your alumni account secure, please click the link below to reset your password:</p><a href="${resetUrl}">Reset Password</a><p>If you did not request this, please ignore this email.</p>`,
 		});
 	} catch (error) {
 		console.error("Error sending reset password email:", error);
@@ -85,7 +85,7 @@ export const sendLikeNotificationEmail = async (recipientEmail, recipientName, l
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "New Reaction on Your Post",
+			subject: "Your post received a new reaction on AlumnLink!",
 			html: createLikeNotificationEmailTemplate(recipientName, likerName, postUrl, postContent),
 			category: "like_notification",
 		});
@@ -103,7 +103,7 @@ export const sendReplyNotificationEmail = async (recipientEmail, recipientName, 
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "New Reply to Your Comment",
+			subject: "Someone replied to your comment on AlumnLink!",
 			html: createReplyNotificationEmailTemplate(recipientName, replierName, postUrl, replyContent),
 			category: "reply_notification",
 		});
@@ -121,7 +121,7 @@ export const sendMentionNotificationEmail = async (recipientEmail, recipientName
 		const response = await mailtrapClient.send({
 			from: sender,
 			to: recipient,
-			subject: "You've Been Mentioned in a Post",
+			subject: "You were mentioned in an AlumnLink post!",
 			html: createMentionNotificationEmailTemplate(recipientName, mentionerName, postUrl, postContent),
 			category: "mention_notification",
 		});
@@ -134,7 +134,7 @@ export const sendMentionNotificationEmail = async (recipientEmail, recipientName
 
 export const sendPostStatusNotificationEmail = async (recipientEmail, recipientName, reviewerName, postStatus, postUrl, postContent, feedback) => {
 	const recipient = [{ email: recipientEmail }];
-	const subject = postStatus === 'approved' ? "Your Post Has Been Approved" : "Your Post Has Been Rejected";
+	const subject = postStatus === 'approved' ? "Your AlumnLink post is now live!" : "Your AlumnLink post was not approved";
 
 	try {
 		const response = await mailtrapClient.send({
