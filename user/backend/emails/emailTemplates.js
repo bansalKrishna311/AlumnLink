@@ -1,3 +1,6 @@
+import logo from '../../client/public/logo copy.png';
+
+
 export function createWelcomeEmailTemplate(name, profileUrl) {
   return `
   <!DOCTYPE html>
@@ -9,7 +12,7 @@ export function createWelcomeEmailTemplate(name, profileUrl) {
   </head>
   <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #000; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F3F2EF;">
     <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-      <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;">
+      <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;">
       <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to AlumnLink!</h1>
     </div>
     <div style="background-color: #fff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.07);">
@@ -46,7 +49,7 @@ export const createLinkAcceptedEmailTemplate = (senderName, recipientName, profi
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #000; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F3F2EF;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">Link Accepted!</h1>
   </div>
   <div style="background-color: #fff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.07);">
@@ -80,7 +83,7 @@ export const createCommentNotificationEmailTemplate = (recipientName, commenterN
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">New Comment on Your Post</h1>
   </div>
   <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -109,7 +112,7 @@ export const createLikeNotificationEmailTemplate = (recipientName, likerName, po
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">New Reaction on Your Post</h1>
   </div>
   <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -138,7 +141,7 @@ export const createReplyNotificationEmailTemplate = (recipientName, replierName,
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">New Reply to Your Comment</h1>
   </div>
   <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -167,7 +170,7 @@ export const createMentionNotificationEmailTemplate = (recipientName, mentionerN
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">You've Been Mentioned</h1>
   </div>
   <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -196,7 +199,7 @@ export const createPostStatusEmailTemplate = (recipientName, reviewerName, postS
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(90deg, #fe6019 0%, #fd8e5e 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="../../client/public/logo copy.png" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
+    <img src="${logo}" alt="AlumnLink Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
     <h1 style="color: white; margin: 0; font-size: 28px;">Post ${postStatus === 'approved' ? 'Approved' : 'Rejected'}</h1>
   </div>
   <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
