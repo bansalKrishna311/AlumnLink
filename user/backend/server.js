@@ -12,6 +12,7 @@ import notificationRoutes from "./routes/notification.route.js";
 import LinkRoutes from "./routes/Link.route.js";
 import messageRoutes from "./routes/message.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import leadRoutes from "./routes/lead.route.js";
 import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
@@ -184,6 +185,7 @@ app.use("/api/v1/Links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
 app.use('/api/v1/messages', verifySession, messageRoutes);
 app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/leads', verifySession, leadRoutes);
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
