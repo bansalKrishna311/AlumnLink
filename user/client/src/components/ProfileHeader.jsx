@@ -15,6 +15,7 @@ const ALLOWED_LOCATIONS = [
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
+  const [previewImg, setPreviewImg] = useState(null); // For image preview modal
   const queryClient = useQueryClient();
   const navigate = useNavigate(); // Initialize navigate
 
@@ -156,11 +157,28 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 
   return (
     <div className="bg-white shadow rounded-lg mb-6">
+      {/* Image Preview Modal */}
+      {previewImg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={() => setPreviewImg(null)}>
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <img src={previewImg} alt="Preview" className="max-h-[80vh] max-w-[90vw] rounded-lg shadow-lg" />
+            <button
+              className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-200"
+              onClick={() => setPreviewImg(null)}
+            >
+              <X size={24} className="text-[#fe6019]" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
-        className="relative h-48 rounded-t-lg bg-cover bg-center"
+        className="relative h-48 rounded-t-lg bg-cover bg-center cursor-pointer"
         style={{
           backgroundImage: `url('${editedData.bannerImg || userData.bannerImg || "/banner.png"}')`,
         }}
+        onClick={() => setPreviewImg(editedData.bannerImg || userData.bannerImg || "/banner.png")}
+        title="Click to preview banner image"
       >
         {isEditing && (
           <label className="absolute top-2 right-2 bg-white p-2 rounded-full shadow cursor-pointer hover:bg-[#fe6019]/10">
@@ -171,6 +189,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
               name="bannerImg"
               onChange={handleImageChange}
               accept="image/*"
+              onClick={e => e.stopPropagation()} // Prevent modal open on file select
             />
           </label>
         )}
@@ -180,7 +199,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
             <Edit3
               size={24}
               className="cursor-pointer text-[#fe6019]"
-              onClick={() => setIsEditing(true)}
+              onClick={e => { e.stopPropagation(); setIsEditing(true); }}
             />
           </div>
         )}
@@ -189,9 +208,11 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
       <div className="p-4">
         <div className="relative -mt-20 mb-4">
           <img
-            className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-lg"
+            className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-lg cursor-pointer"
             src={editedData.profilePicture || userData.profilePicture || "/avatar.png"}
             alt={userData.name}
+            onClick={() => setPreviewImg(editedData.profilePicture || userData.profilePicture || "/avatar.png")}
+            title="Click to preview profile picture"
           />
 
           {isEditing && (
@@ -203,6 +224,7 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
                 name="profilePicture"
                 onChange={handleImageChange}
                 accept="image/*"
+                onClick={e => e.stopPropagation()} // Prevent modal open on file select
               />
             </label>
           )}
