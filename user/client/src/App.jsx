@@ -56,14 +56,16 @@ function App() {
     return (
         <ErrorBoundary>
             <Routes>
+                {/* Root path redirect */}
+                <Route path="/" element={<Navigate to="/Landing" replace />} />
            
-            <Route path="/Landing" element={<Layout />}>
-  <Route index element={<LandHome />} /> {/* /Landing */}
-  <Route path="about" element={<About />} /> {/* /Landing/about */}
-  <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
-  <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
-  <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
-</Route>
+                <Route path="/Landing" element={<Layout />}>
+                    <Route index element={<LandHome />} /> {/* /Landing */}
+                    <Route path="about" element={<About />} /> {/* /Landing/about */}
+                    <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
+                    <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
+                    <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
+                </Route>
 
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />

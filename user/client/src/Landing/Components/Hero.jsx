@@ -60,13 +60,14 @@ const HeroSection = ({ children }) => (
 
 // Main Hero component
 const Hero = () => {
-
-  return (
-    <div className="relative overflow-hidden">
-      {/* Hero Section */}
-      <HeroSection>
-        {/* Hero content - now in top-bottom layout */}
-        <div className="flex flex-col items-center text-center w-full h-full justify-around py-20">
+  // Add error boundary for the component
+  try {
+    return (
+      <div className="relative overflow-hidden">
+        {/* Hero Section */}
+        <HeroSection>
+          {/* Hero content - now in top-bottom layout */}
+          <div className="flex flex-col items-center text-center w-full h-full justify-around py-20">
           {/* Top badge */}
           <motion.div 
             className="inline-flex items-center gap-2 bg-white border border-gray-200 py-2 px-4 rounded-full shadow-sm"
@@ -83,8 +84,45 @@ const Hero = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-3xl mx-auto space-y-8"
+            className="max-w-3xl mx-auto space-y-8 relative"
           >
+            {/* Graduation Illustration - Left Side */}
+            <div className="absolute -left-52 top-1/2 transform -translate-y-1/2 opacity-25 pointer-events-none hidden lg:block">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, x: -50 }}
+                animate={{ scale: 1, opacity: 0.25, x: 0 }}
+                transition={{ delay: 0.5, duration: 1.5, ease: "easeOut" }}
+                className="relative w-64 h-64"
+              >
+                <motion.img
+                  src="/herodoods.png"
+                  alt="Graduation elements"
+                  className="w-full h-full object-contain filter grayscale"
+                  style={{
+                    filter: 'grayscale(100%) sepia(100%) hue-rotate(15deg) saturate(200%) brightness(0.8)',
+                  }}
+                  animate={{ 
+                    y: [-2, 2, -2],
+                    rotate: [-1, 1, -1],
+                    x: [-1, 1, -1]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 8, 
+                    ease: "easeInOut",
+                    delay: 2
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+                {/* Subtle glow effect behind the image */}
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-[#fe6019]/10 via-transparent to-transparent rounded-full blur-xl"
+                  style={{ transform: 'scale(1.2)' }}
+                />
+              </motion.div>
+            </div>
             <motion.h1 
               className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900"
               variants={itemVariants}
@@ -167,6 +205,17 @@ const Hero = () => {
       </HeroSection>
     </div>
   );
+  } catch (error) {
+    console.error('Error rendering Hero component:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to AlumnLink</h1>
+          <p className="text-gray-600">Enterprise Alumni Networking Platform</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Hero;

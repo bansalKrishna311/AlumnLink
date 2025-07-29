@@ -13,7 +13,7 @@ const HangingCap = () => {
         repeat: Infinity, 
         duration: 8, 
         ease: "easeInOut",
-        delay: 3
+        delay: 2
       }}
     >
       {/* Enhanced Hanging Rope */}
@@ -32,7 +32,7 @@ const HangingCap = () => {
           }}
           transition={{ 
             repeat: Infinity, 
-            duration: 6, 
+            duration: 8, 
             ease: "easeInOut",
             delay: 2
           }}
@@ -49,14 +49,14 @@ const HangingCap = () => {
         <motion.div 
           className="relative w-[100px] h-[64px] mx-auto"
           animate={{ 
-            rotateZ: [-3, 3, -3],
+            rotateZ: [-2, 2, -2],
             y: [-2, 2, -2]
           }}
           transition={{ 
             repeat: Infinity, 
-            duration: 7, 
+            duration: 8, 
             ease: "easeInOut",
-            delay: 4
+            delay: 2
           }}
         >
 
