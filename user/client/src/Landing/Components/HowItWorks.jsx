@@ -9,20 +9,20 @@ const HowItWorks = () => {
   const howItWorksSteps = [
     {
       step: 1,
-      title: "Set up your institution",
-      description: "Configure your branding, import alumni data, and customize your community portal to match your institution's identity.",
+      title: "Schedule a demo",
+      description: "Connect with our team to understand how AlumnLink can transform your institution's alumni engagement and explore custom solutions.",
       icon: <Users size={32} />
     },
     {
       step: 2,
-      title: "Engage your alumni",
-      description: "Launch discussions, create events, share job opportunities, and send personalized communications to drive engagement.",
+      title: "Custom implementation",
+      description: "We'll work with your team to configure the platform, import your alumni data, and customize features to match your institution's needs.",
       icon: <BarChart2 size={32} />
     },
     {
       step: 3,
-      title: "Grow your network",
-      description: "Analyze engagement data, optimize your approach, and continuously expand your alumni community's reach and impact.",
+      title: "Launch & grow",
+      description: "Go live with your alumni network, engage your community with events and discussions, and leverage analytics to optimize growth.",
       icon: <Award size={32} />
     }
   ];

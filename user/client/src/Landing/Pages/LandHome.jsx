@@ -7,7 +7,7 @@ import Pricing from "../Components/Pricing";
 import FAQSection from "../Components/FAQSection";
 import CallToAction from "../Components/CallToAction";
 import FeatureGrid from "../Components/FeatureGrid";
-import Testimonials from "../Components/Testimonials";
+import Testimonials from "../Components/TestimonialsClean";
 import AlumnGPT from "../Components/AlumnGPT";
 
 const LandHome = () => {
@@ -66,12 +66,12 @@ const LandHome = () => {
 
           {/* Final CTA */}
           <CallToAction
-            title="Ready to strengthen your alumni community?"
-            description="Start your free trial today and see how AlumnLink can transform your alumni engagement."
-            primaryButtonText="Get Started Free"
-            primaryButtonLink="/signup"
-            secondaryButtonText="Schedule a Demo"
-            secondaryButtonLink="/landing/contact"
+            title="Ready to transform your alumni network?"
+            description="Join institutions across India who are building stronger alumni communities with AlumnLink."
+            primaryButtonText="Schedule Demo"
+            primaryButtonLink="/landing/contact"
+            secondaryButtonText="Learn More"
+            secondaryButtonLink="/landing/about"
           />
         </motion.div>
 
