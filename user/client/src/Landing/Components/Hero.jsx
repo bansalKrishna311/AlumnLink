@@ -62,7 +62,7 @@ const Hero = () => {
       {/* Hero Section */}
       <HeroSection>
         {/* Hero content - now in top-bottom layout */}
-        <div className="flex flex-col items-center text-center w-full h-full justify-between py-20">
+        <div className="flex flex-col items-center text-center w-full h-full justify-around py-20">
           {/* Top badge */}
           <motion.div 
             className="inline-flex items-center gap-2 bg-white border border-gray-200 py-2 px-4 rounded-full shadow-sm"
@@ -101,7 +101,7 @@ const Hero = () => {
               variants={itemVariants}
             >
               <Link
-                to="/login"
+                to="/Landing/contact"
                 className="px-6 py-3 bg-[#fe6019] hover:bg-[#e55017] text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg"
               >
                 Request Demo
@@ -118,7 +118,7 @@ const Hero = () => {
             </motion.div>
 
             <motion.div 
-              className="flex flex-wrap gap-3 justify-center"
+              className="flex flex-wrap gap-5 justify-center py-8"
               variants={itemVariants}
             >
               <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm">
