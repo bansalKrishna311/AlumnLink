@@ -49,6 +49,10 @@ const HeroSection = ({ children }) => (
     {/* Subtle background accent */}
     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-96 bg-gradient-to-b from-[#fe6019]/5 to-transparent"></div>
     
+    {/* Very subtle orange undertone gradient */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#fe6019]/5 via-transparent to-[#fe6019]/2"></div>
+    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#fe6019]/5 to-transparent"></div>
+    
     {/* Hanging Alumni Hat Element */}
     <HangingCap />
     
