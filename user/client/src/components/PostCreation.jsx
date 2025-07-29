@@ -119,8 +119,13 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [closeModal]);
 
-  
+
   const handlePostCreation = async () => {
+    if (!selectedLinks) {
+    toast.error("Please select a relevant link before submitting.");
+    return;
+  }
+  
   try {
     const postData = {
       content,
@@ -315,8 +320,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
           options={userLinks}
           value={selectedLinks}
           onChange={(selectedOption) => setSelectedLinks(selectedOption)}
-          className="mb-4"
+          className={`mb-4 ${!selectedLinks ? 'border border-red-500 rounded-md' : ''}`}
           placeholder="Select relevant links..."
+          isSearchable={false}
         />
       </>
     );
