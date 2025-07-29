@@ -119,29 +119,32 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [closeModal]);
 
+  
   const handlePostCreation = async () => {
-    try {
-      const postData = {
-        content,
-        type,
-        links: selectedLinks ? [selectedLinks.value] : []
-      };
+  try {
+    const postData = {
+      content,
+      type,
+      links: selectedLinks ? [selectedLinks.value] : []
+    };
 
-      if (image) postData.image = await readFileAsDataURL(image);
+    if (image) postData.image = await readFileAsDataURL(image);
 
-      // Add type-specific details
-      const detailsMap = {
-        job: { jobDetails: { companyName, jobTitle, jobLocation } },
-        internship: { internshipDetails: { companyName, internshipDuration } },
-        event: { eventDetails: { eventName, eventDate, eventLocation } },
-      };
+    // Add type-specific details — stringified!
+    const detailsMap = {
+      job: { jobDetails: JSON.stringify({ companyName, jobTitle, jobLocation }) },
+      internship: { internshipDetails: JSON.stringify({ companyName, internshipDuration }) },
+      event: { eventDetails: JSON.stringify({ eventName, eventDate, eventLocation }) },
+    };
 
-      Object.assign(postData, detailsMap[type] || {});
-      createPostMutation(postData);
-    } catch (error) {
-      console.error("Error in handlePostCreation:", error);
-    }
-  };
+    Object.assign(postData, detailsMap[type] || {});
+    
+    createPostMutation(postData);
+  } catch (error) {
+    console.error("Error in handlePostCreation:", error);
+  }
+};
+
 
   const resetForm = () => {
     setContent("");

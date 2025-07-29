@@ -40,7 +40,13 @@ const validatePassword = (password) => {
 
 export const signup = async (req, res) => {
 	try {
-		const { name, username, email, password, role, adminType, location } = req.body;
+		let { name, username, email, password, role, adminType, location } = req.body;
+		// Remove leading/trailing spaces from username
+		if (username) username = username.trim();
+		// Prevent spaces in username
+		if (username && username.includes(" ")) {
+			return res.status(400).json({ message: "Username must not contain spaces" });
+		}
 
 		if (!name || !username || !email || !password || !location) {
 			return res.status(400).json({ message: "All fields are required" });
@@ -117,7 +123,13 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
 	try {
-		const { username, password } = req.body;
+		let { username, password } = req.body;
+		// Remove leading/trailing spaces from username
+		if (username) username = username.trim();
+		// Prevent spaces in username
+		if (username && username.includes(" ")) {
+			return res.status(400).json({ message: "Username must not contain spaces" });
+		}
 
 		const user = await User.findOne({ username });
 		if (!user) return res.status(400).json({ message: "Invalid credentials" });
