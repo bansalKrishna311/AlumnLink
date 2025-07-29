@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, GraduationCap, Building2, School } from 'lucide-react';
+import HangingCap from './HangingCap';
 
 // Animation variants
 const containerVariants = {
@@ -47,6 +48,9 @@ const HeroSection = ({ children }) => (
   <div className="relative bg-gradient-to-b from-gray-50 to-white h-screen">
     {/* Subtle background accent */}
     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-96 bg-gradient-to-b from-[#fe6019]/5 to-transparent"></div>
+    
+    {/* Hanging Alumni Hat Element */}
+    <HangingCap />
     
     <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10 h-full flex items-center justify-center">
       {children}
