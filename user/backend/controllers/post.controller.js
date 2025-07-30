@@ -1,6 +1,7 @@
 // POST.CONTROLLER.JS
 
 import cloudinary from "../lib/cloudinary.js";
+import { uploadToSpaces, uploadBase64ToSpaces } from "../lib/digitalocean.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import mongoose from "mongoose";
@@ -94,6 +95,9 @@ export const getFeedPosts = async (req, res) => {
 
 // Create a post
 export const createPost = async (req, res) => {
+  const requestStartTime = Date.now();
+  console.log('🚀 Starting post creation...');
+  
   try {
     const { content, type, links, images: imagesFromBody, jobDetails, internshipDetails, eventDetails } = req.body;
     const userId = req.user.id;
@@ -122,32 +126,48 @@ export const createPost = async (req, res) => {
 
     // Add images if provided (support both JSON and multipart)
     postData.images = [];
-    // If files are uploaded via multipart form-data
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-        try {
-          const uploadResponse = await cloudinary.uploader.upload(base64Image, {
-            folder: "alumnlink/posts",
-          });
-          postData.images.push(uploadResponse.secure_url);
-        } catch (error) {
-          console.error("Error uploading image to Cloudinary:", error);
-          return res.status(500).json({ message: "Error uploading image" });
-        }
+    
+    try {
+      // Upload all images in parallel for maximum speed
+      if (req.files && req.files.length > 0) {
+        console.log(`🚀 Uploading ${req.files.length} files in parallel...`);
+        
+        // Create upload promises for all files simultaneously
+        const uploadPromises = req.files.map(file => 
+          uploadToSpaces(
+            file.buffer, 
+            file.originalname, 
+            file.mimetype, 
+            'posts'
+          )
+        );
+        
+        // Wait for all uploads to complete in parallel
+        const uploadedUrls = await Promise.all(uploadPromises);
+        postData.images = uploadedUrls;
+        
+        console.log(`✅ Successfully uploaded ${uploadedUrls.length} images in parallel`);
+        
+      } else if (imagesFromBody && Array.isArray(imagesFromBody) && imagesFromBody.length > 0) {
+        console.log(`🚀 Uploading ${imagesFromBody.length} base64 images in parallel...`);
+        
+        // Create upload promises for all base64 images simultaneously
+        const uploadPromises = imagesFromBody.map(img => 
+          uploadBase64ToSpaces(img, 'posts')
+        );
+        
+        // Wait for all uploads to complete in parallel
+        const uploadedUrls = await Promise.all(uploadPromises);
+        postData.images = uploadedUrls;
+        
+        console.log(`✅ Successfully uploaded ${uploadedUrls.length} base64 images in parallel`);
       }
-    } else if (imagesFromBody && Array.isArray(imagesFromBody) && imagesFromBody.length > 0) {
-      for (const img of imagesFromBody) {
-        try {
-          const uploadResponse = await cloudinary.uploader.upload(img, {
-            folder: "alumnlink/posts",
-          });
-          postData.images.push(uploadResponse.secure_url);
-        } catch (error) {
-          console.error("Error uploading image to Cloudinary:", error);
-          return res.status(500).json({ message: "Error uploading image" });
-        }
-      }
+    } catch (error) {
+      console.error("❌ Error uploading images to DigitalOcean Spaces:", error);
+      return res.status(500).json({ 
+        message: "Error uploading images", 
+        error: error.message 
+      });
     }
 
     // Add type-specific details
@@ -167,31 +187,53 @@ export const createPost = async (req, res) => {
 
     postData.status = user.isAdmin ? "approved" : "pending";
 
-    // Create post
+    console.log('💾 Creating post in database...');
+    const dbStartTime = Date.now();
+    
+    // Create post and handle admin notifications in parallel if needed
     const post = await Post.create(postData);
+    const dbTime = Date.now() - dbStartTime;
+    console.log(`✅ Post created in database in ${dbTime}ms`);
 
-    // If user is not admin, create notification for admins
+    // If user is not admin, create notifications for admins (in parallel, don't wait)
     if (!user.isAdmin) {
-      // Find all admin users
-      const admins = await User.find({ isAdmin: true });
-      
-      // Create notifications for each admin
-      const notifications = admins.map(admin => ({
-        recipient: admin._id,
-        type: "post_approval",
-        content: `New post from ${user.name} requires approval`,
-        reference: {
-          type: "post",
-          id: post._id
+      // Don't await this - let it run in background for faster response
+      setImmediate(async () => {
+        try {
+          console.log('🔔 Creating admin notifications in background...');
+          // Find all admin users
+          const admins = await User.find({ isAdmin: true });
+          
+          // Create notifications for each admin
+          const notifications = admins.map(admin => ({
+            recipient: admin._id,
+            type: "post_approval",
+            content: `New post from ${user.name} requires approval`,
+            reference: {
+              type: "post",
+              id: post._id
+            }
+          }));
+          
+          if (notifications.length > 0) {
+            await Notification.insertMany(notifications);
+            console.log(`✅ Created ${notifications.length} admin notifications`);
+          }
+        } catch (notificationError) {
+          console.error('⚠️ Error creating admin notifications:', notificationError);
+          // Don't fail the post creation if notifications fail
         }
-      }));
-      
-      if (notifications.length > 0) {
-        await Notification.insertMany(notifications);
-      }
+      });
     }
 
-    return res.status(201).json({ post, status: postData.status });
+    const totalTime = Date.now() - requestStartTime;
+    console.log(`🎉 Post creation completed in ${totalTime}ms`);
+    
+    return res.status(201).json({ 
+      post, 
+      status: postData.status,
+      uploadTime: totalTime 
+    });
   } catch (error) {
     console.error("Error creating post:", error);
     return res.status(500).json({ message: "Server error", error: error.message });
@@ -778,12 +820,16 @@ export const createAdminPost = async (req, res) => {
         newAdminPostData.eventDetails = JSON.parse(eventDetails);
       }
   
-      // Upload image to Cloudinary if provided
+      // Upload image to DigitalOcean Spaces if provided
       if (imageBuffer) {
-        // Convert buffer to base64 for Cloudinary upload
-        const base64Image = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
-        const imgResult = await cloudinary.uploader.upload(base64Image);
-        newAdminPostData.image = imgResult.secure_url;
+        // Upload directly to DigitalOcean Spaces
+        const imageUrl = await uploadToSpaces(
+          imageBuffer, 
+          req.file.originalname, 
+          req.file.mimetype, 
+          'admin-posts'
+        );
+        newAdminPostData.image = imageUrl;
       }
   
       // Create the post

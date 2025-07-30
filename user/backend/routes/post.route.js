@@ -27,11 +27,22 @@ import Post from "../models/post.model.js"; // Added import for Post model
 const router = express.Router();
 
 import multer from 'multer';    
-// Use memory storage instead of disk storage for Vercel serverless environment
+// Use memory storage with increased limits for image uploads
 const upload = multer({ 
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
+        fileSize: 25 * 1024 * 1024, // Increased to 25MB per file
+        fieldSize: 25 * 1024 * 1024, // 25MB for form fields (base64 images)
+        files: 5, // Maximum 5 files
+        fields: 20 // Maximum 20 form fields
+    },
+    fileFilter: (req, file, cb) => {
+        // Only allow image files
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'), false);
+        }
     }
 });
 
@@ -41,8 +52,36 @@ router.get("/bookmarked", protectRoute, getBookmarkedPosts);
 router.get("/user/:username", protectRoute, getPostsByUsername);
 router.get("/:id", protectRoute, getPostById);
 
-// Creating posts
-router.post("/create", protectRoute, upload.array('images', 5), createPost);
+// Creating posts with error handling for file uploads
+router.post("/create", protectRoute, (req, res, next) => {
+    upload.array('images', 5)(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ 
+                    message: "File too large. Maximum file size is 25MB per image.",
+                    maxSize: "25MB"
+                });
+            }
+            if (err.code === 'LIMIT_FIELD_VALUE') {
+                return res.status(413).json({ 
+                    message: "Request body too large. Maximum size is 25MB.",
+                    maxSize: "25MB"
+                });
+            }
+            if (err.message === 'Only image files are allowed!') {
+                return res.status(400).json({ 
+                    message: "Only image files are allowed. Supported formats: JPG, PNG, GIF, WebP",
+                    supportedFormats: ["jpg", "jpeg", "png", "gif", "webp"]
+                });
+            }
+            return res.status(400).json({ 
+                message: "File upload error", 
+                error: err.message 
+            });
+        }
+        next();
+    });
+}, createPost);
 router.post("/createAdminPost", protectRoute, createAdminPost);
 
 // Deleting posts
@@ -83,7 +122,29 @@ router.get("/admin/rejected", protectRoute, isAdmin, getRejectedPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 router.post("/admin/:postId/review", protectRoute, isAdmin, reviewPost); // Support both parameter names
 router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
-router.post('/admin/create', protectRoute, upload.single('image'), createAdminPost);
+router.post('/admin/create', protectRoute, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ 
+                    message: "File too large. Maximum file size is 25MB.",
+                    maxSize: "25MB"
+                });
+            }
+            if (err.message === 'Only image files are allowed!') {
+                return res.status(400).json({ 
+                    message: "Only image files are allowed. Supported formats: JPG, PNG, GIF, WebP",
+                    supportedFormats: ["jpg", "jpeg", "png", "gif", "webp"]
+                });
+            }
+            return res.status(400).json({ 
+                message: "File upload error", 
+                error: err.message 
+            });
+        }
+        next();
+    });
+}, createAdminPost);
 router.get('/admin/recent', protectRoute, isAdmin, getRecentAdminPosts);
 
 export default router;
