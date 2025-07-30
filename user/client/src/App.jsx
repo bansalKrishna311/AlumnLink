@@ -12,16 +12,17 @@ import {adminRoutes} from "./routes/adminRoutes";
 import {superAdminRoutes} from "./routes/superAdminRoutes";
 import LandHome from "./Landing/Pages/LandHome";
 import About from './Landing/Pages/About';
+import Terms from './Landing/Pages/Terms';
 import Contact from './Landing/Pages/Contact';
-import ForInstitutes from './Landing/Pages/ForInstitutes';
-import ForCorporates from './Landing/Pages/ForCorporates';
-import ForSchools from './Landing/Pages/ForSchools';
-import ForAlumni from './Landing/Pages/ForAlumni';
 import ProfilePage from "./pages/ProfilePage";
 import UserPostsPage from "./pages/UserPostsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Test404Page from "./pages/Test404Page";
+import ForCorporates from "./Landing/Pages/ForCorporates";
+import ForSchools from "./Landing/Pages/ForSchools";
+import ForAlumni from "./Landing/Pages/ForAlumni";
+import ForInstitutes from "./Landing/Pages/ForInstitutes";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({
@@ -59,19 +60,18 @@ function App() {
     return (
         <ErrorBoundary>
             <Routes>
-                {/* Root path redirect */}
-                <Route path="/" element={<Navigate to="/Landing" replace />} />
            
-                <Route path="/Landing" element={<Layout />}>
-                    <Route index element={<LandHome />} /> {/* /Landing */}
-                    <Route path="about" element={<About />} /> {/* /Landing/about */}
-                    <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
-                    <Route path="for-institutes" element={<ForInstitutes />} /> {/* /Landing/for-institutes */}
-                    <Route path="for-corporates" element={<ForCorporates />} /> {/* /Landing/for-corporates */}
-                    <Route path="for-schools" element={<ForSchools />} /> {/* /Landing/for-schools */}
-                    <Route path="for-alumni" element={<ForAlumni />} /> {/* /Landing/for-alumni */}
-                    <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
-                </Route>
+            <Route path="/Landing" element={<Layout />}>
+  <Route index element={<LandHome />} /> {/* /Landing */}
+  <Route path="about" element={<About />} /> {/* /Landing/about */}
+  <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
+    <Route path="for-institutes" element={<ForInstitutes />} />
+                    <Route path="for-corporates" element={<ForCorporates />} />
+                    <Route path="for-schools" element={<ForSchools />} />
+                    <Route path="for-alumni" element={<ForAlumni />} />
+  <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
+  <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
+</Route>
 
                 <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
                 <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
