@@ -22,43 +22,38 @@ const Post = ({ post }) => {
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [activeReactionTab, setActiveReactionTab] = useState("all");
   const [showPostDetails, setShowPostDetails] = useState(false);
-  
-  // Check if the current user has bookmarked this post
-  const isBookmarked = post.bookmarks?.some(id => id === authUser?._id);
-  
-  // Refs
-  const optionsMenuRef = useRef(null);
-
-  // Sync local comments state with post prop
-  useEffect(() => {
-    setComments(post.comments || []);
-  }, [post.comments]);
-  const reactionsModalRef = useRef(null);
-  
-  const queryClient = useQueryClient();
-
-  // Get user's current reaction if any
-  const userReaction = useMemo(() => {
+  // Optimistic UI states for reactions
+  const [optimisticReactions, setOptimisticReactions] = useState(post.reactions || []);
+  const [optimisticUserReaction, setOptimisticUserReaction] = useState(() => {
     if (!post.reactions || !authUser) return null;
-    
     const reaction = post.reactions.find(r => {
-      // Handle both formats: when user is a string ID or an object
       if (typeof r.user === 'object') {
         return r.user?._id === authUser?._id;
       } else {
         return r.user === authUser?._id;
       }
     });
-    
     return reaction?.type || null;
-  }, [post.reactions, authUser]);
+  });
 
-  // Total reactions count
-  const totalReactions = post.reactions?.length || 0;
+  // Check if the current user has bookmarked this post
+  const isBookmarked = post.bookmarks?.some(id => id === authUser?._id);
 
-  // Group reactions by type for the modal
+  // Refs
+  const optionsMenuRef = useRef(null);
+  const reactionsModalRef = useRef(null);
+
+  const queryClient = useQueryClient();
+
+  // Get user's current reaction if any (from optimistic state)
+  const userReaction = optimisticUserReaction;
+
+  // Total reactions count (from optimistic state)
+  const totalReactions = optimisticReactions.length;
+
+  // Group reactions by type for the modal (from optimistic state)
   const reactionsByType =
-    post.reactions?.reduce((groups, reaction) => {
+    optimisticReactions.reduce((groups, reaction) => {
       if (!groups[reaction.type]) {
         groups[reaction.type] = [];
       }
@@ -178,11 +173,14 @@ const Post = ({ post }) => {
         reactionType,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, { reactionType }) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
-    onError: (error) => {
+    onError: (error, { prevReactions, prevUserReaction }) => {
+      // Revert optimistic update
+      setOptimisticReactions(prevReactions);
+      setOptimisticUserReaction(prevUserReaction);
       toast.error(error.message || "Failed to react to post");
     },
   });
@@ -254,14 +252,46 @@ const Post = ({ post }) => {
   const handleReactToPost = (reactionType) => {
     if (isReacting) return;
 
-    // If user clicks the same reaction again, send null to remove it
-    if (userReaction === reactionType) {
-      reactToPost({ postId: post._id, reactionType: null });
-      return;
-    }
+    // Save previous state for rollback
+    const prevReactions = [...optimisticReactions];
+    const prevUserReaction = optimisticUserReaction;
 
-    // Otherwise, add/update reaction
-    reactToPost({ postId: post._id, reactionType });
+    let updatedReactions;
+    let updatedUserReaction;
+    if (userReaction === reactionType) {
+      // Remove reaction
+      updatedReactions = optimisticReactions.filter(r => {
+        if (typeof r.user === 'object') {
+          return r.user?._id !== authUser?._id;
+        } else {
+          return r.user !== authUser?._id;
+        }
+      });
+      updatedUserReaction = null;
+      setOptimisticReactions(updatedReactions);
+      setOptimisticUserReaction(updatedUserReaction);
+      reactToPost({ postId: post._id, reactionType: null, prevReactions, prevUserReaction });
+      return;
+    } else {
+      // Add/update reaction
+      // Remove previous reaction if exists
+      updatedReactions = optimisticReactions.filter(r => {
+        if (typeof r.user === 'object') {
+          return r.user?._id !== authUser?._id;
+        } else {
+          return r.user !== authUser?._id;
+        }
+      });
+      // Add new reaction
+      updatedReactions.push({
+        user: authUser,
+        type: reactionType,
+      });
+      updatedUserReaction = reactionType;
+      setOptimisticReactions(updatedReactions);
+      setOptimisticUserReaction(updatedUserReaction);
+      reactToPost({ postId: post._id, reactionType, prevReactions, prevUserReaction });
+    }
   };
 
   const handleSharePost = async () => {
@@ -503,7 +533,7 @@ const Post = ({ post }) => {
 
         {/* Post Actions Component */}
         <PostActions 
-          post={post}
+          post={{ ...post, reactions: optimisticReactions }}
           userReaction={userReaction}
           handleReactToPost={handleReactToPost}
           totalReactions={totalReactions}
@@ -547,7 +577,7 @@ const Post = ({ post }) => {
 
       {/* Post Modals Component */}
       <PostModals 
-        post={post}
+        post={{ ...post, reactions: optimisticReactions }}
         showReactionsModal={showReactionsModal}
         setShowReactionsModal={setShowReactionsModal}
         showPostDetails={showPostDetails}

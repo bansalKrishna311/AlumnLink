@@ -42,7 +42,7 @@ router.get("/user/:username", protectRoute, getPostsByUsername);
 router.get("/:id", protectRoute, getPostById);
 
 // Creating posts
-router.post("/create", protectRoute, createPost);
+router.post("/create", protectRoute, upload.array('images', 5), createPost);
 router.post("/createAdminPost", protectRoute, createAdminPost);
 
 // Deleting posts
