@@ -1,7 +1,7 @@
 import { useState, memo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Send, Loader, CornerDownRight, X, Heart } from "lucide-react";
+import { MessageCircle, Send, Loader, CornerDownRight, X, Heart, Trash2 } from "lucide-react";
 import { Virtuoso } from 'react-virtuoso';
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -95,8 +95,13 @@ const Comment = memo(({
   handleLikeReply,
   isLikingComment,
   isLikingReply,
+  handleDeleteComment,
+  handleDeleteReply,
+  isDeletingComment,
+  isDeletingReply,
   totalCommentsCount,
-  navigateToProfile
+  navigateToProfile,
+  postAuthorId
 }) => {
   const hasLiked = comment.likes?.some(id => id.toString() === authUser?._id?.toString());
   const likeCount = comment.likes?.length || 0;
@@ -226,6 +231,24 @@ const Comment = memo(({
             >
               <CornerDownRight size={14} className="mr-1" /> Reply
             </button>
+
+            {/* Delete button - show for comment author, post author, or admin */}
+            {(authUser?._id === comment.user?._id || 
+              authUser?._id === postAuthorId || 
+              authUser?.role === 'admin' || 
+              authUser?.role === 'superadmin') && (
+              <button
+                onClick={() => handleDeleteComment(comment._id)}
+                className="text-xs text-red-500 flex items-center hover:text-red-600 transition-colors"
+                disabled={isDeletingComment}
+              >
+                {isDeletingComment ? 
+                  <Loader size={14} className="mr-1 animate-spin" /> : 
+                  <Trash2 size={14} className="mr-1" />
+                }
+                Delete
+              </button>
+            )}
           </div>
           
           {comment.replies && comment.replies.length > 0 && (
@@ -271,17 +294,38 @@ const Comment = memo(({
                           {renderContentWithMentions(reply.content, navigateToProfile)}
                         </div>
                         
-                        <button
-                          onClick={() => handleLikeReply(comment._id, reply._id)}
-                          className={`text-xs flex items-center mt-1 ${hasLikedReply ? 'text-[#fe6019] font-medium' : 'text-gray-500'} hover:text-[#fe6019] transition-colors`}
-                          disabled={isLikingReply}
-                        >
-                          {hasLikedReply ? 
-                            <Heart size={12} className="mr-1 fill-[#fe6019] text-[#fe6019]" /> : 
-                            <Heart size={12} className="mr-1" />
-                          }
-                          {replyLikeCount > 0 && <span>{replyLikeCount}</span>}
-                        </button>
+                        <div className="flex items-center mt-1 space-x-2">
+                          <button
+                            onClick={() => handleLikeReply(comment._id, reply._id)}
+                            className={`text-xs flex items-center ${hasLikedReply ? 'text-[#fe6019] font-medium' : 'text-gray-500'} hover:text-[#fe6019] transition-colors`}
+                            disabled={isLikingReply}
+                          >
+                            {hasLikedReply ? 
+                              <Heart size={12} className="mr-1 fill-[#fe6019] text-[#fe6019]" /> : 
+                              <Heart size={12} className="mr-1" />
+                            }
+                            {replyLikeCount > 0 && <span>{replyLikeCount}</span>}
+                          </button>
+
+                          {/* Delete button for replies - show for reply author, post author, or admin */}
+                          {(authUser?._id === reply.user?._id || 
+                            authUser?._id === reply.user || 
+                            authUser?._id === postAuthorId || 
+                            authUser?.role === 'admin' || 
+                            authUser?.role === 'superadmin') && (
+                            <button
+                              onClick={() => handleDeleteReply(comment._id, reply._id)}
+                              className="text-xs text-red-500 flex items-center hover:text-red-600 transition-colors"
+                              disabled={isDeletingReply}
+                            >
+                              {isDeletingReply ? 
+                                <Loader size={12} className="mr-1 animate-spin" /> : 
+                                <Trash2 size={12} className="mr-1" />
+                              }
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

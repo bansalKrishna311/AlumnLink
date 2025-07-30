@@ -95,7 +95,7 @@ export const getFeedPosts = async (req, res) => {
 // Create a post
 export const createPost = async (req, res) => {
   try {
-    const { content, type, links, image, jobDetails, internshipDetails, eventDetails } = req.body;
+    const { content, type, links, images: imagesFromBody, jobDetails, internshipDetails, eventDetails } = req.body;
     const userId = req.user.id;
 
     // Extract hashtags from content
@@ -120,17 +120,33 @@ export const createPost = async (req, res) => {
       postData.links = links;
     }
 
-    // Add image if provided
-    if (image) {
-      try {
-        // Upload image to Cloudinary
-        const uploadResponse = await cloudinary.uploader.upload(image, {
-          folder: "alumnlink/posts",
-        });
-        postData.image = uploadResponse.secure_url;
-      } catch (error) {
-        console.error("Error uploading image to Cloudinary:", error);
-        return res.status(500).json({ message: "Error uploading image" });
+    // Add images if provided (support both JSON and multipart)
+    postData.images = [];
+    // If files are uploaded via multipart form-data
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        try {
+          const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+            folder: "alumnlink/posts",
+          });
+          postData.images.push(uploadResponse.secure_url);
+        } catch (error) {
+          console.error("Error uploading image to Cloudinary:", error);
+          return res.status(500).json({ message: "Error uploading image" });
+        }
+      }
+    } else if (imagesFromBody && Array.isArray(imagesFromBody) && imagesFromBody.length > 0) {
+      for (const img of imagesFromBody) {
+        try {
+          const uploadResponse = await cloudinary.uploader.upload(img, {
+            folder: "alumnlink/posts",
+          });
+          postData.images.push(uploadResponse.secure_url);
+        } catch (error) {
+          console.error("Error uploading image to Cloudinary:", error);
+          return res.status(500).json({ message: "Error uploading image" });
+        }
       }
     }
 

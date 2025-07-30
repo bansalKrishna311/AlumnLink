@@ -146,7 +146,7 @@ const PostActions = ({
                 className="absolute left-0 -top-12 bg-white border border-gray-200 rounded-full shadow-lg z-10 flex items-center p-1 space-x-1"
               >
                 <motion.button
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.7 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleReactToPost("like")}
                   className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "like" ? "bg-[#fe6019]/10" : ""}`}
@@ -155,7 +155,7 @@ const PostActions = ({
                   <span className="text-lg">👍</span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.7 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleReactToPost("love")}
                   className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "love" ? "bg-[#fe6019]/10" : ""}`}
@@ -164,7 +164,7 @@ const PostActions = ({
                   <span className="text-lg">❤️</span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.7 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleReactToPost("sad")}
                   className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "sad" ? "bg-[#fe6019]/10" : ""}`}
@@ -173,7 +173,7 @@ const PostActions = ({
                   <span className="text-lg">😢</span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.7 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleReactToPost("wow")}
                   className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "wow" ? "bg-[#fe6019]/10" : ""}`}
@@ -182,7 +182,7 @@ const PostActions = ({
                   <span className="text-lg">😮</span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.7 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleReactToPost("angry")}
                   className={`p-2 rounded-full hover:bg-[#fe6019]/10 ${userReaction === "angry" ? "bg-[#fe6019]/10" : ""}`}
