@@ -1,23 +1,22 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Linkedin, Twitter, Instagram, Facebook } from 'lucide-react';
 
 const Footer = () => {
   const navigationLinks = [
-    { label: 'About', href: '/landing/about' },
-    { label: 'Features', href: '/landing/features' },
+    { label: 'About', href: '/Landing/about' },
     { 
-      label: 'For Institutes', 
-      href: '/landing/institutes',
+      label: 'Solutions', 
+      href: '#',
       subItems: [
-        { label: 'For Corporates', href: '/landing/corporates' },
-        { label: 'For Schools', href: '/landing/schools' },
-        { label: 'For Alumni', href: '/landing/alumni' }
+        { label: 'For Institutes', href: '/Landing/for-institutes' },
+        { label: 'For Corporates', href: '/Landing/for-corporates' },
+        { label: 'For Schools', href: '/Landing/for-schools' },
+        { label: 'For Alumni', href: '/Landing/for-alumni' }
       ]
     },
-    { label: 'FAQs', href: '/landing/faqs' },
-    { label: 'Contact', href: '/landing/contact' },
-    { label: 'Terms', href: '/landing/terms' }
+    { label: 'Contact', href: '/Landing/contact' }
   ];
 
   const socialLinks = [
@@ -29,7 +28,7 @@ const Footer = () => {
 
   return (
     <motion.footer 
-      className="bg-gray-900 text-white py-12"
+      className="bg-gray-900 text-white py-32"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
@@ -37,7 +36,7 @@ const Footer = () => {
     >
       <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-16 mb-16">
           {/* Navigation Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -48,25 +47,41 @@ const Footer = () => {
             <div className="flex flex-wrap gap-6 text-sm">
               {navigationLinks.map((link, index) => (
                 <div key={index} className="group">
-                  <motion.a
-                    href={link.href}
-                    className="text-gray-300 hover:text-[#fe6019] transition-colors duration-200 font-medium"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {link.label}
-                  </motion.a>
+                  {link.href === '#' ? (
+                    <motion.span
+                      className="text-gray-300 hover:text-[#fe6019] transition-colors duration-200 font-medium cursor-default"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {link.label}
+                    </motion.span>
+                  ) : (
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Link
+                        to={link.href}
+                        className="text-gray-300 hover:text-[#fe6019] transition-colors duration-200 font-medium"
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  )}
                   {link.subItems && (
                     <div className="mt-2 ml-4 space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       {link.subItems.map((subItem, subIndex) => (
-                        <motion.a
+                        <motion.div
                           key={subIndex}
-                          href={subItem.href}
-                          className="block text-xs text-gray-400 hover:text-[#fe6019] transition-colors duration-200"
                           whileHover={{ x: 5 }}
                         >
-                          {subItem.label}
-                        </motion.a>
+                          <Link
+                            to={subItem.href}
+                            className="block text-xs text-gray-400 hover:text-[#fe6019] transition-colors duration-200"
+                          >
+                            {subItem.label}
+                          </Link>
+                        </motion.div>
                       ))}
                     </div>
                   )}
@@ -104,14 +119,14 @@ const Footer = () => {
 
         {/* Divider */}
         <motion.div
-          className="border-t border-gray-800 pt-8"
+          className="border-t border-gray-800 pt-16"
           initial={{ opacity: 0, scaleX: 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
           {/* Bottom Section */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-6 pb-8">
             {/* Logo/Brand */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
