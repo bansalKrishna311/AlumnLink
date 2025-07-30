@@ -5,48 +5,55 @@ import CallToAction from '../Components/CallToAction';
 // Import our newly created components
 import AboutHero from '../Components/About/AboutHero';
 import OurMission from '../Components/About/OurMission';
+import WhatIsAlumnLink from '../Components/About/WhatIsAlumnLink';
 import WhoWeServe from '../Components/About/WhoWeServe';
+import OurValues from '../Components/About/OurValues';
+import AlumnLinkDifference from '../Components/About/AlumnLinkDifference';
 import OurTeam from '../Components/About/OurTeam';
 import OurStory from '../Components/About/OurStory';
-import OurValues from '../Components/About/OurValues';
 
 const About = () => {
-  // Who We Serve data
+  // Who We Help data
   const whoWeServeItems = [
     {
-      icon: <School size={48} />,
-      title: "Educational Institutions",
-      description: "Universities, colleges, and schools looking to strengthen alumni engagement, enhance fundraising efforts, and build a vibrant community of graduates."
+      icon: <Users size={48} />,
+      title: "Graduates", 
+      description: "Empowering your career, expanding your network, finding guidance fast. Connect with mentors and discover opportunities within your alumni community."
     },
     {
-      icon: <Users size={48} />,
+      icon: <School size={48} />,
       title: "Alumni",
-      description: "Graduates seeking to maintain connections with their alma mater, network with fellow alumni, and access exclusive opportunities and resources."
+      description: "Reconnect, give back, discover new opportunities. Maintain lifelong connections with your alma mater and fellow graduates."
     },
     {
       icon: <Building size={48} />,
-      title: "Corporations",
-      description: "Businesses looking to connect with qualified talent pools, establish educational partnerships, and engage in meaningful CSR initiatives."
+      title: "Institutions",
+      description: "Keep alumni engaged, drive retention, boost community value. Build stronger relationships with graduates for sustainable growth."
+    },
+    {
+      icon: <Briefcase size={48} />,
+      title: "Career Services",
+      description: "Unlocking new ways to connect students and alumni efficiently. Facilitate meaningful career guidance and networking opportunities."
     }
   ];
 
-  // Our Values data
+  // Our Core Values data
   const ourValues = [
     {
-      title: "Connection",
-      description: "We believe in the power of meaningful relationships to drive personal and professional growth."
+      title: "Connection Over Everything",
+      description: "Real, lasting connections are at the heart of progress. We prioritize meaningful relationships over superficial networking."
     },
     {
-      title: "Innovation",
-      description: "We continuously evolve our platform to meet the changing needs of our users."
+      title: "Opportunity for All",
+      description: "Every graduate should have access to support, mentors, and growth. We believe in democratizing access to alumni networks."
     },
     {
-      title: "Security",
-      description: "We prioritize the protection of our users' data and maintain the highest standards of privacy."
+      title: "Lifelong Engagement", 
+      description: "Alumni relationships don't stop at graduation—they grow for life. We build platforms for sustained community engagement."
     },
     {
-      title: "Impact",
-      description: "We measure our success by the positive outcomes we create for institutions and alumni."
+      title: "Trust & Community",
+      description: "Secure, authentic, and dedicated to alumni success. We maintain the highest standards of privacy and community integrity."
     }
   ];
 
@@ -128,39 +135,35 @@ const About = () => {
       {/* About Hero Section */}
       <AboutHero />
 
-      {/* Our Mission */}
+      {/* Our Mission & Vision */}
       <OurMission />
 
-      {/* Who We Serve */}
+      {/* What Is AlumnLink */}
+      <WhatIsAlumnLink />
+
+      {/* Who We Help */}
       <WhoWeServe 
         whoWeServeItems={whoWeServeItems} 
         containerVariants={containerVariants} 
         itemVariants={itemVariants} 
       />
 
-      {/* Our Team Section */}
-      <OurTeam 
-        teamMembers={teamMembers} 
-        containerVariants={containerVariants} 
-        itemVariants={itemVariants} 
-      />
-
-      {/* Our Story */}
-      <OurStory ourStoryItems={ourStoryItems} />
-
-      {/* Our Values */}
-      <OurValues 
+      {/* Our Core Values */}
+      {/* <OurValues 
         ourValues={ourValues} 
         containerVariants={containerVariants} 
         itemVariants={itemVariants} 
-      />
+      /> */}
+
+      {/* The AlumnLink Difference */}
+      <AlumnLinkDifference />
 
       {/* Join Us CTA */}
       <CallToAction
         gradient={true}
         title="Join the AlumnLink Community"
         description="Be part of a platform that's transforming how educational institutions and alumni connect."
-        primaryButtonText="Sign Up Today"
+        primaryButtonText="Get Early Access"
         primaryButtonLink="/signup"
         secondaryButtonText="Contact Us"
         secondaryButtonLink="/landing/contact"

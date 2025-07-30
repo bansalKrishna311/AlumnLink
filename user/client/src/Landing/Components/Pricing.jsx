@@ -10,55 +10,56 @@ const Pricing = () => {
   const pricingTiers = [
     {
       name: "Starter",
-      price: "Free",
-      description: "Perfect for small alumni groups just getting started",
+      price: "Contact Us",
+      description: "Perfect for small institutions and schools getting started",
       features: [
-        "Up to 500 alumni profiles",
-        "Basic event management",
+        "Up to 500 student alumni",
+        "Basic networking features",
+        "Event management",
         "Discussion forums",
         "Email notifications",
-        "Community moderation"
+        "Mobile app access"
       ],
       limitations: [
-        "Limited analytics",
-        "No API access",
-        "Community support only"
+        "Limited customization",
+        "Standard support",
+        "Basic analytics"
       ],
-      cta: "Get Started",
+      cta: "Get Quote",
       popular: false
     },
     {
       name: "Professional",
-      price: "$99",
-      period: "/month",
-      description: "Ideal for growing institutions with active alumni",
+      price: "Custom",
+      period: "per institution",
+      description: "Ideal for colleges and universities with growing alumni base",
       features: [
         "Up to 10,000 alumni profiles",
-        "Advanced event management",
-        "Job board & career center",
+        "Advanced networking tools",
+        "Career center & job board",
         "Fundraising campaigns",
-        "Comprehensive analytics",
-        "Custom branding options",
-        "Email & chat support",
+        "Custom branding",
+        "Advanced analytics",
+        "Priority support",
         "API access"
       ],
       limitations: [],
-      cta: "Start Free Trial",
+      cta: "Schedule Demo",
       popular: true
     },
     {
       name: "Enterprise",
       price: "Custom",
-      description: "For large institutions with complex requirements",
+      description: "For large institutions and corporations with complex needs",
       features: [
         "Unlimited alumni profiles",
-        "Full platform customization",
-        "White-label options",
-        "Advanced data & analytics",
-        "SSO & advanced security",
-        "Dedicated account manager",
-        "Priority 24/7 support",
-        "Custom API integration"
+        "Full white-label solution",
+        "Multi-campus support",
+        "Advanced integrations",
+        "SSO & enterprise security",
+        "Dedicated success manager",
+        "24/7 priority support",
+        "Custom development"
       ],
       limitations: [],
       cta: "Contact Sales",
@@ -87,10 +88,10 @@ const Pricing = () => {
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
         <SectionHeading
-          badge="Simple, transparent pricing"
+          badge="Enterprise Solutions"
           badgeColor="green"
-          title="Choose the plan that fits your institution"
-          description="All plans include a 14-day free trial with no credit card required. Cancel anytime."
+          title="Scalable plans for every institution"
+          description="Custom pricing based on your institution size and requirements. All solutions include dedicated support and onboarding."
         />
 
         <motion.div 

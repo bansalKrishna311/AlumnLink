@@ -53,7 +53,7 @@ const AboutHero = () => {
 
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#fe6019] to-orange-600">About AlumnLink</h1>
           <p className="text-lg text-gray-600 mb-8">
-            Connecting alumni, empowering institutions, and building stronger communities through innovative technology.
+            The first social networking platform tailored specifically for alumni communities. Built for meaningful connections, direct opportunities, and lifelong value.
           </p>
           <div className="w-24 h-1 bg-[#fe6019] mx-auto rounded-full"></div>
         </motion.div>
