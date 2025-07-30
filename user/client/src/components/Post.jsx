@@ -266,19 +266,23 @@ const Post = ({ post }) => {
 
   const handleSharePost = async () => {
     try {
+      // Generate the proper post URL
+      const postUrl = `${window.location.origin}/post/${post._id}`;
+      
       if (navigator.share) {
         await navigator.share({
           title: `${post.author?.name}'s post`,
           text: post.content,
-          url: window.location.href
+          url: postUrl
         });
       } else {
         // Fallback: Copy link to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success('Link copied to clipboard!');
+        await navigator.clipboard.writeText(postUrl);
+        toast.success('Post link copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing:', error);
+      toast.error('Failed to share post');
     }
   };
 

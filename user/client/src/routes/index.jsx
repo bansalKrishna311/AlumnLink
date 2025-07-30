@@ -8,7 +8,7 @@ import AuthRequirePage from "@/pages/AuthRequirePage";
 import ProfilePage from "@/pages/ProfilePage";
 import LandingPage from "@/Landing/LandingPage";
 import AdminDashboard from "@/admin/Dashboard";
-import SinglePost from "@/pages/SinglePost";
+import PostPage from "@/pages/PostPage"; // Changed from SinglePost to PostPage
 import PostRequest from "@/admin/PostRequest";
 import RejectedRequests from "@/admin/rejectedRequests";
 import AdminPosts from "@/admin/AdminPosts";
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
     path: "/post/:postId",
     element: (
       <DashboardLayout>
-        <SinglePost />
+        <PostPage />
       </DashboardLayout>
     ),
   },
