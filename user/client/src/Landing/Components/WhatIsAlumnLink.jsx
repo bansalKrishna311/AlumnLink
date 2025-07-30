@@ -62,7 +62,7 @@ const WhatIsAlumnLink = () => {
 
   return (
     <motion.section 
-      className="py-16 bg-white relative"
+      className="py-16 bg-gradient-to-br from-[#fe6019]/5 to-white relative"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -144,7 +144,7 @@ const WhatIsAlumnLink = () => {
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-gray-50 rounded-xl p-6 border border-gray-100 hover:border-gray-200 transition-all duration-200"
+              className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-[#fe6019]/10 hover:border-[#fe6019]/20 hover:bg-white/80 transition-all duration-200"
               variants={itemVariants}
               whileHover={{ 
                 y: -4,
@@ -168,7 +168,7 @@ const WhatIsAlumnLink = () => {
 
         {/* Simple Benefits List */}
         <motion.div 
-          className="bg-gray-50 rounded-xl p-8 border border-gray-100"
+          className="bg-white/60 backdrop-blur-sm rounded-xl p-8 border border-[#fe6019]/10"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

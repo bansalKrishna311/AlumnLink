@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Hero from "../Components/Hero";
 import WhatIsAlumnLink from "../Components/WhatIsAlumnLink";
+import WhosItFor from "../Components/WhosItFor";
+import WhyInstitutionsLoveUs from "../Components/WhyInstitutionsLoveUs";
 import HowItWorks from "../Components/HowItWorks";
 import Benefits from "../Components/Benefits";
 import Pricing from "../Components/Pricing";
@@ -49,6 +51,12 @@ const LandHome = () => {
 
           {/* What is AlumnLink section */}
           <WhatIsAlumnLink />
+
+          {/* Who's it For section */}
+          <WhosItFor />
+
+          {/* Why Institutions Love Us section */}
+          <WhyInstitutionsLoveUs />
 
           {/* How it works section */}
           <HowItWorks />
