@@ -14,17 +14,51 @@ import {
 } from "../emails/emailHandlers.js";
 
 // Helper function to extract mentions from content
-const extractMentions = (content) => {
-  const mentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  let match;
+const extractMentions = async (content) => {
+  const usernames = [];
   const mentions = [];
   
-  while ((match = mentionPattern.exec(content)) !== null) {
-    const [, username, userId] = match;
-    mentions.push({
-      username,
-      userId
-    });
+  // Handle both old format @[username](userId) and new format @username for backward compatibility
+  const oldMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const newMentionPattern = /@(\w+)/g;
+  
+  let match;
+  
+  // Extract usernames from old format (for backward compatibility)
+  while ((match = oldMentionPattern.exec(content)) !== null) {
+    const username = match[1];
+    if (!usernames.includes(username)) {
+      usernames.push(username);
+    }
+  }
+  
+  // Extract usernames from new format
+  // Reset regex lastIndex
+  newMentionPattern.lastIndex = 0;
+  while ((match = newMentionPattern.exec(content)) !== null) {
+    const username = match[1];
+    if (!usernames.includes(username)) {
+      usernames.push(username);
+    }
+  }
+  
+  // Look up users by username to get their IDs
+  if (usernames.length > 0) {
+    try {
+      const users = await User.find({ 
+        username: { $in: usernames } 
+      }).select('_id username name');
+      
+      users.forEach(user => {
+        mentions.push({
+          username: user.username,
+          userId: user._id.toString(),
+          name: user.name
+        });
+      });
+    } catch (error) {
+      console.error('Error looking up mentioned users:', error);
+    }
   }
   
   return mentions;
@@ -230,7 +264,7 @@ export const createComment = async (req, res) => {
             .populate("reactions.user", "name username profilePicture headline");
 
         // Extract mentions from the comment
-        const mentions = extractMentions(content);
+        const mentions = await extractMentions(content);
 
         // Create notifications
         try {
@@ -361,7 +395,7 @@ export const replyToComment = async (req, res) => {
             .populate("reactions.user", "name username profilePicture headline");
             
         // Extract mentions from reply
-        const mentions = extractMentions(content);
+        const mentions = await extractMentions(content);
 
         // Try to create notifications, but don't let it fail the entire request
         try {
