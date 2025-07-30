@@ -14,17 +14,51 @@ import {
 } from "../emails/emailHandlers.js";
 
 // Helper function to extract mentions from content
-const extractMentions = (content) => {
-  const mentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  let match;
+const extractMentions = async (content) => {
+  const usernames = [];
   const mentions = [];
   
-  while ((match = mentionPattern.exec(content)) !== null) {
-    const [, username, userId] = match;
-    mentions.push({
-      username,
-      userId
-    });
+  // Handle both old format @[username](userId) and new format @username for backward compatibility
+  const oldMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const newMentionPattern = /@(\w+)/g;
+  
+  let match;
+  
+  // Extract usernames from old format (for backward compatibility)
+  while ((match = oldMentionPattern.exec(content)) !== null) {
+    const username = match[1];
+    if (!usernames.includes(username)) {
+      usernames.push(username);
+    }
+  }
+  
+  // Extract usernames from new format
+  // Reset regex lastIndex
+  newMentionPattern.lastIndex = 0;
+  while ((match = newMentionPattern.exec(content)) !== null) {
+    const username = match[1];
+    if (!usernames.includes(username)) {
+      usernames.push(username);
+    }
+  }
+  
+  // Look up users by username to get their IDs
+  if (usernames.length > 0) {
+    try {
+      const users = await User.find({ 
+        username: { $in: usernames } 
+      }).select('_id username name');
+      
+      users.forEach(user => {
+        mentions.push({
+          username: user.username,
+          userId: user._id.toString(),
+          name: user.name
+        });
+      });
+    } catch (error) {
+      console.error('Error looking up mentioned users:', error);
+    }
   }
   
   return mentions;
@@ -230,7 +264,7 @@ export const createComment = async (req, res) => {
             .populate("reactions.user", "name username profilePicture headline");
 
         // Extract mentions from the comment
-        const mentions = extractMentions(content);
+        const mentions = await extractMentions(content);
 
         // Create notifications
         try {
@@ -361,7 +395,7 @@ export const replyToComment = async (req, res) => {
             .populate("reactions.user", "name username profilePicture headline");
             
         // Extract mentions from reply
-        const mentions = extractMentions(content);
+        const mentions = await extractMentions(content);
 
         // Try to create notifications, but don't let it fail the entire request
         try {
@@ -1245,6 +1279,117 @@ export const getRejectedPosts = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getRejectedPosts controller:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete a comment
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId)
+      .populate("author", "_id")
+      .populate("comments.user", "_id");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check if user is authorized to delete the comment
+    // Can delete if: 1) User is comment author, 2) User is post author, 3) User is admin
+    const isCommentAuthor = comment.user._id.toString() === userId.toString();
+    const isPostAuthor = post.author._id.toString() === userId.toString();
+    const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
+
+    if (!isCommentAuthor && !isPostAuthor && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to delete this comment" });
+    }
+
+    // Remove the comment
+    comment.deleteOne();
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      post: updatedPost
+    });
+  } catch (error) {
+    console.error("Error in deleteComment controller:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete a reply
+export const deleteReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId)
+      .populate("author", "_id")
+      .populate("comments.user", "_id");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Find the reply
+    const reply = comment.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    // Check if user is authorized to delete the reply
+    // Can delete if: 1) User is reply author, 2) User is comment author, 3) User is post author, 4) User is admin
+    const isReplyAuthor = reply.user._id?.toString() === userId.toString() || reply.user.toString() === userId.toString();
+    const isCommentAuthor = comment.user._id.toString() === userId.toString();
+    const isPostAuthor = post.author._id.toString() === userId.toString();
+    const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
+
+    if (!isReplyAuthor && !isCommentAuthor && !isPostAuthor && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to delete this reply" });
+    }
+
+    // Remove the reply
+    reply.deleteOne();
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json({
+      message: "Reply deleted successfully",
+      post: updatedPost
+    });
+  } catch (error) {
+    console.error("Error in deleteReply controller:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

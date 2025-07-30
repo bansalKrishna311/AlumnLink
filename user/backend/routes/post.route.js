@@ -19,6 +19,8 @@ import {
     getPostsByUsername,
     getRecentAdminPosts,
     getRejectedPosts,
+    deleteComment,
+    deleteReply,
 } from "../controllers/post.controller.js";
 import Post from "../models/post.model.js"; // Added import for Post model
 
@@ -48,7 +50,9 @@ router.delete("/delete/:id", protectRoute, deletePost);
 
 // Comments and replies
 router.post("/:id/comment", protectRoute, createComment);
+router.delete("/:postId/comment/:commentId", protectRoute, deleteComment);
 router.post("/:postId/comment/:commentId/reply", protectRoute, replyToComment);
+router.delete("/:postId/comment/:commentId/reply/:replyId", protectRoute, deleteReply);
 router.post("/:postId/comment/:commentId/like", protectRoute, likeComment);
 router.post("/:postId/comment/:commentId/reply/:replyId/like", protectRoute, likeReply);
 

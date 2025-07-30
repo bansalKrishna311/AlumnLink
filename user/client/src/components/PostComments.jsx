@@ -12,26 +12,25 @@ import MentionDropdown from "./MentionDropdown";
 const renderContentWithMentions = (content, navigateToProfile) => {
   if (!content) return null;
 
-  // First handle the formatted mentions with @[username](userId) pattern
-  const formattedMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  // Also handle simple @username pattern
-  const simpleMentionPattern = /@(\w+)/g;
+  // Handle both old format @[username](userId) and new format @username for backward compatibility
+  const oldMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const newMentionPattern = /@(\w+)/g;
   
   const parts = [];
   let lastIndex = 0;
   let match;
   let processedContent = content;
 
-  // Process formatted mentions first
-  while ((match = formattedMentionPattern.exec(content)) !== null) {
+  // First, process old format mentions (for backward compatibility)
+  while ((match = oldMentionPattern.exec(content)) !== null) {
     if (match.index > lastIndex) {
       parts.push(content.substring(lastIndex, match.index));
     }
 
-    const [, username, userId] = match;
+    const [, username] = match; // Only use username, ignore userId for security
     parts.push(
       <span
-        key={`formatted-${userId}-${match.index}`}
+        key={`old-mention-${username}-${match.index}`}
         className="inline-block font-medium text-[#fe6019] cursor-pointer hover:underline"
         onClick={() => navigateToProfile(username)}
       >
@@ -42,25 +41,24 @@ const renderContentWithMentions = (content, navigateToProfile) => {
     lastIndex = match.index + match[0].length;
   }
 
-  // Handle remaining text and check for simple @username mentions
+  // Then process new format mentions in remaining text
   if (lastIndex < content.length) {
     const remainingText = content.substring(lastIndex);
-    let simpleParts = [];
-    let simpleLastIndex = 0;
+    let remainingParts = [];
+    let remainingLastIndex = 0;
     
-    // Reset the lastIndex of the regex
-    simpleMentionPattern.lastIndex = 0;
+    // Reset regex lastIndex
+    newMentionPattern.lastIndex = 0;
     
-    // Process simple @username mentions in the remaining text
-    while ((match = simpleMentionPattern.exec(remainingText)) !== null) {
-      if (match.index > simpleLastIndex) {
-        simpleParts.push(remainingText.substring(simpleLastIndex, match.index));
+    while ((match = newMentionPattern.exec(remainingText)) !== null) {
+      if (match.index > remainingLastIndex) {
+        remainingParts.push(remainingText.substring(remainingLastIndex, match.index));
       }
 
-      const username = match[1]; // Just the username without the @
-      simpleParts.push(
+      const username = match[1];
+      remainingParts.push(
         <span
-          key={`simple-${username}-${match.index}`}
+          key={`new-mention-${username}-${match.index}`}
           className="inline-block font-medium text-[#fe6019] cursor-pointer hover:underline"
           onClick={() => navigateToProfile(username)}
         >
@@ -68,16 +66,15 @@ const renderContentWithMentions = (content, navigateToProfile) => {
         </span>
       );
 
-      simpleLastIndex = match.index + match[0].length;
+      remainingLastIndex = match.index + match[0].length;
     }
 
-    // Add any remaining text after the last simple mention
-    if (simpleLastIndex < remainingText.length) {
-      simpleParts.push(remainingText.substring(simpleLastIndex));
+    // Add any remaining text
+    if (remainingLastIndex < remainingText.length) {
+      remainingParts.push(remainingText.substring(remainingLastIndex));
     }
 
-    // Add all processed simple parts to the main parts array
-    parts.push(...simpleParts);
+    parts.push(...remainingParts);
   }
 
   return parts.length > 0 ? parts : content;
@@ -159,14 +156,18 @@ const Comment = memo(({
     }
 
     if (mentionStart !== -1) {
+      // Use secure @username format instead of exposing user ID
+      const username = user.username || user.name.replace(/\s+/g, '');
+      const mentionText = `@${username}`;
+      
       const newText = text.substring(0, mentionStart) + 
-                      `@[${user.username || user.name}](${user._id})` + 
+                      mentionText + 
                       text.substring(cursorPos);
 
       setReplyContent(newText);
 
       setTimeout(() => {
-        const newCursorPos = mentionStart + `@[${user.username || user.name}](${user._id})`.length;
+        const newCursorPos = mentionStart + mentionText.length;
         replyInputRef.current.focus();
         replyInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
       }, 0);
@@ -385,7 +386,12 @@ const PostComments = ({
   handleLikeReply,
   isLikingComment,
   isLikingReply,
-  totalCommentsCount
+  handleDeleteComment,
+  handleDeleteReply,
+  isDeletingComment,
+  isDeletingReply,
+  totalCommentsCount,
+  postAuthorId
 }) => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
@@ -500,14 +506,18 @@ const PostComments = ({
     }
 
     if (mentionStart !== -1) {
+      // Use secure @username format instead of exposing user ID
+      const username = user.username || user.name.replace(/\s+/g, '');
+      const mentionText = `@${username}`;
+      
       const newText = text.substring(0, mentionStart) + 
-                      `@[${user.username || user.name}](${user._id})` + 
+                      mentionText + 
                       text.substring(cursorPos);
 
       setNewComment(newText);
 
       setTimeout(() => {
-        const newCursorPos = mentionStart + `@[${user.username || user.name}](${user._id})`.length;
+        const newCursorPos = mentionStart + mentionText.length;
         commentInputRef.current.focus();
         commentInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
       }, 0);
@@ -579,8 +589,13 @@ const PostComments = ({
                     handleLikeReply={handleLikeReply}
                     isLikingComment={isLikingComment}
                     isLikingReply={isLikingReply}
+                    handleDeleteComment={handleDeleteComment}
+                    handleDeleteReply={handleDeleteReply}
+                    isDeletingComment={isDeletingComment}
+                    isDeletingReply={isDeletingReply}
                     totalCommentsCount={totalCommentsCount}
                     navigateToProfile={navigateToProfile}
+                    postAuthorId={postAuthorId}
                   />
                 ))}
               </motion.div>
@@ -604,8 +619,13 @@ const PostComments = ({
                     handleLikeReply={handleLikeReply}
                     isLikingComment={isLikingComment}
                     isLikingReply={isLikingReply}
+                    handleDeleteComment={handleDeleteComment}
+                    handleDeleteReply={handleDeleteReply}
+                    isDeletingComment={isDeletingComment}
+                    isDeletingReply={isDeletingReply}
                     totalCommentsCount={totalCommentsCount}
                     navigateToProfile={navigateToProfile}
+                    postAuthorId={postAuthorId}
                   />
                 )}
               />

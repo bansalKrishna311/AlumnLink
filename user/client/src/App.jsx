@@ -19,6 +19,10 @@ import UserPostsPage from "./pages/UserPostsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Test404Page from "./pages/Test404Page";
+import ForCorporates from "./Landing/Pages/ForCorporates";
+import ForSchools from "./Landing/Pages/ForSchools";
+import ForAlumni from "./Landing/Pages/ForAlumni";
+import ForInstitutes from "./Landing/Pages/ForInstitutes";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({
@@ -61,6 +65,10 @@ function App() {
   <Route index element={<LandHome />} /> {/* /Landing */}
   <Route path="about" element={<About />} /> {/* /Landing/about */}
   <Route path="terms" element={<Terms />} /> {/* /Landing/terms */}
+    <Route path="for-institutes" element={<ForInstitutes />} />
+                    <Route path="for-corporates" element={<ForCorporates />} />
+                    <Route path="for-schools" element={<ForSchools />} />
+                    <Route path="for-alumni" element={<ForAlumni />} />
   <Route path="contact" element={<Contact />} /> {/* /Landing/contact */}
   <Route path="*" element={<NotFoundPage />} /> {/* 404 for Landing sub-routes */}
 </Route>

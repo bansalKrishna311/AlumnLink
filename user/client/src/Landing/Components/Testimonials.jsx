@@ -4,71 +4,71 @@ import SectionHeading from './SectionHeading';
 
 const Testimonials = () => {
   // University theme colors for testimonial cards
-  const universityColors = [
+  const institutionColors = [
     {
-      name: "Stanford University",
+      name: "Regional Engineering College",
       primary: "#fe6019", // AlumnLink primary orange
       secondary: "#ffd9c7", // Light orange variant
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Stanford_Cardinal_logo.svg/200px-Stanford_Cardinal_logo.svg.png"
+      logo: null
     },
     {
-      name: "Massachusetts Institute of Technology",
+      name: "Business Institute of Technology",
       primary: "#ff7a3d", // Slightly lighter orange
       secondary: "#ffe2d3", // Very light orange
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/200px-MIT_logo.svg.png"
+      logo: null
     },
     {
-      name: "Harvard University",
+      name: "State University",
       primary: "#e85000", // Darker orange
       secondary: "#ffc5a8", // Peachy orange
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Harvard_Crimson_logo.svg/200px-Harvard_Crimson_logo.svg.png"
+      logo: null
     },
     {
-      name: "University of Oxford",
+      name: "Corporate Training Institute",
       primary: "#ff4d00", // Vibrant orange
       secondary: "#ffccb8", // Soft peachy orange
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/200px-Oxford-University-Circlet.svg.png"
+      logo: null
     },
     {
-      name: "University of Cambridge",
+      name: "International School",
       primary: "#ff8c4d", // Light warm orange
       secondary: "#ffede3", // Very light peach
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/University_of_Cambridge_coat_of_arms.svg/200px-University_of_Cambridge_coat_of_arms.svg.png"
+      logo: null
     }
   ];
 
   // Testimonial data
   const testimonials = [
     {
-      quote: "AlumnLink has completely transformed how we engage with our alumni. The platform is intuitive and has increased our active alumni participation by 78% in just six months.",
-      name: "Dr. Elizabeth Chen",
-      title: "Alumni Relations Director",
-      university: "Stanford University",
-      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-      stats: { engagement: "78%", retention: "91%", satisfaction: "4.9/5" }
+      quote: "AlumnLink helped us centralize our alumni network for the first time. Our graduates can now easily connect with each other and find mentorship opportunities.",
+      name: "Dr. Rajesh Kumar",
+      title: "Alumni Relations Head",
+      university: "Regional Engineering College",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      stats: { engagement: "60%", retention: "85%", satisfaction: "4.7/5" }
     },
     {
-      quote: "The analytics dashboard gives us invaluable insights into our alumni community. We've been able to tailor our programs to increase engagement and foster meaningful connections.",
-      name: "Professor James Wilson",
-      title: "Dean of Alumni Affairs",
-      university: "Massachusetts Institute of Technology",
-      avatar: "https://randomuser.me/api/portraits/men/42.jpg",
-      stats: { events: "142", attendees: "3,500+", fundraising: "$2.7M" }
+      quote: "The platform made it simple to organize alumni events and track engagement. We've seen significant improvement in alumni participation since implementing AlumnLink.",
+      name: "Prof. Priya Sharma",
+      title: "Dean of Student Affairs",
+      university: "Business Institute of Technology",
+      avatar: "https://randomuser.me/api/portraits/women/42.jpg",
+      stats: { events: "25", attendees: "800+", growth: "40%" }
     },
     {
-      quote: "What sets AlumnLink apart is how it seamlessly integrates with our existing systems. The career networking features have created countless opportunities for our recent graduates.",
-      name: "Sarah Johnson, Ph.D.",
-      title: "Head of Career Services",
-      university: "Harvard University",
-      avatar: "https://randomuser.me/api/portraits/women/45.jpg",
-      stats: { jobPlacements: "347", mentorships: "512", networkGrowth: "156%" }
-    },
+      quote: "What impressed us most was how quickly we could get our alumni network up and running. The support team guided us through every step of the setup process.",
+      name: "Amit Patel",
+      title: "Director of Alumni Services",
+      university: "State University",
+      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+      stats: { setup: "2 weeks", profiles: "1,200", connections: "300+" }
+    }
     
   ];
 
-  const getColorByUniversity = (universityName) => {
-    const university = universityColors.find(u => u.name === universityName);
-    return university || universityColors[0];
+  const getColorByInstitution = (institutionName) => {
+    const institution = institutionColors.find(u => u.name === institutionName);
+    return institution || institutionColors[0];
   };
 
   // Stagger animation for cards
@@ -110,24 +110,57 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-[#fff8f5] overflow-hidden relative">
-      {/* Decorative elements */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#ffe8de] rounded-full opacity-50 blur-3xl"></div>
-      <div className="absolute bottom-20 -left-20 w-60 h-60 bg-orange-100 rounded-full opacity-60 blur-2xl"></div>
-
+    <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
         <SectionHeading
-          badge="Testimonials"
+          badge="Client Success"
           badgeColor="orange"
-          title="Trusted by leading universities worldwide"
-          description="Discover how AlumnLink has transformed alumni engagement and community building for prestigious institutions across the globe."
+          title="Growing alumni networks across institutions"
+          description="See how educational institutions are building stronger alumni communities with AlumnLink's comprehensive platform."
         />
         
-        {/* Stat highlights */}
-        <motion.div 
-          className="flex flex-wrap justify-center gap-4 md:gap-8 mb-16"
-          initial="hidden"
-          whileInView="visible"
+        {/* Simple stats */}
+        <div className="flex justify-center gap-12 mb-16">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-800">40%</div>
+            <div className="text-sm text-gray-600">Engagement Increase</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-800">25+</div>
+            <div className="text-sm text-gray-600">Partner Institutions</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-800">89%</div>
+            <div className="text-sm text-gray-600">Client Satisfaction</div>
+          </div>
+        </div>
+
+        {/* Simplified testimonial cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div 
+              key={index}
+              className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
+            >
+              <blockquote className="text-gray-700 mb-6">
+                "{testimonial.quote}"
+              </blockquote>
+              
+              <div className="flex items-center">
+                <img 
+                  src={testimonial.avatar} 
+                  alt={testimonial.name} 
+                  className="w-12 h-12 rounded-full mr-4"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                  <div className="text-sm text-gray-600">{testimonial.title}</div>
+                  <div className="text-xs text-[#fe6019] font-medium">{testimonial.university}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
           viewport={{ once: true }}
           variants={containerVariants}
         >
@@ -156,7 +189,7 @@ const Testimonials = () => {
             >
               +
             </motion.div>
-            <span className="font-bold text-gray-800">78% engagement increase</span>
+            <span className="font-bold text-gray-800">40% engagement increase</span>
           </motion.div>
           
           <motion.div
@@ -170,7 +203,7 @@ const Testimonials = () => {
             >
               +
             </motion.div>
-            <span className="font-bold text-gray-800">43% donation growth</span>
+            <span className="font-bold text-gray-800">25% network growth</span>
           </motion.div>
         </motion.div>
 
@@ -183,7 +216,7 @@ const Testimonials = () => {
           viewport={{ once: true, margin: "-100px" }}
         >
           {testimonials.map((testimonial, index) => {
-            const university = getColorByUniversity(testimonial.university);
+            const institution = getColorByInstitution(testimonial.university);
             
             return (
               <motion.div 
@@ -199,23 +232,25 @@ const Testimonials = () => {
                 {/* Curved accent on top */}
                 <div 
                   className="absolute top-0 left-0 right-0 h-24 rounded-b-[50%] opacity-20 -z-0"
-                  style={{ background: `linear-gradient(45deg, ${university.primary}, ${university.secondary})` }}
+                  style={{ background: `linear-gradient(45deg, ${institution.primary}, ${institution.secondary})` }}
                 ></div>
                 
-                {/* University logo watermark */}
+                {/* Institution logo watermark */}
                 <div className="absolute top-6 right-6 w-12 h-12 opacity-20">
-                  <img 
-                    src={university.logo} 
-                    alt={university.name} 
-                    className="w-full h-full object-contain"
-                  />
+                  {institution.logo && (
+                    <img 
+                      src={institution.logo} 
+                      alt={institution.name} 
+                      className="w-full h-full object-contain"
+                    />
+                  )}
                 </div>
                 
                 <div className="p-8 flex flex-col flex-grow relative z-10">
                   {/* Stylized quote mark */}
                   <div 
                     className="text-6xl font-serif absolute -top-2 -left-1 opacity-10"
-                    style={{ color: university.primary }}
+                    style={{ color: institution.primary }}
                   >
                     "
                   </div>
@@ -232,8 +267,8 @@ const Testimonials = () => {
                         key={key}
                         className="text-xs py-1 px-3 rounded-full font-medium"
                         style={{ 
-                          background: `${university.secondary}80`,
-                          color: university.primary 
+                          background: `${institution.secondary}80`,
+                          color: institution.primary 
                         }}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -248,7 +283,7 @@ const Testimonials = () => {
                   <div className="mt-auto flex items-center">
                     <div 
                       className="w-12 h-12 rounded-full overflow-hidden border-2 shadow-sm mr-4"
-                      style={{ borderColor: university.primary }}
+                      style={{ borderColor: institution.primary }}
                     >
                       <img 
                         src={testimonial.avatar} 
@@ -261,7 +296,7 @@ const Testimonials = () => {
                       <p className="text-sm text-gray-600">{testimonial.title}</p>
                       <p 
                         className="text-xs font-medium" 
-                        style={{ color: university.primary }}
+                        style={{ color: institution.primary }}
                       >
                         {testimonial.university}
                       </p>
@@ -272,7 +307,7 @@ const Testimonials = () => {
                 {/* Colored border accent at bottom */}
                 <div 
                   className="h-1.5 w-full" 
-                  style={{ background: `linear-gradient(to right, ${university.primary}, ${university.secondary})` }}
+                  style={{ background: `linear-gradient(to right, ${institution.primary}, ${institution.secondary})` }}
                 ></div>
               </motion.div>
             );
