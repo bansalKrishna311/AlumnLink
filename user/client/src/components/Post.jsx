@@ -28,6 +28,11 @@ const Post = ({ post }) => {
   
   // Refs
   const optionsMenuRef = useRef(null);
+
+  // Sync local comments state with post prop
+  useEffect(() => {
+    setComments(post.comments || []);
+  }, [post.comments]);
   const reactionsModalRef = useRef(null);
   
   const queryClient = useQueryClient();
@@ -208,6 +213,38 @@ const Post = ({ post }) => {
     },
   });
 
+  const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
+    mutationFn: async ({ postId, commentId }) => {
+      await axiosInstance.delete(`/posts/${postId}/comment/${commentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      toast.success("Comment deleted successfully");
+    },
+    onError: (error, variables) => {
+      // Revert optimistic update on error
+      setComments(post.comments || []);
+      toast.error(error.response?.data?.message || "Failed to delete comment");
+    },
+  });
+
+  const { mutate: deleteReply, isPending: isDeletingReply } = useMutation({
+    mutationFn: async ({ postId, commentId, replyId }) => {
+      await axiosInstance.delete(`/posts/${postId}/comment/${commentId}/reply/${replyId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      toast.success("Reply deleted successfully");
+    },
+    onError: (error, variables) => {
+      // Revert optimistic update on error
+      setComments(post.comments || []);
+      toast.error(error.response?.data?.message || "Failed to delete reply");
+    },
+  });
+
   // Action Handlers
   const handleDeletePost = () => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -315,6 +352,34 @@ const Post = ({ post }) => {
   const handleLikeReply = (commentId, replyId) => {
     if (isLikingReply) return;
     likeReply({ postId: post._id, commentId, replyId });
+  };
+
+  const handleDeleteComment = (commentId) => {
+    if (isDeletingComment) return;
+    
+    // Optimistically update local state
+    const updatedComments = comments.filter(comment => comment._id !== commentId);
+    setComments(updatedComments);
+    
+    deleteComment({ postId: post._id, commentId });
+  };
+
+  const handleDeleteReply = (commentId, replyId) => {
+    if (isDeletingReply) return;
+    
+    // Optimistically update local state
+    const updatedComments = comments.map(comment => {
+      if (comment._id === commentId) {
+        return {
+          ...comment,
+          replies: comment.replies.filter(reply => reply._id !== replyId)
+        };
+      }
+      return comment;
+    });
+    setComments(updatedComments);
+    
+    deleteReply({ postId: post._id, commentId, replyId });
   };
 
   const handleBookmarkPost = () => {
@@ -468,7 +533,12 @@ const Post = ({ post }) => {
         handleLikeReply={handleLikeReply}
         isLikingComment={isLikingComment}
         isLikingReply={isLikingReply}
+        handleDeleteComment={handleDeleteComment}
+        handleDeleteReply={handleDeleteReply}
+        isDeletingComment={isDeletingComment}
+        isDeletingReply={isDeletingReply}
         totalCommentsCount={totalCommentsCount}
+        postAuthorId={post.author._id}
       />
 
       {/* Post Modals Component */}

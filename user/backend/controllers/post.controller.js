@@ -1248,3 +1248,114 @@ export const getRejectedPosts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Delete a comment
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId)
+      .populate("author", "_id")
+      .populate("comments.user", "_id");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check if user is authorized to delete the comment
+    // Can delete if: 1) User is comment author, 2) User is post author, 3) User is admin
+    const isCommentAuthor = comment.user._id.toString() === userId.toString();
+    const isPostAuthor = post.author._id.toString() === userId.toString();
+    const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
+
+    if (!isCommentAuthor && !isPostAuthor && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to delete this comment" });
+    }
+
+    // Remove the comment
+    comment.deleteOne();
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      post: updatedPost
+    });
+  } catch (error) {
+    console.error("Error in deleteComment controller:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete a reply
+export const deleteReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user._id;
+
+    // Find the post
+    const post = await Post.findById(postId)
+      .populate("author", "_id")
+      .populate("comments.user", "_id");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Find the reply
+    const reply = comment.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    // Check if user is authorized to delete the reply
+    // Can delete if: 1) User is reply author, 2) User is comment author, 3) User is post author, 4) User is admin
+    const isReplyAuthor = reply.user._id?.toString() === userId.toString() || reply.user.toString() === userId.toString();
+    const isCommentAuthor = comment.user._id.toString() === userId.toString();
+    const isPostAuthor = post.author._id.toString() === userId.toString();
+    const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
+
+    if (!isReplyAuthor && !isCommentAuthor && !isPostAuthor && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to delete this reply" });
+    }
+
+    // Remove the reply
+    reply.deleteOne();
+    await post.save();
+
+    // Get updated post with populated data
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline")
+      .populate("comments.replies.user", "name profilePicture username headline")
+      .populate("reactions.user", "name username profilePicture headline");
+
+    res.status(200).json({
+      message: "Reply deleted successfully",
+      post: updatedPost
+    });
+  } catch (error) {
+    console.error("Error in deleteReply controller:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
