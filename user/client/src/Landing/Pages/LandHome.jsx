@@ -5,6 +5,7 @@ import WhatIsAlumnLink from "../Components/WhatIsAlumnLink";
 import WhosItFor from "../Components/WhosItFor";
 import WhyInstitutionsLoveUs from "../Components/WhyInstitutionsLoveUs";
 import WhyYouLoveUs from "../Components/WhyYouLoveUs";
+import ObviousChoice from "../Components/ObviousChoice";
 import HowItWorks from "../Components/HowItWorks";
 import Benefits from "../Components/Benefits";
 import Pricing from "../Components/Pricing";
@@ -13,6 +14,7 @@ import CallToAction from "../Components/CallToAction";
 import FeatureGrid from "../Components/FeatureGrid";
 import Testimonials from "../Components/TestimonialsClean";
 import AlumnGPT from "../Components/AlumnGPT";
+
 
 const LandHome = () => {
   // Scroll to top on component mount
@@ -62,33 +64,38 @@ const LandHome = () => {
           {/* Why You'll Love Us section */}
           <WhyYouLoveUs />
 
+          {/* What Makes AlumnLink the Obvious Choice section */}
+          <ObviousChoice />
+
           {/* How it works section */}
-          <HowItWorks />
+          {/* <HowItWorks /> */}
 
           {/* Feature Grid section */}
-          <FeatureGrid />
+          {/* <FeatureGrid /> */}
 
           {/* Benefits / Why Choose Us */}
-          <Benefits />
+          {/* <Benefits /> */}
 
           {/* Testimonials section */}
-          <Testimonials />
+          {/* <Testimonials /> */}
 
           {/* Pricing section */}
-          <Pricing />
+          {/* <Pricing /> */}
 
           {/* FAQ Section */}
-          <FAQSection />
+          {/* <FAQSection /> */}
 
           {/* Final CTA */}
-          <CallToAction
+          {/* <CallToAction
             title="Ready to transform your alumni network?"
             description="Join institutions across India who are building stronger alumni communities with AlumnLink."
             primaryButtonText="Schedule Demo"
             primaryButtonLink="/landing/contact"
             secondaryButtonText="Learn More"
             secondaryButtonLink="/landing/about"
-          />
+          /> */}
+
+      
         </motion.div>
 
         {/* AlumnGPT Chatbot */}
