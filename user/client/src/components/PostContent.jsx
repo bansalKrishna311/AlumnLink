@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Building, Briefcase, MapPin, Clock, Calendar, Hash, ArrowLeftCircle, ArrowRightCircle, XCircle } from "lucide-react";
 
 const PostContent = ({ post }) => {
+  const [showFullContent, setShowFullContent] = useState(false);
   const [formattedContent, setFormattedContent] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
@@ -109,17 +110,34 @@ const PostContent = ({ post }) => {
 
       <div className="mb-4">
         {/* Post description above images */}
-        <div
-          className="whitespace-pre-wrap break-words mb-3 text-gray-800 text-base"
-          dangerouslySetInnerHTML={{ __html: formattedContent }}
-          onClick={(e) => {
-            // Handle clicks on hashtags
-            if (e.target.tagName === "A" && e.target.href.includes("/hashtag/")) {
-              const hashtag = e.target.href.split("/hashtag/")[1];
-              handleHashtagClick(hashtag, e);
+        <div className="whitespace-pre-wrap break-words mb-3 text-gray-800 text-base">
+          {(() => {
+            const plainText = post.content || "";
+            if (!showFullContent && plainText.length > 500) {
+              // Truncate and add Read more
+              const truncated = plainText.slice(0, 500);
+              // Format truncated content
+              const formattedTruncated = formatContent(truncated);
+              return <>
+                <span dangerouslySetInnerHTML={{ __html: formattedTruncated }} />
+                <span className="text-blue-500 cursor-pointer ml-2" onClick={() => setShowFullContent(true)}>
+                  ...Read more
+                </span>
+              </>;
+            } else if (showFullContent && plainText.length > 500) {
+              // Show full content with Hide link
+              return <>
+                <span dangerouslySetInnerHTML={{ __html: formattedContent }} />
+                <span className="text-blue-500 cursor-pointer ml-2" onClick={() => setShowFullContent(false)}>
+                  Hide
+                </span>
+              </>;
+            } else {
+              // Show full formatted content (short post)
+              return <span dangerouslySetInnerHTML={{ __html: formattedContent }} />;
             }
-          }}
-        />
+          })()}
+        </div>
         {/* Custom layout for multiple images: first image large, others in row below with borders and '+N' overlay */}
         {post.images && post.images.length > 0 && (
           <div className="mb-3 mt-2 flex flex-col items-center">
