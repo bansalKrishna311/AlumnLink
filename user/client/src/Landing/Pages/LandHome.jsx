@@ -4,6 +4,7 @@ import Hero from "../Components/Hero";
 import WhatIsAlumnLink from "../Components/WhatIsAlumnLink";
 import WhosItFor from "../Components/WhosItFor";
 import WhyInstitutionsLoveUs from "../Components/WhyInstitutionsLoveUs";
+import WhyYouLoveUs from "../Components/WhyYouLoveUs";
 import HowItWorks from "../Components/HowItWorks";
 import Benefits from "../Components/Benefits";
 import Pricing from "../Components/Pricing";
@@ -57,6 +58,9 @@ const LandHome = () => {
 
           {/* Why Institutions Love Us section */}
           <WhyInstitutionsLoveUs />
+
+          {/* Why You'll Love Us section */}
+          <WhyYouLoveUs />
 
           {/* How it works section */}
           <HowItWorks />
