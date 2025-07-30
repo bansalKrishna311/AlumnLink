@@ -113,89 +113,103 @@ const WhyInstitutionsLoveUs = () => {
           </motion.p>
         </motion.div>
 
-        {/* Benefits Grid - Enhanced Design */}
-        <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-30px" }}
-        >
-          {benefits.map((benefit, index) => (
-            <motion.div
-              key={index}
-              className="group relative"
-              variants={itemVariants}
-              onHoverStart={() => setHoveredCard(index)}
-              onHoverEnd={() => setHoveredCard(null)}
-              whileHover={{ 
-                y: -4,
-                transition: { duration: 0.2 }
-              }}
-            >
-              {/* Card with enhanced styling */}
-              <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 text-center border border-[#fe6019]/10 hover:border-[#fe6019]/20 hover:bg-white/80 transition-all duration-200 h-full relative overflow-hidden">
-                {/* Background gradient on hover */}
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-br from-[#fe6019]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
-                
-                {/* Content */}
-                <div className="relative z-10">
-                  {/* Icon with enhanced animations */}
-                  <motion.div
-                    className="w-12 h-12 bg-[#fe6019]/10 rounded-lg flex items-center justify-center text-[#fe6019] mx-auto mb-4 group-hover:bg-[#fe6019]/20 transition-colors duration-200"
-                    whileHover={{ 
-                      scale: 1.1,
-                      rotate: [0, -3, 3, -3, 3, 0],
-                    }}
-                    transition={{ 
-                      scale: { duration: 0.3 },
-                      rotate: { duration: 0.8, ease: "easeInOut" }
-                    }}
-                    animate={hoveredCard === index ? {
-                      y: [-2, 2, -2],
-                    } : {}}
-                  >
-                    <motion.div
-                      animate={hoveredCard === index ? {
-                        scale: [1, 1.1, 1],
-                      } : {}}
-                      transition={{ 
-                        repeat: hoveredCard === index ? Infinity : 0,
-                        duration: 1.5,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      {benefit.icon}
-                    </motion.div>
-                  </motion.div>
-                  
-                  {/* Highlight badge */}
-                  <motion.div 
-                    className="inline-block px-3 py-1 bg-[#fe6019]/10 text-[#fe6019] text-xs font-medium rounded-full mb-3 group-hover:bg-[#fe6019]/20 transition-colors duration-300"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-                  >
-                    {benefit.highlight}
-                  </motion.div>
-                  
-                  {/* Title */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#fe6019] transition-colors duration-200">
-                    {benefit.title}
-                  </h3>
-                  
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {benefit.description}
+        {/* Benefits in Split Layout - NO MORE CARDS! */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Left Column - Benefits List */}
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-[#fe6019]/10 hover:border-[#fe6019]/20 hover:bg-white/80 transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
+                whileHover={{ x: 5 }}
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-[#fe6019]/10 rounded-lg flex items-center justify-center text-[#fe6019]">
+                    {React.cloneElement(benefit.icon, { size: 24 })}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{benefit.title}</h3>
+                    <span className="px-2 py-1 bg-[#fe6019]/10 text-[#fe6019] text-xs font-medium rounded-full">
+                      {benefit.highlight}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">{benefit.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Right Column - Testimonial Style Content */}
+          <motion.div 
+            className="space-y-8"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            {/* Success Promise */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-[#fe6019]/20">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#fe6019]/20 to-[#fe6019]/30 rounded-full flex items-center justify-center text-[#fe6019] font-bold text-xl">
+                  ₹
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Built for Profitability</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                Designed to deliver measurable returns through improved alumni engagement. Our pricing model ensures institutions invest wisely.
                   </p>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            </div>
+
+            {/* Feature Highlight */}
+            <div className="bg-gradient-to-br from-[#fe6019]/5 to-transparent rounded-xl p-6 border border-[#fe6019]/10">
+              <div className="flex items-center gap-3 mb-4">
+                <Trophy size={20} className="text-[#fe6019]" />
+                <h4 className="text-lg font-semibold text-gray-900">Purpose-Built Solution</h4>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                Specifically designed for Indian educational institutions to create meaningful alumni connections and unlock opportunities.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['Alumni Networking', 'Career Opportunities', 'Institutional Growth'].map((tag, i) => (
+                  <span key={i} className="px-3 py-1 bg-[#fe6019]/10 text-[#fe6019] text-xs font-medium rounded-full">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            {/* <motion.div 
+              className="bg-[#fe6019]/10 rounded-xl p-6 text-center border border-[#fe6019]/20"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Be among the first institutions</h4>
+              <p className="text-gray-600 text-sm mb-4">Get early access and help shape the future of alumni networking in India</p>
+              <motion.button 
+                className="px-6 py-2 bg-[#fe6019] text-white font-medium rounded-lg hover:bg-[#fe6019]/90 transition-colors duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Request Early Access
+              </motion.button>
+            </motion.div> */}
+          </motion.div>
+        </div>
       </div>
     </motion.section>
   );
