@@ -8,8 +8,8 @@ import MentionDropdown from "./MentionDropdown";
 
 const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [content, setContent] = useState("");
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [type, setType] = useState(selectedPostType || "discussion");
   const [selectedLinks, setSelectedLinks] = useState(null);
 
@@ -133,7 +133,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
       links: selectedLinks ? [selectedLinks.value] : []
     };
 
-    if (image) postData.image = await readFileAsDataURL(image);
+    if (images.length > 0) {
+      postData.images = await Promise.all(images.map(readFileAsDataURL));
+    }
 
     // Add type-specific details — stringified!
     const detailsMap = {
@@ -153,8 +155,8 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
 
   const resetForm = () => {
     setContent("");
-    setImage(null);
-    setImagePreview(null);
+    setImages([]);
+    setImagePreviews([]);
     setType("discussion");
     setSelectedLinks([]);
     setCompanyName("");
@@ -169,10 +171,9 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const handleFileButtonClick = () => document.getElementById("fileInput").click();
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-    if (file) readFileAsDataURL(file).then(setImagePreview);
-    else setImagePreview(null);
+    const files = Array.from(e.target.files);
+    setImages(files);
+    Promise.all(files.map(readFileAsDataURL)).then(setImagePreviews);
   };
 
   const readFileAsDataURL = (file) => {
@@ -349,11 +350,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
           <div
             ref={modalRef}
             className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-8 overflow-y-auto max-h-[90vh]"
-            style={{
-              backgroundImage: "url('../../public/background.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
+          
           >
             <div
               className={`text-xl font-semibold mb-4 text-white py-2 px-4 rounded-lg ${getButtonGradient()}`}
@@ -427,20 +424,48 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               />
             )}
 
-            {imagePreview && (
-              <div className="relative mt-2 mb-4">
-                <img
-                  src={imagePreview}
-                  alt="Selected"
-                  className="w-full h-auto rounded-lg border border-[#fe6019]/20"
-                />
-              </div>
-            )}
+            {imagePreviews.length > 0 && (
+  <div className="relative mt-2 mb-4">
+    <div className="grid grid-cols-3 gap-2">
+      {/* Large main image (first image) */}
+      <div className="col-span-3 sm:col-span-2 row-span-2">
+        <img
+          src={imagePreviews[0]}
+          alt="Main"
+          className="w-full h-full object-cover rounded-lg border border-[#fe6019]/20"
+          style={{ aspectRatio: '16/9', maxHeight: '300px' }}
+        />
+      </div>
+
+      {/* Up to 3 small images (thumbnails) */}
+      <div className="grid grid-cols-1 gap-2">
+        {imagePreviews.slice(1, 4).map((preview, index) => (
+          <img
+            key={index}
+            src={preview}
+            alt={`Preview ${index + 2}`}
+            className="w-full h-full object-cover rounded-lg border border-[#fe6019]/20"
+            style={{ aspectRatio: '4/3', maxHeight: '95px' }}
+          />
+        ))}
+
+        {/* Show "+X" badge if more images exist */}
+        {imagePreviews.length > 4 && (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg text-gray-700 font-semibold border border-[#fe6019]/20 text-sm">
+            +{imagePreviews.length - 4} more
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
 
             <input
               id="fileInput"
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
               className="hidden"
             />

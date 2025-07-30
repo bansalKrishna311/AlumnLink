@@ -24,7 +24,7 @@ const postSchema = new mongoose.Schema(
     {
         author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         content: { type: String },
-        image: { type: String },
+        images: [{ type: String }],
         reactions: [{
             user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
             type: {

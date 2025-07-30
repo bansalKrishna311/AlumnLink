@@ -845,13 +845,17 @@ const PostRequests = () => {
                     )}
                     
                     {/* Post image with improved styling */}
-                    {previewPost.image && (
-                      <div className="mt-4 rounded-lg overflow-hidden border border-gray-100 shadow-sm">
-                        <img
-                          src={previewPost.image}
-                          alt="Post content"
-                          className="w-full h-auto max-h-96 object-contain bg-black/5"
-                        />
+                    {previewPost.images && previewPost.images.length > 0 && (
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {previewPost.images.map((img, idx) => (
+                          <div key={idx} className="rounded-lg overflow-hidden border border-gray-100 shadow-sm">
+                            <img
+                              src={img}
+                              alt={`Post content ${idx+1}`}
+                              className="w-full h-auto max-h-96 object-contain bg-black/5"
+                            />
+                          </div>
+                        ))}
                       </div>
                     )}
                     
