@@ -242,8 +242,18 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
             <h1 className="text-2xl font-bold mb-2 text-[#fe6019]">{userData.name}</h1>
           )}
 
-          {/* Display headline but don't allow editing */}
-          <p className="text-gray-600">{userData.headline}</p>
+          {/* Editable headline */}
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedData.headline ?? userData.headline ?? "AlumnLink User"}
+              onChange={(e) => setEditedData({ ...editedData, headline: e.target.value })}
+              className="text-gray-600 text-center w-full focus:border-[#fe6019] focus:ring-1 focus:ring-[#fe6019] rounded-md py-1 px-2 mb-2"
+              placeholder="AlumnLink User"
+            />
+          ) : (
+            <p className="text-gray-600">{userData.headline || "AlumnLink User"}</p>
+          )}
 
           <div className="flex justify-center items-center mt-2">
             <MapPin size={16} className="text-[#fe6019] mr-1" />
