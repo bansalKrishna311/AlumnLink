@@ -218,6 +218,7 @@ export const getUserLinks = async (req, res) => {
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder || 'desc';
         const search = req.query.search; // Get search query
+        const location = req.query.location; // Get location filter
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -275,14 +276,20 @@ export const getUserLinks = async (req, res) => {
                 },
                 {
                     $match: {
-                        $or: [
-                            { 'otherUser.name': searchRegex },
-                            { 'otherUser.username': searchRegex },
-                            { 'otherUser.email': searchRegex },
-                            { 'otherUser.location': searchRegex },
-                            { rollNumber: searchRegex },
-                            { batch: searchRegex },
-                            { courseName: searchRegex }
+                        $and: [
+                            {
+                                $or: [
+                                    { 'otherUser.name': searchRegex },
+                                    { 'otherUser.username': searchRegex },
+                                    { 'otherUser.email': searchRegex },
+                                    { 'otherUser.location': searchRegex },
+                                    { rollNumber: searchRegex },
+                                    { batch: searchRegex },
+                                    { courseName: searchRegex }
+                                ]
+                            },
+                            // Add location filter if provided
+                            ...(location && location !== 'All Chapters' ? [{ 'otherUser.location': location }] : [])
                         ]
                     }
                 },
@@ -337,7 +344,101 @@ export const getUserLinks = async (req, res) => {
             return res.json(transformedLinks);
         }
 
-        // No search - use simpler query
+        // Handle location filtering when no search is provided
+        if (location && location !== 'All Chapters') {
+            // Use aggregation pipeline for location filtering
+            const pipeline = [
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'sender',
+                        foreignField: '_id',
+                        as: 'senderData'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'recipient',
+                        foreignField: '_id',
+                        as: 'recipientData'
+                    }
+                },
+                {
+                    $unwind: '$senderData'
+                },
+                {
+                    $unwind: '$recipientData'
+                },
+                {
+                    $addFields: {
+                        otherUser: {
+                            $cond: {
+                                if: { $eq: ['$sender', userId] },
+                                then: '$recipientData',
+                                else: '$senderData'
+                            }
+                        }
+                    }
+                },
+                {
+                    $match: {
+                        'otherUser.location': location
+                    }
+                },
+                { $sort: sortOptions }
+            ];
+
+            // Get total count
+            const countPipeline = [...pipeline, { $count: 'total' }];
+            const countResult = await LinkRequest.aggregate(countPipeline);
+            const totalCount = countResult.length > 0 ? countResult[0].total : 0;
+
+            // Add pagination
+            pipeline.push({ $skip: skip });
+            pipeline.push({ $limit: limit });
+
+            // Execute aggregation
+            const linkRequests = await LinkRequest.aggregate(pipeline);
+
+            // Transform data
+            const transformedLinks = linkRequests.map((request) => {
+                const otherUser = request.otherUser;
+                
+                return {
+                    _id: request._id,
+                    connection: request.sender.equals(userId) ? "sent" : "received",
+                    user: otherUser,
+                    name: otherUser.name,
+                    username: otherUser.username,
+                    location: otherUser.location,
+                    profilePicture: otherUser.profilePicture,
+                    headline: otherUser.headline,
+                    skills: otherUser.skills,
+                    experience: otherUser.experience,
+                    education: otherUser.education,
+                    rollNumber: request.rollNumber,
+                    batch: request.batch,
+                    courseName: request.courseName,
+                    status: request.status,
+                    createdAt: request.createdAt,
+                    updatedAt: request.updatedAt,
+                };
+            });
+
+            const totalPages = Math.ceil(totalCount / limit);
+
+            // Set pagination headers
+            res.set('X-Total-Count', totalCount.toString());
+            res.set('X-Total-Pages', totalPages.toString());
+            res.set('X-Current-Page', page.toString());
+            res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
+
+            return res.json(transformedLinks);
+        }
+
+        // No search and no location filter - use simpler query
         const totalCount = await LinkRequest.countDocuments(baseQuery);
         
         // Fetch all accepted link requests with pagination
@@ -536,6 +637,9 @@ export const getUsersLinks = async (req, res) => {
     const skip = (page - 1) * limit;
     const sortBy = req.query.sortBy || 'name';
     const sortOrder = req.query.sortOrder || 'asc';
+    const search = req.query.search ? req.query.search.trim() : '';
+    const location = req.query.location ? req.query.location.trim() : '';
+    const skill = req.query.skill ? req.query.skill.trim() : '';
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -543,24 +647,48 @@ export const getUsersLinks = async (req, res) => {
       return res.status(400).json({ message: "Invalid userId" });
     }
 
-    // Count total connections for pagination
-    const user = await User.findById(userId);
+    // Fetch all links for the user
+    const user = await User.findById(userId).populate({
+      path: "Links",
+      select: "name username profilePicture location skills experience education batch courseName",
+    });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    
-    const totalCount = user.Links.length;
 
-    // Fetch user links with pagination and sorting
-    const populatedUser = await User.findById(userId).populate({
-      path: "Links",
-      select: "name username profilePicture location skills experience education batch courseName",
-      options: {
-        sort: sortOptions,
-        skip: skip,
-        limit: limit
-      }
+    // Filter links array in-memory (for moderate dataset size)
+    let filteredLinks = user.Links;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredLinks = filteredLinks.filter(link =>
+        (link.name && link.name.toLowerCase().includes(searchLower)) ||
+        (link.username && link.username.toLowerCase().includes(searchLower))
+      );
+    }
+    if (location) {
+      filteredLinks = filteredLinks.filter(link => link.location === location);
+    }
+    if (skill) {
+      const skillLower = skill.toLowerCase();
+      filteredLinks = filteredLinks.filter(link =>
+        Array.isArray(link.skills) &&
+        link.skills.some(s => s && s.toLowerCase().includes(skillLower))
+      );
+    }
+
+    // Sort filtered links
+    filteredLinks = filteredLinks.sort((a, b) => {
+      let aVal = a[sortBy] || '';
+      let bVal = b[sortBy] || '';
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
     });
+
+    const totalCount = filteredLinks.length;
+    const paginatedLinks = filteredLinks.slice(skip, skip + limit);
 
     // Set pagination headers
     res.set('X-Total-Count', totalCount.toString());
@@ -568,7 +696,7 @@ export const getUsersLinks = async (req, res) => {
     res.set('X-Current-Page', page.toString());
     res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
 
-    res.json(populatedUser.Links);
+    res.json(paginatedLinks);
   } catch (error) {
     console.error("Error fetching user links:", error);
     res.status(500).json({

@@ -17,7 +17,7 @@ const UserLinksPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedSkill, setSelectedSkill] = useState("");
+  const [skillSearch, setSkillSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -40,7 +40,8 @@ const UserLinksPage = () => {
     if (userId) {
       fetchUserLinks();
     }
-  }, [userId, page, itemsPerPage, sortBy, sortOrder]);
+    // eslint-disable-next-line
+  }, [userId, page, itemsPerPage, sortBy, sortOrder, searchQuery, selectedLocation, skillSearch]);
 
   const fetchUserLinks = async () => {
     try {
@@ -50,22 +51,18 @@ const UserLinksPage = () => {
           page,
           limit: itemsPerPage,
           sortBy,
-          sortOrder
+          sortOrder,
+          search: searchQuery,
+          location: selectedLocation,
+          skill: skillSearch
         }
       });
-      
-      console.log("API Response:", response.data);
       setLinks(response.data || []);
-      
-      // Extract unique values for filters
       extractFilterOptions(response.data);
-      
-      // Calculate total pages if pagination info is available
       if (response.headers && response.headers["x-total-count"]) {
         const totalCount = parseInt(response.headers["x-total-count"]);
         setTotalPages(Math.ceil(totalCount / itemsPerPage));
       } else {
-        // If server doesn't provide count, estimate based on results
         setTotalPages(response.data.length < itemsPerPage ? 1 : page + 1);
       }
     } catch (error) {
@@ -116,7 +113,7 @@ const UserLinksPage = () => {
 
   const resetFilters = () => {
     setSelectedLocation("");
-    setSelectedSkill("");
+    setSkillSearch("");
     setSearchQuery("");
     setSortBy("name");
     setSortOrder("asc");
@@ -135,19 +132,8 @@ const UserLinksPage = () => {
     setPage(1); // Reset to first page
   };
 
-  const filteredLinks = links.filter((link) => {
-    const searchTerm = searchQuery.toLowerCase();
-    const name = (link.name || "").toLowerCase();
-    const username = (link.username || "").toLowerCase();
-    const locationMatch = !selectedLocation || link.location === selectedLocation;
-    const skillMatch = !selectedSkill || (link.skills && link.skills.includes(selectedSkill));
-
-    return (
-      (name.includes(searchTerm) || username.includes(searchTerm)) && 
-      locationMatch && 
-      skillMatch
-    );
-  });
+  // No client-side filtering; use links directly from backend
+  const filteredLinks = links;
 
   const locations = [
     "Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai", 
@@ -164,8 +150,8 @@ const UserLinksPage = () => {
         {/* Search and Basic Filters */}
         <div className="flex flex-col space-y-4 backdrop-blur-sm bg-white/30 p-3 sm:p-4 rounded-xl border border-orange-100 shadow-lg">
           <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-            <div className="relative w-full md:max-w-[70%]">
-              <div className="relative">
+            <div className="flex w-full md:max-w-[70%] gap-2 items-center">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#fe6019]" />
                 <Input
                   type="text"
@@ -174,8 +160,19 @@ const UserLinksPage = () => {
                   className="pl-10 w-full border-orange-200 focus:border-[#fe6019] focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300 text-sm"
                 />
               </div>
+              <div className="min-w-[140px]">
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="px-2 py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm text-xs sm:text-sm"
+                >
+                  <option value="">All Chapters</option>
+                  {locations.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            
             <button
               onClick={toggleFilters}
               className="flex items-center justify-center gap-2 px-3 py-2 bg-[#fe6019] text-white rounded-md hover:bg-[#e54e0e] transition-colors text-sm"
@@ -188,44 +185,22 @@ const UserLinksPage = () => {
           {/* Expanded Filters Section */}
           {filtersVisible && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-orange-100">
-              {/* Location Filter */}
-              <div className="flex flex-col space-y-1">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
-                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-[#fe6019]" />
-                  Chapters
-                </label>
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="px-2 py-1 sm:px-3 sm:py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300 text-xs sm:text-sm"
-                >
-                  <option value="">All Chapters</option>
-                  {locations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Skills Filter */}
+              {/* Skills Search Bar */}
               <div className="flex flex-col space-y-1">
                 <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
                   <Code className="h-3 w-3 sm:h-4 sm:w-4 text-[#fe6019]" />
-                  Skills
+                  Skill Search
                 </label>
-                <select
-                  value={selectedSkill}
-                  onChange={(e) => setSelectedSkill(e.target.value)}
+                <input
+                  type="text"
+                  value={skillSearch}
+                  onChange={e => {
+                    setSkillSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Type skill (e.g. React)"
                   className="px-2 py-1 sm:px-3 sm:py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300 text-xs sm:text-sm"
-                >
-                  <option value="">All Skills</option>
-                  {availableSkills.map((skill) => (
-                    <option key={skill} value={skill}>
-                      {skill}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               
               {/* Sort By */}
@@ -242,7 +217,7 @@ const UserLinksPage = () => {
                 >
                   <option value="name-asc">Name (A-Z)</option>
                   <option value="name-desc">Name (Z-A)</option>
-                  <option value="createdAt-desc">Recently Connected</option>
+                  {/* <option value="createdAt-desc">Recently Connected</option> */}
                 </select>
               </div>
               
@@ -281,10 +256,10 @@ const UserLinksPage = () => {
           {filteredLinks.length > 0 ? (
             <p>
               Showing {filteredLinks.length} connection{filteredLinks.length !== 1 ? 's' : ''}
-              {(selectedLocation || selectedSkill || searchQuery) && ' • Filtered by: '}
+              {(selectedLocation || skillSearch || searchQuery) && ' • Filtered by: '}
               {selectedLocation && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{selectedLocation}</span>}
-              {selectedSkill && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{selectedSkill}</span>}
-              {searchQuery && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">"{searchQuery}"</span>}
+              {skillSearch && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{skillSearch}</span>}
+              {searchQuery && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">&quot;{searchQuery}&quot;</span>}
             </p>
           ) : !isLoading && (
             <p>No connections match your filters</p>
@@ -413,10 +388,10 @@ const UserLinksPage = () => {
           <div className="text-center py-12 bg-white/70 backdrop-blur-sm rounded-xl border border-orange-100">
             <UserCircle2 className="mx-auto h-16 w-16 text-[#fe6019]" />
             <h3 className="mt-4 text-xl font-medium text-gray-900">
-              {searchQuery || selectedLocation || selectedSkill ? "No matches found" : "No connections yet"}
+              {searchQuery || selectedLocation || skillSearch ? "No matches found" : "No connections yet"}
             </h3>
             <p className="mt-2 text-gray-600">
-              {searchQuery || selectedLocation || selectedSkill
+              {searchQuery || selectedLocation || skillSearch
                 ? "Try adjusting your search terms or filters"
                 : "Start connecting with other users to build your network."}
             </p>
