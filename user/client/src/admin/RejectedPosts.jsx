@@ -716,7 +716,7 @@ const RejectedPosts = () => {
                         <img
                           src={previewPost.image}
                           alt="Post content"
-                          className="w-full h-auto max-h-96 object-contain bg-black/5"
+                          className="w-full h-auto max-h-64 object-contain bg-black/5"
                         />
                       </div>
                     )}
@@ -848,11 +848,11 @@ const RejectedPosts = () => {
                 </div>
                 
                 {/* Display metadata for admin */}
-                <div className="mt-3 text-center">
+                {/* <div className="mt-3 text-center">
                   <span className="text-xs text-gray-400">
                     Post ID: {previewPost._id} • Created: {new Date(previewPost.createdAt).toLocaleString()}
                   </span>
-                </div>
+                </div> */}
               </div>
             </motion.div>
           </div>

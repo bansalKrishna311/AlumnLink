@@ -10,6 +10,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   User,
   Calendar,
   BookOpen,
@@ -31,6 +32,26 @@ const UserLinks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState('All Chapters');
+  
+  // Location options for the filter
+  const locationOptions = [
+    'All Chapters',
+    'Bengaluru',
+    'Hyderabad', 
+    'Pune',
+    'Chennai',
+    'Mumbai',
+    'Delhi NCR',
+    'Kolkata',
+    'Ahmedabad',
+    'Jaipur',
+    'Thiruvananthapuram',
+    'Lucknow',
+    'Indore',
+    'Chandigarh',
+    'Nagpur'
+  ];
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +73,11 @@ const UserLinks = () => {
       // Add search query to server request if it exists
       if (debouncedSearchQuery && debouncedSearchQuery.trim()) {
         params.append('search', debouncedSearchQuery.trim());
+      }
+      
+      // Add location filter to server request if it's not "All Chapters"
+      if (selectedLocation && selectedLocation !== 'All Chapters') {
+        params.append('location', selectedLocation);
       }
       
       const response = await axiosInstance.get(`/links?${params}`);
@@ -93,7 +119,7 @@ const UserLinks = () => {
       }
       setIsLoading(false);
     }
-  }, [currentPage, debouncedSearchQuery]);
+  }, [currentPage, debouncedSearchQuery, selectedLocation]);
 
   // Debounce search query and handle search changes
   useEffect(() => {
@@ -280,6 +306,12 @@ const UserLinks = () => {
     setCurrentPage(1);
   }, []);
 
+  const handleLocationChange = useCallback((location) => {
+    setSelectedLocation(location);
+    // Reset pagination when changing location
+    setCurrentPage(1);
+  }, []);
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -365,17 +397,37 @@ const UserLinks = () => {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <div className="max-w-md w-full">
-                <SearchBar
-                  placeholder="Search by name, roll number, batch, course..."
-                  onSearch={handleSearchChange}
-                  onClear={handleClearSearch}
-                  initialValue={searchQuery}
-                  className="w-full"
-                  size="md"
-                  showClearButton={true}
-                  debounceDelay={0}
-                />
+              <div className="max-w-2xl w-full">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <SearchBar
+                      placeholder="Search by name, roll number, batch, course..."
+                      onSearch={handleSearchChange}
+                      onClear={handleClearSearch}
+                      initialValue={searchQuery}
+                      className="w-full"
+                      size="md"
+                      showClearButton={true}
+                      debounceDelay={0}
+                    />
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={selectedLocation}
+                      onChange={(e) => handleLocationChange(e.target.value)}
+                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] min-w-[180px] cursor-pointer transition-colors duration-200"
+                    >
+                      {locationOptions.map((location) => (
+                        <option key={location} value={location}>
+                          {location}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" 
+                    />
+                  </div>
+                </div>
                 {isSearching && (
                   <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
                     <motion.div 
@@ -390,19 +442,30 @@ const UserLinks = () => {
                   <div className="mt-2 text-sm text-gray-600">
                     {pagination.totalCount > 0 ? (
                       <>
-                        Found {pagination.totalCount} result{pagination.totalCount !== 1 ? 's' : ''} for "{searchQuery}"
+                        Found {pagination.totalCount} result{pagination.totalCount !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
+                        {selectedLocation !== 'All Chapters' && (
+                          <span className="text-gray-500"> in {selectedLocation}</span>
+                        )}
                         {pagination.totalPages > 1 && (
                           <span className="text-gray-500"> (Page {pagination.currentPage} of {pagination.totalPages})</span>
                         )}
                       </>
                     ) : (
-                      `No results found for "${searchQuery}"`
+                      <>
+                        No results found for &quot;{searchQuery}&quot;
+                        {selectedLocation !== 'All Chapters' && (
+                          <span className="text-gray-500"> in {selectedLocation}</span>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
                 {!searchQuery && pagination.totalCount > 0 && (
                   <div className="mt-2 text-sm text-gray-500">
                     Showing {pagination.totalCount} total connections
+                    {selectedLocation !== 'All Chapters' && (
+                      <span> from {selectedLocation}</span>
+                    )}
                     {pagination.totalPages > 1 && (
                       <span> (Page {pagination.currentPage} of {pagination.totalPages})</span>
                     )}
