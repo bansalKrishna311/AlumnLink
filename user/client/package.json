@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start":"vite start"
+    "start": "vite start"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -56,6 +56,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "User-end": "file:..",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
