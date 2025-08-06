@@ -5,6 +5,7 @@ import Session from "../models/session.model.js";
 import { sendResetPasswordEmail, sendWelcomeEmail } from "../emails/emailHandlers.js";
 import crypto from "crypto";
 import cloudinary from '../lib/cloudinary.js';
+import { uploadToSpaces } from "../lib/digitalocean.js";
 
 // Helper function to validate password strength
 const validatePassword = (password) => {
@@ -312,22 +313,15 @@ export const linkedInCallback = async (req, res) => {
 			try {
 				const imageRes = await fetch(userdata.picture);
 				const buffer = await imageRes.arrayBuffer();
+				const imageBuffer = Buffer.from(buffer);
 
-				const uploadResult = await new Promise((resolve, reject) => {
-					const stream = cloudinary.uploader.upload_stream(
-						{
-							folder: 'alumnlink/linkedin-profiles',
-							resource_type: 'image',
-						},
-						(error, result) => {
-							if (error) return reject(error);
-							resolve(result);
-						}
-					);
-					stream.end(Buffer.from(buffer));
-				});
-
-				profilePictureUrl = uploadResult.secure_url;
+				// Upload to DigitalOcean Spaces instead of Cloudinary
+				profilePictureUrl = await uploadToSpaces(
+					imageBuffer,
+					'linkedin-profile.jpg',
+					'image/jpeg',
+					'linkedin-profiles'
+				);
 			} catch (err) {
 				console.error("Cloudinary upload failed:", err.message);
 				profilePictureUrl = ''; // fallback if upload fails

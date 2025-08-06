@@ -364,7 +364,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
               <img
                 src={user.profilePicture || "/avatar.png"}
                 alt={user.name}
-                className="w-10 h-10 rounded-full border-2 border-[#fe6019]/50"
+                className="w-10 h-10 rounded-full border-2 border-[#fe6019]/50 object-cover"
               />
               <div className="w-full">
                 <textarea

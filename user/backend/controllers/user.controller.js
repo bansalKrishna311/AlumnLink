@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
+import { uploadBase64ToSpaces } from "../lib/digitalocean.js";
 
 
 
@@ -84,14 +85,36 @@ export const updateProfile = async (req, res) => {
 			}
 		} 
 
+		// Upload profile picture and banner in parallel for speed
+		const uploadPromises = [];
+		
 		if (req.body.profilePicture) {
-			const result = await cloudinary.uploader.upload(req.body.profilePicture);
-			updatedData.profilePicture = result.secure_url;
+			console.log('🚀 Uploading profile picture...');
+			uploadPromises.push(
+				uploadBase64ToSpaces(req.body.profilePicture, 'profiles')
+					.then(url => ({ type: 'profilePicture', url }))
+			);
 		}
 
 		if (req.body.bannerImg) {
-			const result = await cloudinary.uploader.upload(req.body.bannerImg);
-			updatedData.bannerImg = result.secure_url;
+			console.log('🚀 Uploading banner image...');
+			uploadPromises.push(
+				uploadBase64ToSpaces(req.body.bannerImg, 'banners')
+					.then(url => ({ type: 'bannerImg', url }))
+			);
+		}
+
+		// Wait for all uploads to complete in parallel
+		if (uploadPromises.length > 0) {
+			console.log(`⚡ Processing ${uploadPromises.length} image uploads in parallel...`);
+			const uploadResults = await Promise.all(uploadPromises);
+			
+			// Apply the upload results to updatedData
+			uploadResults.forEach(result => {
+				updatedData[result.type] = result.url;
+			});
+			
+			console.log(`✅ Successfully uploaded ${uploadResults.length} images`);
 		}
 
 		const user = await User.findByIdAndUpdate(req.user._id, { $set: updatedData }, { new: true }).select(

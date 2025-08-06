@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Superimg from '../../public/super/supp.jpg'
+
 const SuperAdminPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center p-6">
@@ -17,7 +17,7 @@ const SuperAdminPage = () => {
         </div>
         <div className="md:w-1/2 flex justify-center mt-6 md:mt-0">
           <img 
-            src={Superimg}
+            src="/super/supp.jpg"
             alt="Super Admin" 
             className="rounded-xl  w-full"
           />

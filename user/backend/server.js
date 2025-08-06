@@ -55,8 +55,9 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
-// Set reasonable body size limits
-app.use(express.json({ limit: "2mb" })); 
+// Set reasonable body size limits for image uploads
+app.use(express.json({ limit: "50mb" })); // Increased from 2mb to 50mb for large base64 images
+app.use(express.urlencoded({ limit: "50mb", extended: true })); // Added for form data
 app.use(cookieParser());
 
 // Add database optimization middleware
