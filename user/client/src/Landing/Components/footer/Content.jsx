@@ -22,10 +22,7 @@ const Content = () => {
   ];
 
   const socialIcons = [
-    { name: "LinkedIn", link: "https://linkedin.com/company/alumnlink", icon: <Linkedin size={20} />, label: "LinkedIn" },
-    { name: "Twitter", link: "https://twitter.com/alumnlink", icon: <Twitter size={20} />, label: "Twitter" },
-    { name: "Instagram", link: "https://instagram.com/alumnlink", icon: <Instagram size={20} />, label: "Instagram" },
-    { name: "Facebook", link: "https://facebook.com/alumnlink", icon: <Facebook size={20} />, label: "Facebook" },
+    { name: "LinkedIn", link: "https://www.linkedin.com/company/aumnlink/", icon: <Linkedin size={20} />, label: "LinkedIn" },
   ];
 
   const FooterColumn = ({ title, links }) => (

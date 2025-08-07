@@ -1,0 +1,37 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /login/
+Disallow: /register/
+
+# Allow specific landing pages
+Allow: /landing/
+Allow: /about/
+Allow: /contact/
+Allow: /terms/
+Allow: /privacy/
+
+# Sitemap location
+Sitemap: https://www.alumnlink.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
+# Specific bots
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+
+User-agent: Baiduspider
+Disallow: /
