@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Users, Zap, Award, Target, ArrowRight, CheckCircle } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const ForInstitutes = () => {
   const benefits = [
@@ -53,9 +54,17 @@ const ForInstitutes = () => {
   ];
 
   return (
-    <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
-      {/* Hero Section */}
-      <div className="py-20 relative overflow-hidden">
+    <>
+      <SEO 
+        title="AlumnLink for Educational Institutes - Alumni Management Platform"
+        description="Transform your alumni network with AlumnLink's comprehensive alumni management platform. Boost engagement, fundraising, and institutional growth. Get started today!"
+        keywords="alumni management platform, educational institutes, alumni engagement, university alumni network, college alumni portal, institute alumni management, alumni fundraising, alumni relations software"
+        url="https://www.alumnlink.com/landing/for-institutes"
+        canonical="https://www.alumnlink.com/landing/for-institutes"
+      />
+      <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
+        {/* Hero Section */}
+        <div className="py-20 relative overflow-hidden">
         <motion.div 
           className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-[#fe6019]/20 to-[#fe6019]/5 rounded-full mix-blend-multiply filter blur-3xl opacity-70"
           animate={{ 
@@ -264,6 +273,7 @@ const ForInstitutes = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -60,7 +60,7 @@ const Navbar = () => {
               <img 
                 src="/logo copy.png" 
                 alt="AlumLink Logo" 
-                className="h-8 md:h-10 object-contain"
+                className="h-7 md:h-9 object-contain"
               />
             </Link>
           </div>
