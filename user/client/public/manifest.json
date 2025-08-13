@@ -1,7 +1,7 @@
 {
-  "name": "AlumnLink - Alumni Management Platform",
+  "name": "AlumnLink - The Ultimate Alumni Engagement Platform",
   "short_name": "AlumnLink",
-  "description": "The ultimate alumni engagement platform connecting educational institutions with their graduates",
+  "description": "Professional alumni networking platform connecting educational institutions with their graduates. Build stronger communities, find career opportunities, and maintain lifelong institutional relationships.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -17,12 +17,53 @@
     {
       "src": "/logo copy.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "categories": ["education", "business", "networking"],
-  "lang": "en-US",
+  "categories": ["education", "business", "networking", "social", "productivity"],
+  "lang": "en-IN",
   "dir": "ltr",
   "scope": "/",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/banner.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "AlumnLink Platform Overview"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Alumni Directory",
+      "short_name": "Directory",
+      "description": "Browse and connect with alumni",
+      "url": "/directory",
+      "icons": [{ "src": "/icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Network",
+      "short_name": "Network",
+      "description": "Expand your professional network",
+      "url": "/network",
+      "icons": [{ "src": "/icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "Discover alumni events",
+      "url": "/events",
+      "icons": [{ "src": "/icon.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7"
 }

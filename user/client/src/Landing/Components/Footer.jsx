@@ -20,10 +20,24 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: <Linkedin size={20} />, href: 'https://linkedin.com/company/alumnlink', label: 'LinkedIn' },
-    { icon: <Twitter size={20} />, href: 'https://twitter.com/alumnlink', label: 'Twitter' },
-    { icon: <Instagram size={20} />, href: 'https://instagram.com/alumnlink', label: 'Instagram' },
-    { icon: <Facebook size={20} />, href: 'https://facebook.com/alumnlink', label: 'Facebook' }
+    { 
+      icon: <Linkedin size={20} />, 
+      href: 'https://www.linkedin.com/company/aumnlink/', 
+      label: 'LinkedIn',
+      color: '#0077B5'
+    },
+    { 
+      icon: <Twitter size={20} />, 
+      href: 'https://x.com/Alumn_Link', 
+      label: 'Twitter (X)',
+      color: '#000000'
+    },
+    { 
+      icon: <Instagram size={20} />, 
+      href: 'https://www.instagram.com/alumnlink/', 
+      label: 'Instagram',
+      color: '#E4405F'
+    }
   ];
 
   return (
@@ -98,21 +112,34 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <div className="flex gap-4">
-              {socialLinks.map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#fe6019] transition-all duration-200"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={social.label}
-                >
-                  {social.icon}
-                </motion.a>
-              ))}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Connect With Us</h3>
+              <div className="flex gap-4">
+                {socialLinks.map((social, index) => (
+                  <motion.a
+                    key={index}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 group"
+                    whileHover={{ 
+                      scale: 1.1, 
+                      rotate: 5,
+                      backgroundColor: social.color || '#fe6019'
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={`Follow AlumnLink on ${social.label}`}
+                    title={`Follow us on ${social.label}`}
+                  >
+                    <span className="group-hover:scale-110 transition-transform duration-200">
+                      {social.icon}
+                    </span>
+                  </motion.a>
+                ))}
+              </div>
+              <p className="text-sm text-gray-400 mt-3 max-w-xs">
+                Stay updated with the latest alumni networking trends and platform updates.
+              </p>
             </div>
           </motion.div>
         </div>

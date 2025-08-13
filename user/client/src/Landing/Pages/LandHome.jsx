@@ -26,11 +26,38 @@ const LandHome = () => {
   return (
     <AnimatePresence>
       <SEO 
-        title="AlumnLink - Leading Alumni Management Platform | Connect, Engage, Grow"
-        description="AlumnLink is India's premier alumni networking platform. Transform your institution's alumni engagement with our comprehensive management tools, networking features, and career opportunities."
-        keywords="alumni portal, alumni management software, alumni network platform, educational institution software, alumni engagement tool, college alumni portal, university alumni management, alumni community platform"
+        title="AlumnLink - India's #1 Alumni Engagement Platform | Connect, Network & Grow Together"
+        description="Transform your alumni network with AlumnLink - India's leading alumni management platform. Connect 50,000+ alumni, discover career opportunities, and build stronger institutional relationships. Join top universities and colleges already using our platform for seamless alumni engagement."
+        keywords="alumni network India, alumni management software, alumni engagement platform, university alumni portal, college alumni directory, professional networking India, career opportunities alumni, alumni events management, educational technology India, institutional networking, graduate connections, mentorship programs India, alumni association software, alumni platform India, education alumni network"
         url="https://www.alumnlink.com"
         canonical="https://www.alumnlink.com"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "AlumnLink - India's Leading Alumni Engagement Platform",
+          "description": "Transform your alumni network with comprehensive management tools, networking features, and career opportunities on India's premier alumni platform.",
+          "url": "https://www.alumnlink.com",
+          "mainEntity": {
+            "@type": "SoftwareApplication",
+            "name": "AlumnLink Platform",
+            "applicationCategory": "Educational Technology",
+            "operatingSystem": "Web Browser",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR"
+            }
+          },
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [{
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://www.alumnlink.com"
+            }]
+          }
+        }}
       />
       <motion.div
         initial={{ opacity: 0 }}

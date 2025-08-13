@@ -7,67 +7,105 @@
   <!-- Homepage -->
   <url>
     <loc>https://www.alumnlink.com/</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Landing Pages -->
+  <!-- Main Landing Pages -->
   <url>
     <loc>https://www.alumnlink.com/landing/about</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://www.alumnlink.com/landing/contact</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
+  <!-- Solution Pages -->
   <url>
     <loc>https://www.alumnlink.com/landing/for-institutes</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://www.alumnlink.com/landing/for-alumni</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://www.alumnlink.com/landing/for-corporates</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://www.alumnlink.com/landing/for-schools</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+
+  <!-- Authentication Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/login</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/signup</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- Legal Pages -->
   <url>
     <loc>https://www.alumnlink.com/landing/terms</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://www.alumnlink.com/landing/privacy</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+
+  <!-- Features Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/features/networking</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/features/directory</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/features/events</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
 </urlset>

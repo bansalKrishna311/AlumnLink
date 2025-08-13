@@ -3,16 +3,22 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
-Disallow: /profile/
-Disallow: /login/
-Disallow: /register/
+Disallow: /profile/*/edit
+Disallow: /messages/
+Disallow: /settings/
+Disallow: /*?*
+Disallow: /search?
+Allow: /search
 
 # Allow specific landing pages
 Allow: /landing/
-Allow: /about/
-Allow: /contact/
-Allow: /terms/
-Allow: /privacy/
+Allow: /about
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /login
+Allow: /signup
+Allow: /features/
 
 # Sitemap location
 Sitemap: https://www.alumnlink.com/sitemap.xml
@@ -26,12 +32,39 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
+Disallow: /profile/*/edit
+Disallow: /messages/
+Disallow: /settings/
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
+Disallow: /profile/*/edit
+Disallow: /messages/
+Disallow: /settings/
+Crawl-delay: 1
 
 User-agent: Baiduspider
+Disallow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+# Block non-essential crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
 Disallow: /

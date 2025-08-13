@@ -1,0 +1,31 @@
+# AlumnLink - Netlify Redirects Configuration
+
+# SPA fallback
+/*    /index.html   200
+
+# Force HTTPS and WWW
+http://alumnlink.com/*    https://www.alumnlink.com/:splat    301!
+https://alumnlink.com/*   https://www.alumnlink.com/:splat    301!
+
+# Legacy URL redirects
+/home                     /                                    301!
+/landing/home             /                                    301!
+/alumni                   /landing/for-alumni                  301!
+/institutes               /landing/for-institutes              301!
+/corporates               /landing/for-corporates              301!
+/schools                  /landing/for-schools                 301!
+
+# API redirects
+/api/*                    https://api.alumnlink.com/:splat    200!
+
+# Social media redirects
+/linkedin                 https://www.linkedin.com/company/aumnlink/    301!
+/twitter                  https://x.com/Alumn_Link                      301!
+/instagram               https://www.instagram.com/alumnlink/           301!
+
+# Remove trailing slashes
+/*/                       /:splat                              301!
+
+# Sitemap and robots
+/sitemap                  /sitemap.xml                         301!
+/robots                   /robots.txt                          301!

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Mail, Phone, MapPin, MessageSquare, Clock, CheckCircle } from 'lucide-react';
 import { axiosInstance } from '@/lib/axios';
+import SEO from '../../components/SEO';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -56,6 +57,34 @@ const Contact = () => {
 
   return (
     <div className="pt-28 pb-16">
+      <SEO 
+        title="Contact AlumnLink - Get In Touch With India's Alumni Platform Experts | Support & Sales"
+        description="Contact AlumnLink's team for alumni platform support, sales inquiries, or partnership opportunities. Reach out via email, phone, or our contact form. We're here to help transform your alumni engagement."
+        keywords="contact alumnlink, alumni platform support, alumnlink customer service, alumni software inquiry, educational technology contact, alumni platform demo, alumnlink sales team, alumni engagement help"
+        url="https://www.alumnlink.com/landing/contact"
+        canonical="https://www.alumnlink.com/landing/contact"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact AlumnLink",
+          "description": "Get in touch with AlumnLink for support, sales inquiries, or partnership opportunities.",
+          "url": "https://www.alumnlink.com/landing/contact",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "AlumnLink",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "customer service",
+              "availableLanguage": ["English", "Hindi"]
+            }
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "https://www.alumnlink.com" },
+          { name: "Contact", url: "https://www.alumnlink.com/landing/contact" }
+        ]}
+      />
+      
       {/* Contact Hero Section */}
       <div className="bg-gradient-to-b from-[#fe6019]/5 to-white py-12">
         <div className="container w-11/12 mx-auto px-4 md:px-6">

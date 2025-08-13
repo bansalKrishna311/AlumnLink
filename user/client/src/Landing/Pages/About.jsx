@@ -1,6 +1,7 @@
 import React from 'react';
 import { School, Building, Award, Briefcase, Users } from 'lucide-react';
 import CallToAction from '../Components/CallToAction';
+import SEO from '../../components/SEO';
 
 // Import our newly created components
 import AboutHero from '../Components/About/AboutHero';
@@ -132,6 +133,31 @@ const About = () => {
 
   return (
     <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
+      <SEO 
+        title="About AlumnLink - India's Leading Alumni Engagement Platform | Our Story & Mission"
+        description="Learn about AlumnLink's mission to transform alumni networking in India. Discover how we're connecting 50,000+ alumni, empowering educational institutions, and building stronger communities through innovative technology."
+        keywords="about alumnlink, alumni platform story, alumni engagement mission, educational technology company, alumni network founders, india alumni platform, university alumni management, college networking platform"
+        url="https://www.alumnlink.com/landing/about"
+        canonical="https://www.alumnlink.com/landing/about"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About AlumnLink",
+          "description": "Learn about AlumnLink's mission to transform alumni networking and engagement for educational institutions across India.",
+          "url": "https://www.alumnlink.com/landing/about",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "AlumnLink",
+            "foundingDate": "2023",
+            "description": "India's leading alumni engagement platform connecting educational institutions with their graduates."
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "https://www.alumnlink.com" },
+          { name: "About", url: "https://www.alumnlink.com/landing/about" }
+        ]}
+      />
+      
       {/* About Hero Section */}
       <AboutHero />
 
