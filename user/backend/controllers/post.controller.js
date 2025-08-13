@@ -1,11 +1,9 @@
-// POST.CONTROLLER.JS
-
 import cloudinary from "../lib/cloudinary.js";
 import { uploadToSpaces, uploadBase64ToSpaces } from "../lib/digitalocean.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import mongoose from "mongoose";
-import User from "../models/user.model.js"; // Import User model
+import User from "../models/user.model.js";
 import { 
     sendCommentNotificationEmail,
     sendLikeNotificationEmail,
@@ -13,174 +11,189 @@ import {
     sendMentionNotificationEmail,
     sendPostStatusNotificationEmail
 } from "../emails/emailHandlers.js";
+import cacheCleanupService from "../utils/cache-cleanup.js";
 
-// Helper function to extract mentions from content
+// Cache for frequently accessed data
+const userCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Register cache with cleanup service
+cacheCleanupService.registerCache('postUserCache', userCache, 100, CACHE_TTL);
+
+// Helper function to get user from cache or database
+const getCachedUser = async (userId) => {
+  const cacheKey = userId.toString();
+  const cached = userCache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.user;
+  }
+  
+  const user = await User.findById(userId).select('_id name username email profilePicture headline isAdmin').lean();
+  
+  if (user) {
+    userCache.set(cacheKey, { user, timestamp: Date.now() });
+    
+    // Clean cache if it gets too large
+    if (userCache.size > 100) {
+      const firstKey = userCache.keys().next().value;
+      userCache.delete(firstKey);
+    }
+  }
+  
+  return user;
+};
+
+// Helper function to extract mentions from content - OPTIMIZED
 const extractMentions = async (content) => {
+  if (!content || typeof content !== 'string') return [];
+  
   const usernames = [];
   const mentions = [];
   
-  // Handle both old format @[username](userId) and new format @username for backward compatibility
-  const oldMentionPattern = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  const newMentionPattern = /@(\w+)/g;
+  // More efficient regex patterns
+  const patterns = [
+    /@\[([^\]]+)\]\(([^)]+)\)/g, // Old format
+    /@(\w+)/g // New format
+  ];
   
-  let match;
-  
-  // Extract usernames from old format (for backward compatibility)
-  while ((match = oldMentionPattern.exec(content)) !== null) {
-    const username = match[1];
-    if (!usernames.includes(username)) {
-      usernames.push(username);
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(content)) !== null) {
+      const username = match[1];
+      if (username && !usernames.includes(username)) {
+        usernames.push(username);
+      }
     }
   }
   
-  // Extract usernames from new format
-  // Reset regex lastIndex
-  newMentionPattern.lastIndex = 0;
-  while ((match = newMentionPattern.exec(content)) !== null) {
-    const username = match[1];
-    if (!usernames.includes(username)) {
-      usernames.push(username);
-    }
-  }
+  if (usernames.length === 0) return [];
   
-  // Look up users by username to get their IDs
-  if (usernames.length > 0) {
-    try {
-      const users = await User.find({ 
-        username: { $in: usernames } 
-      }).select('_id username name');
-      
-      users.forEach(user => {
-        mentions.push({
-          username: user.username,
-          userId: user._id.toString(),
-          name: user.name
-        });
+  try {
+    // Use lean() for better performance
+    const users = await User.find({ 
+      username: { $in: usernames } 
+    }).select('_id username name').lean();
+    
+    users.forEach(user => {
+      mentions.push({
+        username: user.username,
+        userId: user._id.toString(),
+        name: user.name
       });
-    } catch (error) {
-      console.error('Error looking up mentioned users:', error);
-    }
+    });
+  } catch (error) {
+    console.error('Error looking up mentioned users:', error);
   }
   
   return mentions;
 };
 
-// Fetch posts for the user's feed
-// Modify getFeedPosts to only show approved posts
+// Fetch posts for the user's feed - OPTIMIZED
 export const getFeedPosts = async (req, res) => {
     try {
+        // Use pagination to reduce memory usage
+        const page = parseInt(req.query.page) || 1;
+        const limit = Math.min(parseInt(req.query.limit) || 10, 20); // Max 20 posts
+        const skip = (page - 1) * limit;
+
         // Get the user's ID and linked user IDs
         const userIds = [...req.user.Links, req.user._id];
 
-        // Find posts by authors in `userIds` or where the post has links to any user in `userIds`
+        // Use lean() for better performance and less memory usage
         const posts = await Post.find({
             $or: [
                 { author: { $in: userIds } },
                 { links: { $in: userIds } }
             ],
-            status: "approved" // Only show approved posts
+            status: "approved"
         })
-            .populate("author", "name username profilePicture headline")
-            .populate("comments.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline")
-            .populate("adminId", "name username") // Populate admin who approved the post
-            .sort({ createdAt: -1 });
+        .populate("author", "name username profilePicture headline")
+        .populate("comments.user", "name profilePicture username headline")
+        .populate("reactions.user", "name username profilePicture headline")
+        .populate("adminId", "name username")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(); // Use lean for better performance
 
-        res.status(200).json(posts);
+        res.status(200).json({
+            posts,
+            pagination: {
+                currentPage: page,
+                hasMore: posts.length === limit
+            }
+        });
     } catch (error) {
         console.error("Error in getFeedPosts controller:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
 
-// Create a post
+// Create a post - OPTIMIZED FOR PERFORMANCE
 export const createPost = async (req, res) => {
   const requestStartTime = Date.now();
-  console.log('🚀 Starting post creation...');
   
   try {
     const { content, type, links, images: imagesFromBody, jobDetails, internshipDetails, eventDetails } = req.body;
     const userId = req.user.id;
 
-    // Extract hashtags from content
-    const hashtagRegex = /#(\w+)/g;
-    const hashtags = [];
-    let match;
-    
-    while ((match = hashtagRegex.exec(content)) !== null) {
-      hashtags.push(match[1].toLowerCase());
-    }
+    // Extract hashtags more efficiently
+    const hashtags = [...new Set((content.match(/#(\w+)/g) || []).map(tag => tag.slice(1).toLowerCase()))];
     
     // Create the post object
     const postData = {
       content,
       author: userId,
       type: type || "discussion",
-      hashtags: [...new Set(hashtags)], // Remove duplicates
+      hashtags,
+      images: [],
+      links: links && links.length > 0 ? links : undefined
     };
 
-    // Add links if provided
-    if (links && links.length > 0) {
-      postData.links = links;
-    }
-
-    // Add images if provided (support both JSON and multipart)
-    postData.images = [];
-    
+    // Handle image uploads efficiently
     try {
-      // Upload all images in parallel for maximum speed
       if (req.files && req.files.length > 0) {
-        console.log(`🚀 Uploading ${req.files.length} files in parallel...`);
+        console.log(`� Uploading ${req.files.length} files...`);
         
-        // Create upload promises for all files simultaneously
-        const uploadPromises = req.files.map(file => 
-          uploadToSpaces(
-            file.buffer, 
-            file.originalname, 
-            file.mimetype, 
-            'posts'
-          )
+        // Limit concurrent uploads to prevent memory spikes
+        const uploadPromises = req.files.slice(0, 5).map(file => 
+          uploadToSpaces(file.buffer, file.originalname, file.mimetype, 'posts')
         );
         
-        // Wait for all uploads to complete in parallel
-        const uploadedUrls = await Promise.all(uploadPromises);
-        postData.images = uploadedUrls;
-        
-        console.log(`✅ Successfully uploaded ${uploadedUrls.length} images in parallel`);
+        postData.images = await Promise.all(uploadPromises);
+        console.log(`✅ Images uploaded successfully`);
         
       } else if (imagesFromBody && Array.isArray(imagesFromBody) && imagesFromBody.length > 0) {
-        console.log(`🚀 Uploading ${imagesFromBody.length} base64 images in parallel...`);
+        console.log(`� Uploading ${imagesFromBody.length} base64 images...`);
         
-        // Create upload promises for all base64 images simultaneously
-        const uploadPromises = imagesFromBody.map(img => 
+        // Limit and process base64 images
+        const uploadPromises = imagesFromBody.slice(0, 5).map(img => 
           uploadBase64ToSpaces(img, 'posts')
         );
         
-        // Wait for all uploads to complete in parallel
-        const uploadedUrls = await Promise.all(uploadPromises);
-        postData.images = uploadedUrls;
-        
-        console.log(`✅ Successfully uploaded ${uploadedUrls.length} base64 images in parallel`);
+        postData.images = await Promise.all(uploadPromises);
+        console.log(`✅ Base64 images uploaded successfully`);
       }
     } catch (error) {
-      console.error("❌ Error uploading images to DigitalOcean Spaces:", error);
+      console.error("❌ Error uploading images:", error);
       return res.status(500).json({ 
         message: "Error uploading images", 
         error: error.message 
       });
     }
 
-    // Add type-specific details
+    // Add type-specific details efficiently
     if (type === "job" && jobDetails) {
-      postData.jobDetails = JSON.parse(jobDetails);
+      postData.jobDetails = typeof jobDetails === 'string' ? JSON.parse(jobDetails) : jobDetails;
     } else if (type === "internship" && internshipDetails) {
-      postData.internshipDetails = JSON.parse(internshipDetails);
+      postData.internshipDetails = typeof internshipDetails === 'string' ? JSON.parse(internshipDetails) : internshipDetails;
     } else if (type === "event" && eventDetails) {
-      postData.eventDetails = JSON.parse(eventDetails);
+      postData.eventDetails = typeof eventDetails === 'string' ? JSON.parse(eventDetails) : eventDetails;
     }
 
-    // Determine post status based on user role
-    const user = await User.findById(userId);
+    // Get user and determine post status
+    const user = await getCachedUser(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -188,40 +201,28 @@ export const createPost = async (req, res) => {
     postData.status = user.isAdmin ? "approved" : "pending";
 
     console.log('💾 Creating post in database...');
-    const dbStartTime = Date.now();
-    
-    // Create post and handle admin notifications in parallel if needed
     const post = await Post.create(postData);
-    const dbTime = Date.now() - dbStartTime;
-    console.log(`✅ Post created in database in ${dbTime}ms`);
 
-    // If user is not admin, create notifications for admins (in parallel, don't wait)
+    // Handle admin notifications asynchronously for non-admin users
     if (!user.isAdmin) {
-      // Don't await this - let it run in background for faster response
-      setImmediate(async () => {
+      // Don't await - run in background
+      process.nextTick(async () => {
         try {
-          console.log('🔔 Creating admin notifications in background...');
-          // Find all admin users
-          const admins = await User.find({ isAdmin: true });
+          const admins = await User.find({ isAdmin: true }).select('_id').lean();
           
-          // Create notifications for each admin
-          const notifications = admins.map(admin => ({
-            recipient: admin._id,
-            type: "post_approval",
-            content: `New post from ${user.name} requires approval`,
-            reference: {
-              type: "post",
-              id: post._id
-            }
-          }));
-          
-          if (notifications.length > 0) {
+          if (admins.length > 0) {
+            const notifications = admins.map(admin => ({
+              recipient: admin._id,
+              type: "post_approval",
+              content: `New post from ${user.name} requires approval`,
+              reference: { type: "post", id: post._id }
+            }));
+            
             await Notification.insertMany(notifications);
             console.log(`✅ Created ${notifications.length} admin notifications`);
           }
         } catch (notificationError) {
           console.error('⚠️ Error creating admin notifications:', notificationError);
-          // Don't fail the post creation if notifications fail
         }
       });
     }

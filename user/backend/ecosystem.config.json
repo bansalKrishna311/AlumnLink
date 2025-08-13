@@ -1,0 +1,45 @@
+{
+  "apps": [
+    {
+      "name": "alumnlink-backend",
+      "script": "server.js",
+      "instances": 1,
+      "exec_mode": "fork",
+      "node_args": [
+        "--max-old-space-size=512",
+        "--gc-interval=100",
+        "--expose-gc",
+        "--max-semi-space-size=64"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 4000
+      },
+      "max_memory_restart": "400M",
+      "min_uptime": "10s",
+      "max_restarts": 3,
+      "restart_delay": 5000,
+      "autorestart": true,
+      "watch": false,
+      "ignore_watch": [
+        "node_modules",
+        "logs",
+        "uploads"
+      ],
+      "error_file": "./logs/pm2-error.log",
+      "out_file": "./logs/pm2-out.log",
+      "log_file": "./logs/pm2-combined.log",
+      "time": true,
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
+      "merge_logs": true,
+      "kill_timeout": 5000,
+      "listen_timeout": 3000,
+      "shutdown_with_message": true,
+      "pmx": true,
+      "monitoring": {
+        "network": true,
+        "ports": true
+      }
+    }
+  ]
+}
