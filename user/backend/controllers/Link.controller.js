@@ -235,12 +235,14 @@ export const getUserLinks = async (req, res) => {
         };
 
         // If search is provided, use a simpler aggregation approach
-        if (search && search.trim()) {
-            const searchRegex = new RegExp(search.trim(), 'i');
+                if (search && search.trim()) {
+                        const trimmed = search.trim();
+                        const searchRegex = new RegExp(trimmed, 'i');
             
             // Build aggregation pipeline with search
             const pipeline = [
-                { $match: baseQuery },
+                                // Early match to reduce docs
+                                { $match: baseQuery },
                 {
                     $lookup: {
                         from: 'users',
@@ -274,6 +276,17 @@ export const getUserLinks = async (req, res) => {
                         }
                     }
                 },
+                                // Limit fields to reduce payload
+                                {
+                                    $project: {
+                                        otherUser: {
+                                            _id: 1, name: 1, username: 1, email: 1, location: 1,
+                                            profilePicture: 1, headline: 1, skills: 1, experience: 1, education: 1
+                                        },
+                                        sender: 1, recipient: 1, rollNumber: 1, batch: 1, courseName: 1,
+                                        status: 1, createdAt: 1, updatedAt: 1
+                                    }
+                                },
                 {
                     $match: {
                         $and: [
@@ -345,7 +358,7 @@ export const getUserLinks = async (req, res) => {
         }
 
         // Handle location filtering when no search is provided
-        if (location && location !== 'All Chapters') {
+                if (location && location !== 'All Chapters') {
             // Use aggregation pipeline for location filtering
             const pipeline = [
                 { $match: baseQuery },
@@ -387,6 +400,16 @@ export const getUserLinks = async (req, res) => {
                         'otherUser.location': location
                     }
                 },
+                                {
+                                    $project: {
+                                        otherUser: {
+                                            _id: 1, name: 1, username: 1, location: 1, profilePicture: 1, headline: 1,
+                                            skills: 1, experience: 1, education: 1
+                                        },
+                                        sender: 1, recipient: 1, rollNumber: 1, batch: 1, courseName: 1,
+                                        status: 1, createdAt: 1, updatedAt: 1
+                                    }
+                                },
                 { $sort: sortOptions }
             ];
 
@@ -443,11 +466,13 @@ export const getUserLinks = async (req, res) => {
         
         // Fetch all accepted link requests with pagination
         const linkRequests = await LinkRequest.find(baseQuery)
+            .select('sender recipient rollNumber batch courseName status createdAt updatedAt')
             .populate("sender", "name username location profilePicture headline skills experience education")
             .populate("recipient", "name username location profilePicture headline skills experience education")
             .sort(sortOptions)
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .lean();
 
         if (!linkRequests || linkRequests.length === 0) {
             const totalPages = Math.ceil(totalCount / limit);

@@ -24,11 +24,8 @@ const userSchema = new mongoose.Schema(
 			default: "AlumnLink User",
 		},
 		location: {
-			
 				type: String,
-				
 				enum: ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Mumbai","Delhi NCR", "Kolkata", "Ahmedabad", "Jaipur", "Thiruvananthapuram", "Lucknow", "Indore", "Chandigarh", "Nagpur",]
-		
 		},
 		about: {
 			type: String,
@@ -80,6 +77,12 @@ const userSchema = new mongoose.Schema(
 
 	{ timestamps: true }
 );
+
+// Indexes for common query patterns
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ location: 1 });
+userSchema.index({ createdAt: -1 });
 
 const User = mongoose.model("User", userSchema);
 

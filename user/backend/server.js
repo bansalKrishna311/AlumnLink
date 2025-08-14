@@ -5,6 +5,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
 import serverless from "serverless-http";
+import compression from "compression";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
@@ -44,6 +47,26 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 const __dirname = path.resolve();
+
+// Trust proxy for correct IPs behind proxies
+app.set('trust proxy', 1);
+
+// Security headers and compression (cheap CPU, big bandwidth wins)
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: false
+  }));
+}
+app.use(compression({ level: 6 }));
+
+// Basic rate limiting to curb bursts
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300, // 300 req/min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 // Set up lightweight middleware with memory optimization
 // CORS configuration - simplified for better performance
@@ -254,7 +277,9 @@ if (process.env.NODE_ENV === 'production') {
     
     // Clear any hanging timeouts/intervals
     const memUsage = process.memoryUsage();
-    console.log(`Memory usage: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB Heap`);
+    if (Math.floor(Date.now() / 60000) % 10 === 0) { // log every ~10 minutes
+      console.log(`Memory usage: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB Heap`);
+    }
     
     // If memory usage is too high, log warning
     if (memUsage.heapUsed > 150 * 1024 * 1024) { // 150MB

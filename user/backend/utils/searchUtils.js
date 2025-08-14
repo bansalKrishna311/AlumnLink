@@ -15,7 +15,7 @@ const buildSearchQuery = (searchTerm) => {
     return {};
   }
 
-  const searchRegex = new RegExp(searchTerm.trim(), 'i'); // Case insensitive
+  const searchRegex = new RegExp(searchTerm.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'); // Case insensitive, escaped
   const searchTerms = searchTerm.trim().split(/\s+/);
   
   // Create search conditions for multiple fields
@@ -90,7 +90,7 @@ const buildSearchAggregation = (searchTerm, page = 1, limit = 10) => {
 
   // Add search stage if search term exists
   if (searchTerm && searchTerm.trim()) {
-    const searchQuery = buildSearchQuery(searchTerm);
+  const searchQuery = buildSearchQuery(searchTerm);
     if (Object.keys(searchQuery).length > 0) {
       pipeline.push({ $match: searchQuery });
     }
@@ -227,7 +227,15 @@ const highlightText = (text, searchTerm) => {
   return highlightedText;
 };
 
-module.exports = {
+export {
+  buildSearchQuery,
+  buildSearchAggregation,
+  buildCountAggregation,
+  searchLinksHandler,
+  highlightText
+};
+
+export default {
   buildSearchQuery,
   buildSearchAggregation,
   buildCountAggregation,

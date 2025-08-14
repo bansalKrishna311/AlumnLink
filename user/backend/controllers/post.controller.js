@@ -275,11 +275,12 @@ export const deletePost = async (req, res) => {
 export const getPostById = async (req, res) => {
     try {
         const postId = req.params.id;
-        const post = await Post.findById(postId)
+    const post = await Post.findById(postId)
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline")
-            .populate("adminId", "name username"); // Populate admin who approved the post
+      .populate("adminId", "name username") // Populate admin who approved the post
+      .lean();
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -316,11 +317,12 @@ export const createComment = async (req, res) => {
         await existingPost.save();
 
         // Get the updated post with populated data
-        const updatedPost = await Post.findById(postId)
+    const updatedPost = await Post.findById(postId)
             .populate("author", "name email username headline profilePicture")
             .populate("comments.user", "name profilePicture username headline")
             .populate("comments.replies.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline");
+      .populate("reactions.user", "name username profilePicture headline")
+      .lean();
 
         // Extract mentions from the comment
         const mentions = await extractMentions(content);
@@ -451,7 +453,8 @@ export const replyToComment = async (req, res) => {
             .populate("author", "name email username headline profilePicture")
             .populate("comments.user", "name profilePicture username headline")
             .populate("comments.replies.user", "name profilePicture username headline")
-            .populate("reactions.user", "name username profilePicture headline");
+      .populate("reactions.user", "name username profilePicture headline")
+      .lean();
             
         // Extract mentions from reply
         const mentions = await extractMentions(content);
@@ -926,7 +929,8 @@ export const likeComment = async (req, res) => {
       .populate("author", "name email username headline profilePicture")
       .populate("comments.user", "name profilePicture username headline")
       .populate("comments.replies.user", "name profilePicture username headline")
-      .populate("reactions.user", "name username profilePicture headline");
+      .populate("reactions.user", "name username profilePicture headline")
+      .lean();
 
     res.status(200).json(updatedPost);
   } catch (error) {
@@ -1137,76 +1141,77 @@ export const getPostsByUsername = async (req, res) => {
 // Get recent posts with analytics data for admin dashboard
 export const getRecentAdminPosts = async (req, res) => {
   try {
-    // Get recent posts (limit to 5)
+    // Get recent posts (limit to 5) - use lean for memory efficiency
     const recentPosts = await Post.find({})
       .populate("author", "name username profilePicture headline")
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(5)
+      .lean();
 
-    // Get total posts count
-    const totalPosts = await Post.countDocuments();
-    
-    // Get posts created this month
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    
-    const postsThisMonth = await Post.countDocuments({
-      createdAt: { $gte: startOfMonth }
-    });
+    // Compute counts efficiently
+    const [totalPosts, postsThisMonthAgg] = await Promise.all([
+      Post.estimatedDocumentCount(),
+      (async () => {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        return Post.countDocuments({ createdAt: { $gte: startOfMonth } });
+      })()
+    ]);
+    const postsThisMonth = postsThisMonthAgg;
 
-    // Get engagement statistics
-    const allPosts = await Post.find({});
-    
-    const totalReactions = allPosts.reduce((sum, post) => sum + post.reactions.length, 0);
-    const totalComments = allPosts.reduce((sum, post) => sum + post.comments.length, 0);
-    
-    // Calculate post engagement by type
-    const postTypeEngagement = {};
-    const postCountByType = {};
+    // Engagement stats via aggregation (no full document materialization)
+    const engagementAgg = await Post.aggregate([
+      {
+        $project: {
+          type: { $ifNull: ["$type", "other"] },
+          reactionCount: { $size: { $ifNull: ["$reactions", []] } },
+          commentCount: { $size: { $ifNull: ["$comments", []] } }
+        }
+      },
+      {
+        $group: {
+          _id: "$type",
+          totalReactions: { $sum: "$reactionCount" },
+          totalComments: { $sum: "$commentCount" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
     const validTypes = ['discussion', 'job', 'internship', 'event', 'other'];
-    
-    // Initialize counters for each type
-    validTypes.forEach(type => {
-      postTypeEngagement[type] = 0;
-      postCountByType[type] = 0;
-    });
-    
-    // Calculate total engagement for each post type
-    allPosts.forEach(post => {
-      const type = post.type && validTypes.includes(post.type) ? post.type : 'other';
-      const engagement = post.reactions.length + post.comments.length;
-      
-      postTypeEngagement[type] += engagement;
-      postCountByType[type] += 1;
-    });
-    
-    // Calculate percentage distribution
-    const totalEngagement = Object.values(postTypeEngagement).reduce((sum, val) => sum + val, 0);
+    const totals = engagementAgg.reduce((acc, row) => {
+      const t = validTypes.includes(row._id) ? row._id : 'other';
+      acc.byType[t] = {
+        reactions: row.totalReactions,
+        comments: row.totalComments,
+        count: row.count
+      };
+      acc.totalReactions += row.totalReactions;
+      acc.totalComments += row.totalComments;
+      return acc;
+    }, { byType: {}, totalReactions: 0, totalComments: 0 });
+
+    // Calculate percentages and most engaged type
+    const totalEngagement = totals.totalReactions + totals.totalComments;
     const engagementPercentages = {};
-    
-    validTypes.forEach(type => {
-      engagementPercentages[type] = totalEngagement > 0 
-        ? Math.round((postTypeEngagement[type] / totalEngagement) * 100) 
-        : 0;
-    });
-    
-    // Find type with highest average engagement
     let mostEngagedType = 'other';
     let highestEngagement = 0;
-    
-    Object.entries(postTypeEngagement).forEach(([type, engagement]) => {
-      const count = postCountByType[type];
-      const avgEngagement = count > 0 ? engagement / count : 0;
-      
-      if (avgEngagement > highestEngagement) {
-        highestEngagement = avgEngagement;
+    validTypes.forEach(type => {
+      const t = totals.byType[type] || { reactions: 0, comments: 0, count: 0 };
+      const engagement = t.reactions + t.comments;
+      engagementPercentages[type] = totalEngagement > 0
+        ? Math.round((engagement / totalEngagement) * 100)
+        : 0;
+      const avg = t.count > 0 ? engagement / t.count : 0;
+      if (avg > highestEngagement) {
+        highestEngagement = avg;
         mostEngagedType = type;
       }
     });
 
     // Get top performing posts - Using aggregation
-    const topPosts = await Post.aggregate([
+  const topPosts = await Post.aggregate([
       {
         $project: {
           _id: 1,
@@ -1232,28 +1237,32 @@ export const getRecentAdminPosts = async (req, res) => {
     await Post.populate(topPosts, { path: "author", select: "name username profilePicture headline" });
 
     // Create monthly post distribution data
-    const monthlyPostData = [];
-    const currentMonth = new Date().getMonth();
-    
-    for (let i = 0; i < 12; i++) {
-      const month = new Date();
-      month.setMonth(currentMonth - i);
-      month.setDate(1);
-      month.setHours(0, 0, 0, 0);
-      
-      const nextMonth = new Date(month);
-      nextMonth.setMonth(month.getMonth() + 1);
-      
-      const count = await Post.countDocuments({
-        createdAt: { 
-          $gte: month,
-          $lt: nextMonth
+    // Monthly post distribution via single aggregation
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
+    const monthlyAgg = await Post.aggregate([
+      { $match: { createdAt: { $gte: twelveMonthsAgo } } },
+      {
+        $group: {
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          count: { $sum: 1 }
         }
-      });
-      
-      monthlyPostData.unshift({
-        month: month.toLocaleString('default', { month: 'short' }),
-        count,
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+    // Map aggregation to last 12 months array (fill zeros)
+    const monthlyPostData = [];
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const found = monthlyAgg.find(row => row._id.year === y && row._id.month === m);
+      monthlyPostData.push({
+        month: d.toLocaleString('default', { month: 'short' }),
+        count: found ? found.count : 0,
         isCurrent: i === 0
       });
     }
@@ -1265,18 +1274,10 @@ export const getRecentAdminPosts = async (req, res) => {
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     
-    const postsLastWeek = await Post.countDocuments({
-      createdAt: { 
-        $gte: oneWeekAgo
-      }
-    });
-    
-    const postsPreviousWeek = await Post.countDocuments({
-      createdAt: { 
-        $gte: twoWeeksAgo,
-        $lt: oneWeekAgo
-      }
-    });
+    const [postsLastWeek, postsPreviousWeek] = await Promise.all([
+      Post.countDocuments({ createdAt: { $gte: oneWeekAgo } }),
+      Post.countDocuments({ createdAt: { $gte: twoWeeksAgo, $lt: oneWeekAgo } })
+    ]);
     
     // Calculate growth percentage
     let weeklyGrowthRate = 0;
@@ -1294,8 +1295,8 @@ export const getRecentAdminPosts = async (req, res) => {
         postsThisMonth,
         weeklyGrowthRate,
         engagement: {
-          totalReactions,
-          totalComments,
+          totalReactions: totals.totalReactions,
+          totalComments: totals.totalComments,
           mostEngagedType
         },
         engagementByType: engagementPercentages,
@@ -1386,7 +1387,8 @@ export const deleteComment = async (req, res) => {
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("comments.replies.user", "name profilePicture username headline")
-      .populate("reactions.user", "name username profilePicture headline");
+      .populate("reactions.user", "name username profilePicture headline")
+      .lean();
 
     res.status(200).json({
       message: "Comment deleted successfully",

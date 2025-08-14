@@ -8,8 +8,8 @@ class MemoryMonitor {
   constructor() {
     this.alerts = [];
     this.logFile = path.join(process.cwd(), 'logs', 'memory.log');
-    this.maxMemoryMB = 400; // 400MB threshold
-    this.checkInterval = 30000; // 30 seconds
+  this.maxMemoryMB = 500; // Slightly higher to reduce churn
+  this.checkInterval = 60000; // 60 seconds
     this.isRunning = false;
   }
 
@@ -69,8 +69,8 @@ class MemoryMonitor {
       console.log(`🗑️ Forced garbage collection - Heap was ${heapUsedMB}MB`);
     }
 
-    // Log memory stats periodically
-    if (Math.floor(Date.now() / 60000) % 5 === 0) { // Every 5 minutes
+    // Log memory stats periodically (every ~15 minutes)
+    if (Math.floor(Date.now() / 900000) % 1 === 0) {
       console.log(`📊 Memory: RSS=${rssMB}MB, Heap=${heapUsedMB}/${heapTotalMB}MB, External=${externalMB}MB`);
     }
   }

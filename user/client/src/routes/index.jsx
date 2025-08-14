@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import { Suspense } from "react";
 import AuthLayout from "@/layouts/AuthLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Dashboard from "@/app/dashboard/page";
@@ -8,13 +9,14 @@ import AuthRequirePage from "@/pages/AuthRequirePage";
 import ProfilePage from "@/pages/ProfilePage";
 import LandingPage from "@/Landing/LandingPage";
 import AdminDashboard from "@/admin/Dashboard";
-import PostPage from "@/pages/PostPage"; // Changed from SinglePost to PostPage
-import PostRequest from "@/admin/PostRequest";
-import RejectedRequests from "@/admin/rejectedRequests";
-import AdminPosts from "@/admin/AdminPosts";
-import ManageUsers from "@/admin/ManageUsers";
-import PostCreationPage from "@/admin/PostCreationPage";
-import ManageAlumni from "@/admin/manage-alumni";
+import React, { lazy } from "react";
+const AdminDashboard = lazy(() => import("@/admin/Dashboard"));
+const PostRequest = lazy(() => import("@/admin/PostRequest"));
+const RejectedRequests = lazy(() => import("@/admin/rejectedRequests"));
+const AdminPosts = lazy(() => import("@/admin/AdminPosts"));
+const ManageUsers = lazy(() => import("@/admin/ManageUsers"));
+const PostCreationPage = lazy(() => import("@/admin/PostCreationPage"));
+const ManageAlumni = lazy(() => import("@/admin/manage-alumni"));
 import BookmarksPage from "@/pages/BookmarksPage";
 import ChatPage from "@/pages/ChatPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -124,7 +126,9 @@ export const router = createBrowserRouter([
     path: "/admin",
     element: (
       <DashboardLayout>
-        <AdminDashboard />
+        <Suspense fallback={<div />}> 
+          <AdminDashboard />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -132,7 +136,9 @@ export const router = createBrowserRouter([
     path: "/admin/posts",
     element: (
       <DashboardLayout>
-        <AdminPosts />
+        <Suspense fallback={<div />}> 
+          <AdminPosts />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -140,7 +146,9 @@ export const router = createBrowserRouter([
     path: "/admin/manage-alumni",
     element: (
       <DashboardLayout>
-        <ManageAlumni />
+        <Suspense fallback={<div />}> 
+          <ManageAlumni />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -148,7 +156,9 @@ export const router = createBrowserRouter([
     path: "/admin/post-requests",
     element: (
       <DashboardLayout>
-        <PostRequest />
+        <Suspense fallback={<div />}> 
+          <PostRequest />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -156,7 +166,9 @@ export const router = createBrowserRouter([
     path: "/admin/rejected-requests",
     element: (
       <DashboardLayout>
-        <RejectedRequests />
+        <Suspense fallback={<div />}> 
+          <RejectedRequests />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -164,7 +176,9 @@ export const router = createBrowserRouter([
     path: "/admin/manage-users",
     element: (
       <DashboardLayout>
-        <ManageUsers />
+        <Suspense fallback={<div />}> 
+          <ManageUsers />
+        </Suspense>
       </DashboardLayout>
     ),
   },
@@ -172,7 +186,9 @@ export const router = createBrowserRouter([
     path: "/admin/create-post",
     element: (
       <DashboardLayout>
-        <PostCreationPage />
+        <Suspense fallback={<div />}> 
+          <PostCreationPage />
+        </Suspense>
       </DashboardLayout>
     ),
   },

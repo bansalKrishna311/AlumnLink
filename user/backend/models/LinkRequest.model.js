@@ -36,6 +36,12 @@ const LinkRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Compound indexes for frequent queries
+LinkRequestSchema.index({ status: 1, recipient: 1, createdAt: -1 });
+LinkRequestSchema.index({ status: 1, sender: 1, createdAt: -1 });
+LinkRequestSchema.index({ sender: 1, recipient: 1 }, { unique: false });
+LinkRequestSchema.index({ createdAt: -1 });
+
 const LinkRequest = mongoose.model("LinkRequest", LinkRequestSchema);
 
 export default LinkRequest;

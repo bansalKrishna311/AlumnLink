@@ -68,6 +68,12 @@ const postSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// Indexes for common access patterns
+postSchema.index({ createdAt: -1 });
+postSchema.index({ status: 1, createdAt: -1 });
+postSchema.index({ author: 1, createdAt: -1 });
+postSchema.index({ type: 1 });
+
 // Method to find posts by hashtag
 postSchema.statics.findByHashtag = function(hashtag) {
     const lowercaseTag = hashtag.toLowerCase();

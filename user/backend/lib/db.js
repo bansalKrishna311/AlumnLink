@@ -38,12 +38,12 @@ const connectDB = async () => {
       connectTimeoutMS: 8000, // Reduced from 15000
       
       // Connection pool settings - optimized for memory
-      maxPoolSize: 2, // Reduced from 3 for better memory usage
-      minPoolSize: 1, 
-      maxIdleTimeMS: 30000, // Reduced from 60000 to free connections faster
+  maxPoolSize: parseInt(process.env.DB_MAX_POOL || '2', 10),
+  minPoolSize: 0,
+  maxIdleTimeMS: 20000, // free connections faster
       
       // Keep-alive settings - less aggressive
-      heartbeatFrequencyMS: 20000, // Increased from 10000
+  heartbeatFrequencyMS: 30000,
       
       // Index and collection management
       autoIndex: false, // Disabled for production performance

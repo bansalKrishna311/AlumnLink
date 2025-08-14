@@ -31,10 +31,10 @@ import multer from 'multer';
 const upload = multer({ 
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 25 * 1024 * 1024, // Increased to 25MB per file
-        fieldSize: 25 * 1024 * 1024, // 25MB for form fields (base64 images)
-        files: 5, // Maximum 5 files
-        fields: 20 // Maximum 20 form fields
+    fileSize: 8 * 1024 * 1024, // 8MB per file in production to cap memory spikes
+    fieldSize: 10 * 1024 * 1024, // 10MB for form fields
+    files: 3, // Max 3 files per request
+    fields: 15 // Max 15 form fields
     },
     fileFilter: (req, file, cb) => {
         // Only allow image files
