@@ -11,7 +11,7 @@ const replySchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
-
+// dfsh
 const commentSchema = new mongoose.Schema({
     content: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
