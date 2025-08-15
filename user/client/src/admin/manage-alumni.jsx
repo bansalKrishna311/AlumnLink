@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '@/lib/axios';
 import * as XLSX from 'xlsx';
 import { 
-  UserCircle2, 
   Clock, 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
   MapPin, 
   Search,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   User,
   Calendar,
@@ -19,23 +13,20 @@ import {
   Code,
   Download
 } from 'lucide-react';
-import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Pagination from "@/components/Pagination";
-import SearchBar from "@/components/SearchBar";
 import HighlightedText from "@/components/HighlightedText";
 
 const UserLinks = () => {
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
+  const [allLinks, setAllLinks] = useState([]); // Store all links for client-side filtering
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('All Chapters');
   
   // Location options for the filter
@@ -65,19 +56,69 @@ const UserLinks = () => {
     currentPage: 1,
     pageSize: 10
   });
+  
+  // Client-side filtering function like in SelfLinks.jsx
+  const filterLinks = useCallback((linksArray, query) => {
+    if (!query || !query.trim()) {
+      return linksArray;
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    return linksArray.filter((link) => {
+      const name = link.user?.name?.toLowerCase() || '';
+      const username = link.user?.username?.toLowerCase() || '';
+      const rollNumber = String(link.rollNumber || '').toLowerCase();
+      const batch = String(link.batch || '').toLowerCase();
+      const courseName = String(link.courseName || '').toLowerCase();
+      const location = link.user?.location?.toLowerCase() || '';
+      
+      return name.includes(searchTerm) ||
+             username.includes(searchTerm) ||
+             rollNumber.includes(searchTerm) ||
+             batch.includes(searchTerm) ||
+             courseName.includes(searchTerm) ||
+             location.includes(searchTerm);
+    });
+  }, []);
+
+  // Apply client-side filtering and pagination when search query or page changes
+  useEffect(() => {
+    let filtered = filterLinks(allLinks, searchQuery);
+    
+    // Update pagination based on filtered results
+    const totalCount = filtered.length;
+    const pageSize = 10;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    
+    setPagination(prev => ({
+      ...prev,
+      totalCount,
+      totalPages
+    }));
+    
+    // Apply pagination to filtered results
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedResults = filtered.slice(startIndex, endIndex);
+    
+    setLinks(paginatedResults);
+  }, [searchQuery, allLinks, filterLinks, currentPage]);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    if (searchQuery) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery]);
 
   const fetchUserLinks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
-      });
       
-      // Add search query to server request if it exists
-      if (debouncedSearchQuery && debouncedSearchQuery.trim()) {
-        params.append('search', debouncedSearchQuery.trim());
-      }
+      // Fetch ALL data for client-side filtering and pagination
+      const params = new URLSearchParams({
+        limit: '10000' // Get all records
+      });
       
       // Add location filter to server request if it's not "All Chapters"
       if (selectedLocation && selectedLocation !== 'All Chapters') {
@@ -86,23 +127,27 @@ const UserLinks = () => {
       
       const response = await axiosInstance.get(`/links?${params}`);
       
-      // Handle pagination data from headers
-      const totalCount = parseInt(response.headers['x-total-count'] || '0');
-      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
-      
-      setPagination({
-        totalCount,
-        totalPages,
-        currentPage: parseInt(response.headers['x-current-page'] || currentPage),
-        pageSize: 10
-      });
-      
       // Ensure we have valid data before setting state
       if (response && response.data && Array.isArray(response.data)) {
-        setLinks(response.data);
+        const allData = response.data;
+        setAllLinks(allData);
+        
+        // Calculate pagination for all data
+        const totalCount = allData.length;
+        const pageSize = 10;
+        const totalPages = Math.ceil(totalCount / pageSize);
+        
+        setPagination({
+          totalCount,
+          totalPages,
+          currentPage: 1,
+          pageSize
+        });
+        
         setError(null);
       } else {
         setLinks([]);
+        setAllLinks([]);
         setError("Received invalid data format");
       }
       setIsLoading(false);
@@ -111,6 +156,7 @@ const UserLinks = () => {
       // Handle 404 specifically as "no data" rather than an error
       if (err.response && err.response.status === 404) {
         setLinks([]);
+        setAllLinks([]);
         setPagination({
           totalCount: 0,
           totalPages: 0,
@@ -123,24 +169,9 @@ const UserLinks = () => {
       }
       setIsLoading(false);
     }
-  }, [currentPage, debouncedSearchQuery, selectedLocation]);
+  }, [selectedLocation]);
 
-  // Debounce search query and handle search changes
-  useEffect(() => {
-    setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      setIsSearching(false);
-      // Reset to page 1 when starting a new search
-      if (searchQuery && currentPage !== 1) {
-        setCurrentPage(1);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Fetch data when dependencies change
+  // Fetch data when location changes or on initial load
   useEffect(() => {
     fetchUserLinks();
   }, [fetchUserLinks]);
@@ -299,17 +330,6 @@ const UserLinks = () => {
     }
   };
 
-  const handleSearchChange = useCallback((query) => {
-    setSearchQuery(query);
-  }, []);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
-    // Reset pagination when clearing search
-    setCurrentPage(1);
-  }, []);
-
   const handleLocationChange = useCallback((location) => {
     setSelectedLocation(location);
     // Reset pagination when changing location
@@ -439,19 +459,6 @@ const UserLinks = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="h-4 w-4 text-amber-500" />;
-      case 'accepted':
-        return <CheckCircle className="h-4 w-4 text-emerald-500" />;
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-rose-500" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="p-8 w-full max-w-[1400px] mx-auto">
       <motion.h1 
@@ -498,16 +505,16 @@ const UserLinks = () => {
               <div className="max-w-2xl w-full">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1">
-                    <SearchBar
-                      placeholder="Search by name, roll number, batch, course..."
-                      onSearch={handleSearchChange}
-                      onClear={handleClearSearch}
-                      initialValue={searchQuery}
-                      className="w-full"
-                      size="md"
-                      showClearButton={true}
-                      debounceDelay={0}
-                    />
+                    <div className="relative group">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-hover:text-[#fe6019]" />
+                      <input
+                        type="text"
+                        placeholder="Search by name, roll number, batch, course..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] transition-all duration-200 bg-white shadow-sm hover:border-gray-400 text-sm"
+                      />
+                    </div>
                   </div>
                   <div className="relative">
                     <select
@@ -526,17 +533,7 @@ const UserLinks = () => {
                     />
                   </div>
                 </div>
-                {isSearching && (
-                  <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
-                    <motion.div 
-                      className="w-3 h-3 border border-gray-300 border-t-[#fe6019] rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
-                    Searching across all pages...
-                  </div>
-                )}
-                {searchQuery && !isSearching && (
+                {searchQuery && (
                   <div className="mt-2 text-sm text-gray-600">
                     {pagination.totalCount > 0 ? (
                       <>
@@ -545,7 +542,7 @@ const UserLinks = () => {
                           <span className="text-gray-500"> in {selectedLocation}</span>
                         )}
                         {pagination.totalPages > 1 && (
-                          <span className="text-gray-500"> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                          <span className="text-gray-500"> (Page {currentPage} of {pagination.totalPages})</span>
                         )}
                       </>
                     ) : (
@@ -565,7 +562,7 @@ const UserLinks = () => {
                       <span> from {selectedLocation}</span>
                     )}
                     {pagination.totalPages > 1 && (
-                      <span> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                      <span> (Page {currentPage} of {pagination.totalPages})</span>
                     )}
                   </div>
                 )}
@@ -780,7 +777,7 @@ const UserLinks = () => {
               transition={{ delay: 0.3 }}
             >
               <Pagination
-                currentPage={pagination.currentPage}
+                currentPage={currentPage}
                 totalPages={pagination.totalPages}
                 onPageChange={(newPage) => setCurrentPage(newPage)}
               />

@@ -76,9 +76,7 @@ const SearchBar = memo(({
 
   // Update internal state when initialValue changes
   useEffect(() => {
-    if (initialValue !== searchValue) {
-      setSearchValue(initialValue);
-    }
+    setSearchValue(initialValue);
   }, [initialValue]);
 
   // Size variants
