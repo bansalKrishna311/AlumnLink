@@ -80,6 +80,7 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
   });
 
   const { mutate: createPostMutation, isPending } = useMutation({
+    mutationKey: ["createPost"],
     mutationFn: async (postData) => {
       const res = await axiosInstance.post("/posts/create", postData, {
         headers: { "Content-Type": "application/json" },

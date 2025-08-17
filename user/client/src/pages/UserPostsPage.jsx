@@ -29,12 +29,6 @@ const UserPostsPage = () => {
     },
   });
 
-  // Fetch user profile to show name
-  const { data: userProfile } = useQuery({
-    queryKey: ["userProfile", username],
-    queryFn: () => axiosInstance.get(`/users/${username}`).then((res) => res.data),
-  });
-
   const handleTypeChange = (type) => {
     setSelectedType(type);
   };
@@ -62,7 +56,7 @@ const UserPostsPage = () => {
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white shadow rounded-lg mb-6 p-4 md:p-6">
         <div className="flex justify-between items-center mb-6">
-          <Link to={`/users/${username}`} className="flex items-center text-gray-600 hover:text-[#fe6019] transition-colors mr-4">
+          <Link to={`/profile/${username}`} className="flex items-center text-gray-600 hover:text-[#fe6019] transition-colors mr-4">
             <ArrowLeft size={20} className="mr-2" />
             <span>Back to Profile</span>
           </Link>

@@ -90,7 +90,7 @@ const Navbar = () => {
 							</Sheet>
 						)}
 						<Link to='/' className="transform transition-transform duration-300 hover:scale-105" onClick={handleNavClick}>
-							<img className='h-8 rounded hover:animate-none' src='/logo copy.png' alt='AlumnLink' />
+							<img className='h-6 sm:h-7 md:h-8 rounded hover:animate-none' src='/logo copy.png' alt='AlumnLink' />
 						</Link>
 					</div>
 					<div className='flex items-center gap-2 md:gap-6'>

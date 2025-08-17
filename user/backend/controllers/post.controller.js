@@ -13,6 +13,7 @@ import {
     sendMentionNotificationEmail,
     sendPostStatusNotificationEmail
 } from "../emails/emailHandlers.js";
+import { trackUserActivity } from "../utils/activityTracker.js";
 
 // Helper function to extract mentions from content
 const extractMentions = async (content) => {
@@ -229,6 +230,15 @@ export const createPost = async (req, res) => {
     const totalTime = Date.now() - requestStartTime;
     console.log(`🎉 Post creation completed in ${totalTime}ms`);
     
+    // Track user activity for post creation (in background)
+    setImmediate(async () => {
+      try {
+        await trackUserActivity(userId, 'post');
+      } catch (error) {
+        console.error('Error tracking post activity:', error);
+      }
+    });
+    
     return res.status(201).json({ 
       post, 
       status: postData.status,
@@ -323,6 +333,15 @@ export const createComment = async (req, res) => {
 
         // Extract mentions from the comment
         const mentions = await extractMentions(content);
+
+        // Track user activity for comment creation (in background)
+        setImmediate(async () => {
+            try {
+                await trackUserActivity(req.user._id, 'comment');
+            } catch (error) {
+                console.error('Error tracking comment activity:', error);
+            }
+        });
 
         // Create notifications
         try {
@@ -455,6 +474,15 @@ export const replyToComment = async (req, res) => {
         // Extract mentions from reply
         const mentions = await extractMentions(content);
 
+        // Track user activity for reply creation (in background)
+        setImmediate(async () => {
+            try {
+                await trackUserActivity(req.user._id, 'comment');
+            } catch (error) {
+                console.error('Error tracking reply activity:', error);
+            }
+        });
+
         // Try to create notifications, but don't let it fail the entire request
         try {
             // Create a notification for the comment owner (if it's not the same user)
@@ -561,6 +589,17 @@ export const reactToPost = async (req, res) => {
         }
 
         await post.save();
+
+        // Track user activity for reaction (in background)
+        if (isNewReaction) {
+            setImmediate(async () => {
+                try {
+                    await trackUserActivity(req.user._id, 'like');
+                } catch (error) {
+                    console.error('Error tracking reaction activity:', error);
+                }
+            });
+        }
 
         // Create notification for post author if this is a new reaction and author is not the reactor
         try {
@@ -880,6 +919,15 @@ export const likeComment = async (req, res) => {
       // Add like
       comment.likes.push(userId);
       
+      // Track user activity for comment like (in background)
+      setImmediate(async () => {
+        try {
+          await trackUserActivity(userId, 'like');
+        } catch (error) {
+          console.error('Error tracking comment like activity:', error);
+        }
+      });
+      
       // Create notification for comment author (if not the same user)
       try {
         if (comment.user.toString() !== userId.toString()) {
@@ -983,6 +1031,15 @@ export const likeReply = async (req, res) => {
     if (isAddingLike) {
       // Add like
       reply.likes.push(userId);
+      
+      // Track user activity for reply like (in background)
+      setImmediate(async () => {
+        try {
+          await trackUserActivity(userId, 'like');
+        } catch (error) {
+          console.error('Error tracking reply like activity:', error);
+        }
+      });
       
       // Create notification for reply author (if not the same user)
       try {
