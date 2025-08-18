@@ -24,12 +24,7 @@ const ProfilePage = () => {
         queryFn: () => axiosInstance.get(`/users/${username}`).then((res) => res.data),
     });
 
-    // Fetch user contributions for the contribution graph (only for regular users)
-    const { data: contributionData } = useQuery({
-        queryKey: ["userContributions", username],
-        queryFn: () => axiosInstance.get(`/users/contributions/${username}`).then((res) => res.data.data),
-        enabled: !!username && userProfile?.role === "user", // Only fetch for regular users
-    });
+    // Use activityHistory from userData directly (no need for separate API call)
 
     const { mutate: updateProfile } = useMutation({
         mutationFn: async (updatedData) => {
@@ -62,7 +57,7 @@ const ProfilePage = () => {
                 <ContributionGraph 
                     username={username} 
                     isOwnProfile={isOwnProfile} 
-                    contributionData={contributionData || []}
+                    activityHistory={userData.activityHistory || []}
                     className="mb-6" 
                 />
             )}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Flame, Award, TrendingUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
-const ContributionGraph = ({ username, isOwnProfile, contributionData = [], className = "" }) => {
+const ContributionGraph = ({ username, isOwnProfile, activityHistory = [], className = "" }) => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [hoveredDay, setHoveredDay] = useState(null);
   const queryClient = useQueryClient();
@@ -11,8 +11,9 @@ const ContributionGraph = ({ username, isOwnProfile, contributionData = [], clas
   // Listen for real-time activity updates
   useEffect(() => {
     const handleActivityUpdate = () => {
-      // Force refresh of contribution data when activities are updated
-      queryClient.invalidateQueries(['userContributions', username]);
+      // Force refresh of user profile data when activities are updated
+      queryClient.invalidateQueries(['authUser']); // For own profile
+      queryClient.invalidateQueries(['userProfile', username]); // For viewing others' profiles
     };
 
     // Listen for mutation success events that indicate new activities
@@ -46,9 +47,10 @@ const ContributionGraph = ({ username, isOwnProfile, contributionData = [], clas
     const handleUserActivity = (event) => {
       const { username: activityUsername } = event.detail;
       
-      // Refresh contribution data if it's for this user
+      // Refresh user data if it's for this user
       if (activityUsername === username) {
-        queryClient.invalidateQueries(['userContributions', username]);
+        queryClient.invalidateQueries(['authUser']); // For own profile
+        queryClient.invalidateQueries(['userProfile', username]); // For viewing others' profiles
       }
     };
 
@@ -90,16 +92,16 @@ const ContributionGraph = ({ username, isOwnProfile, contributionData = [], clas
 
   const dateRange = useMemo(() => generateDateRange(), [generateDateRange]);
 
-  // Create a map of date strings to activity counts
+  // Create a map of date strings to activity counts from activityHistory
   const activityMap = useMemo(() => {
     const map = {};
-    contributionData.forEach(activity => {
+    activityHistory.forEach(activity => {
       const date = getISTDate(new Date(activity.date));
       const dateStr = date.toISOString().split('T')[0];
-      map[dateStr] = (map[dateStr] || 0) + activity.count;
+      map[dateStr] = activity.activities.total || 0;
     });
     return map;
-  }, [contributionData, getISTDate]);
+  }, [activityHistory, getISTDate]);
 
   // Calculate intensity based on activity count
   const getIntensity = (count) => {
@@ -129,7 +131,6 @@ const ContributionGraph = ({ username, isOwnProfile, contributionData = [], clas
   // Calculate streaks
   const calculateStreaks = useCallback(() => {
     const today = getISTDate();
-    const todayStr = today.toISOString().split('T')[0];
     
     let currentStreak = 0;
     let longestStreak = 0;
@@ -137,15 +138,23 @@ const ContributionGraph = ({ username, isOwnProfile, contributionData = [], clas
     
     // Calculate current streak (working backwards from today)
     let checkDate = new Date(today);
+    let hasActivity = false;
+    
     while (checkDate >= new Date('2025-08-01')) {
       const dateStr = checkDate.toISOString().split('T')[0];
-      if (activityMap[dateStr] > 0) {
-        if (dateStr === todayStr || currentStreak > 0) {
-          currentStreak++;
-        }
+      const activityCount = activityMap[dateStr] || 0;
+      
+      if (activityCount > 0) {
+        currentStreak++;
+        hasActivity = true;
       } else {
-        break;
+        // If we haven't found any activity yet and this is the first gap, it's okay
+        // But if we already had activity and now there's a gap, break the streak
+        if (hasActivity) {
+          break;
+        }
       }
+      
       checkDate.setDate(checkDate.getDate() - 1);
     }
     
