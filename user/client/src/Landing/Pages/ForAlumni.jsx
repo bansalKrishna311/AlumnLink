@@ -56,14 +56,54 @@ const ForAlumni = () => {
     <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
       {/* Hero Section */}
       <div className="py-20 relative overflow-hidden">
+        {/* Advanced floating elements */}
         <motion.div 
-          className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/20 to-purple-300/5 rounded-full mix-blend-multiply filter blur-3xl opacity-70"
+          className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/15 to-purple-300/5 rounded-full mix-blend-multiply filter blur-3xl"
           animate={{ 
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-            y: [0, -50, 0],
+            scale: [1, 1.3, 0.9, 1],
+            x: [0, 50, -20, 0],
+            y: [0, -30, 40, 0],
+            rotate: [0, 180, 360],
           }}
-          transition={{ duration: 15, repeat: Infinity, repeatType: "reverse" }}
+          transition={{ 
+            duration: 25, 
+            repeat: Infinity, 
+            repeatType: "loop",
+            ease: "easeInOut"
+          }}
+        />
+        
+        <motion.div 
+          className="absolute top-40 left-10 w-64 h-64 bg-gradient-to-br from-indigo-400/10 to-blue-300/5 rounded-full mix-blend-multiply filter blur-2xl"
+          animate={{ 
+            scale: [0.8, 1.2, 1],
+            x: [0, -40, 20, 0],
+            y: [0, 60, -30, 0],
+            rotate: [360, 180, 0],
+          }}
+          transition={{ 
+            duration: 20, 
+            repeat: Infinity, 
+            repeatType: "loop",
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        <motion.div 
+          className="absolute bottom-10 right-20 w-48 h-48 bg-gradient-to-br from-teal-400/15 to-green-300/5 rounded-full mix-blend-multiply filter blur-2xl"
+          animate={{ 
+            scale: [1, 0.7, 1.4, 1],
+            x: [0, 30, -40, 0],
+            y: [0, -20, 50, 0],
+          }}
+          transition={{ 
+            duration: 18, 
+            repeat: Infinity, 
+            repeatType: "loop",
+            ease: "easeInOut",
+            delay: 1
+          }}
         />
         
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
@@ -74,50 +114,162 @@ const ForAlumni = () => {
             className="text-center max-w-4xl mx-auto"
           >
             <motion.div 
-              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm py-2 px-4 rounded-full shadow-sm mb-6 border border-purple-500/10"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-3 bg-white/90 backdrop-blur-lg py-3 px-6 rounded-full shadow-lg mb-8 border border-purple-200/30"
+              initial={{ opacity: 0, y: -30, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ 
+                delay: 0.3,
+                type: "spring",
+                stiffness: 200,
+                damping: 15
+              }}
             >
-              <motion.span 
-                className="h-2 w-2 rounded-full bg-purple-600"
+              <motion.div 
+                className="relative"
                 animate={{ 
-                  scale: [1, 1.5, 1],
-                  opacity: [0.7, 1, 0.7]
+                  rotate: [0, 360],
                 }}
                 transition={{ 
-                  duration: 2,
-                  repeat: Infinity
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "linear"
                 }}
-              />
-              <span className="text-sm font-medium text-gray-600">For Alumni</span>
+              >
+                <motion.span 
+                  className="h-3 w-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 block"
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    boxShadow: [
+                      "0 0 0 0 rgba(147, 51, 234, 0.4)",
+                      "0 0 0 8px rgba(147, 51, 234, 0.1)",
+                      "0 0 0 0 rgba(147, 51, 234, 0)"
+                    ]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.span 
+                  className="absolute inset-0 h-3 w-3 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400"
+                  animate={{ 
+                    scale: [0, 1.5, 0],
+                    opacity: [0, 0.6, 0]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeOut"
+                  }}
+                />
+              </motion.div>
+              <span className="text-sm font-semibold text-gray-700 tracking-wide">For Alumni</span>
             </motion.div>
 
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-700">
-              Your Network for Life
-            </h1>
+            <motion.h1 
+              className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800"
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ 
+                delay: 0.5,
+                type: "spring",
+                stiffness: 150,
+                damping: 20
+              }}
+            >
+              <motion.span
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  backgroundSize: "200% 200%"
+                }}
+              >
+                Your Network for Life
+              </motion.span>
+            </motion.h1>
             
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <motion.p 
+              className="text-xl text-gray-600 mb-8 leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                delay: 0.7,
+                type: "spring",
+                stiffness: 100,
+                damping: 15
+              }}
+            >
               AlumnLink lets you connect, grow, and thrive alongside fellow graduates. Whether you want to reconnect, find mentors, discover opportunities, or give back, you're in the right place.
-            </p>
+            </motion.p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                delay: 0.9,
+                type: "spring",
+                stiffness: 120,
+                damping: 15
+              }}
+            >
               <motion.button 
-                className="px-8 py-4 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition-all duration-300 flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
+                className="relative px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-full overflow-hidden group"
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"
+                }}
                 whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Join Today
-                <ArrowRight size={20} />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "0%" }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                />
+                <span className="relative z-10 flex items-center gap-2">
+                  Join Today
+                  <motion.div
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ 
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <ArrowRight size={20} />
+                  </motion.div>
+                </span>
               </motion.button>
+              
               <motion.button 
-                className="px-8 py-4 bg-white text-purple-600 font-semibold rounded-full border-2 border-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
+                className="relative px-8 py-4 bg-white text-purple-600 font-semibold rounded-full border-2 border-purple-600 overflow-hidden group"
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 15px 30px rgba(147, 51, 234, 0.2)"
+                }}
                 whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Explore Features
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600"
+                  initial={{ scale: 0, borderRadius: "50%" }}
+                  whileHover={{ scale: 1, borderRadius: "0%" }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                />
+                <span className="relative z-10 group-hover:text-white transition-colors duration-300">
+                  Explore Features
+                </span>
               </motion.button>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -160,23 +312,61 @@ const ForAlumni = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="group"
               >
-                <div className="relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 group-hover:scale-105 overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${benefit.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}/>
+                <motion.div
+                  className="relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 group-hover:scale-105 overflow-hidden cursor-pointer"
+                  whileHover={{ 
+                    y: -8,
+                    rotateY: 5,
+                    rotateX: 5,
+                  }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 20 
+                  }}
+                >
+                  <motion.div 
+                    className={`absolute inset-0 bg-gradient-to-br ${benefit.color} opacity-0 group-hover:opacity-100`}
+                    initial={{ scale: 0, rotate: 180 }}
+                    whileHover={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  />
                   
                   <div className="relative z-10">
-                    <div className={`w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center ${benefit.iconColor} group-hover:bg-white/80 transition-all duration-300 mb-6`}>
+                    <motion.div 
+                      className={`w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center ${benefit.iconColor} group-hover:bg-white/90 transition-all duration-300 mb-6`}
+                      whileHover={{ 
+                        rotate: [0, -10, 10, 0],
+                        scale: 1.1
+                      }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 400, 
+                        damping: 10 
+                      }}
+                    >
                       {benefit.icon}
-                    </div>
+                    </motion.div>
                     
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    <motion.h3 
+                      className="text-xl font-bold text-gray-900 mb-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 + 0.2 }}
+                    >
                       {benefit.title}
-                    </h3>
+                    </motion.h3>
                     
-                    <p className="text-gray-600 leading-relaxed">
+                    <motion.p 
+                      className="text-gray-600 leading-relaxed"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 + 0.3 }}
+                    >
                       {benefit.description}
-                    </p>
+                    </motion.p>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             ))}
           </div>
@@ -225,9 +415,32 @@ const ForAlumni = () => {
               className="bg-gradient-to-br from-purple-500/10 to-indigo-100 rounded-3xl p-8"
             >
               <div className="text-center">
-                <div className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                  <Network size={40} />
-                </div>
+                <motion.div 
+                  className="w-24 h-24 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6 shadow-xl"
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotate: [0, -5, 5, 0],
+                    boxShadow: "0 25px 50px rgba(147, 51, 234, 0.4)"
+                  }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 15 
+                  }}
+                >
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 360],
+                    }}
+                    transition={{ 
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  >
+                    <Network size={40} />
+                  </motion.div>
+                </motion.div>
                 <h4 className="text-2xl font-bold text-gray-900 mb-4">
                   "Through AlumnLink, I found a mentor who changed my career path."
                 </h4>
@@ -300,12 +513,33 @@ const ForAlumni = () => {
               Your community is waiting. Join AlumnLink today and start building meaningful connections.
             </p>
             <motion.button 
-              className="px-8 py-4 bg-white text-purple-600 font-semibold rounded-full hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 mx-auto"
-              whileHover={{ scale: 1.05 }}
+              className="relative px-8 py-4 bg-white text-purple-600 font-semibold rounded-full overflow-hidden group shadow-lg"
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)"
+              }}
               whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              Join today
-              <ArrowRight size={20} />
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600"
+                initial={{ scale: 0, borderRadius: "50%" }}
+                whileHover={{ scale: 1, borderRadius: "0%" }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              />
+              <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors duration-300">
+                Join today
+                <motion.div
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ 
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <ArrowRight size={20} />
+                </motion.div>
+              </span>
             </motion.button>
           </motion.div>
         </div>
