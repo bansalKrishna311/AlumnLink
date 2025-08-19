@@ -457,9 +457,6 @@ const JoinNetwork = () => {
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">
-                                  Available courses: {adminCourses.join(", ")}
-                                </p>
                               </>
                             ) : (
                               <div className="space-y-2">
