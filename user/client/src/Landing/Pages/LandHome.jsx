@@ -14,6 +14,7 @@ import CallToAction from "../Components/CallToAction";
 import FeatureGrid from "../Components/FeatureGrid";
 import Testimonials from "../Components/TestimonialsClean";
 import AlumnGPT from "../Components/AlumnGPT";
+import SEO from "../../components/SEO";
 
 
 const LandHome = () => {
@@ -24,6 +25,13 @@ const LandHome = () => {
 
   return (
     <AnimatePresence>
+      <SEO 
+        title="AlumnLink - Leading Alumni Management Platform | Connect, Engage, Grow"
+        description="AlumnLink is India's premier alumni networking platform. Transform your institution's alumni engagement with our comprehensive management tools, networking features, and career opportunities."
+        keywords="alumni portal, alumni management software, alumni network platform, educational institution software, alumni engagement tool, college alumni portal, university alumni management, alumni community platform"
+        url="https://www.alumnlink.com"
+        canonical="https://www.alumnlink.com"
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

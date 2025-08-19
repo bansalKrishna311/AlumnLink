@@ -10,7 +10,8 @@
 		"keep-alive": "node utils/external-keepalive.js",
 		"m0-keepalive": "node utils/m0-external-keepalive.js",
 		"m0-keepalive-stats": "node utils/m0-external-keepalive.js --stats",
-		"monitor": "node -e \"import('./lib/dbMonitor.js').then(m => { m.default.startMonitoring(); console.log('Database monitoring started. Press Ctrl+C to stop.'); })\""
+		"monitor": "node -e \"import('./lib/dbMonitor.js').then(m => { m.default.startMonitoring(); console.log('Database monitoring started. Press Ctrl+C to stop.'); })\"",
+		"add-sample-activity": "node scripts/add-sample-activity.js"
 	},
 	"keywords": [],
 	"author": "",

@@ -76,6 +76,21 @@ const userSchema = new mongoose.Schema(
 			},
 			default: null,  // Default type if admin role is selected
 		  },
+		// Activity tracking for contribution graph
+		activityHistory: [
+			{
+				date: {
+					type: Date,
+					required: true
+				},
+				activities: {
+					posts: { type: Number, default: 0 },
+					likes: { type: Number, default: 0 },
+					comments: { type: Number, default: 0 },
+					total: { type: Number, default: 0 }
+				}
+			}
+		],
 	},
 
 	{ timestamps: true }
