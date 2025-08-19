@@ -28,6 +28,8 @@ const UserLinks = () => {
   const [processing, setProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All Chapters');
+  const [selectedCourse, setSelectedCourse] = useState('All Courses');
+  const [availableCourses, setAvailableCourses] = useState(['All Courses']);
   
   // Location options for the filter
   const locationOptions = [
@@ -57,35 +59,45 @@ const UserLinks = () => {
     pageSize: 10
   });
   
-  // Client-side filtering function like in SelfLinks.jsx
-  const filterLinks = useCallback((linksArray, query) => {
+  // Client-side filtering function with course filter first, then search
+  const filterLinks = useCallback((linksArray, query, courseFilter) => {
+    let filtered = linksArray;
+    
+    // First filter by course if not "All Courses"
+    if (courseFilter && courseFilter !== 'All Courses') {
+      filtered = filtered.filter((link) => {
+        const linkSelectedCourse = String(link.selectedCourse || '').toLowerCase();
+        const linkCourseName = String(link.courseName || '').toLowerCase();
+        const filterCourse = courseFilter.toLowerCase();
+        
+        return linkSelectedCourse.includes(filterCourse) || linkCourseName.includes(filterCourse);
+      });
+    }
+    
+    // Then filter by search query if provided
     if (!query || !query.trim()) {
-      return linksArray;
+      return filtered;
     }
     
     const searchTerm = query.toLowerCase().trim();
-    return linksArray.filter((link) => {
+    return filtered.filter((link) => {
       const name = link.user?.name?.toLowerCase() || '';
       const username = link.user?.username?.toLowerCase() || '';
       const rollNumber = String(link.rollNumber || '').toLowerCase();
       const batch = String(link.batch || '').toLowerCase();
-      const courseName = String(link.courseName || '').toLowerCase();
-      const selectedCourse = String(link.selectedCourse || '').toLowerCase();
       const location = link.user?.location?.toLowerCase() || '';
       
       return name.includes(searchTerm) ||
              username.includes(searchTerm) ||
              rollNumber.includes(searchTerm) ||
              batch.includes(searchTerm) ||
-             courseName.includes(searchTerm) ||
-             selectedCourse.includes(searchTerm) ||
              location.includes(searchTerm);
     });
   }, []);
 
-  // Apply client-side filtering and pagination when search query or page changes
+  // Apply client-side filtering and pagination when search query, course filter, or page changes
   useEffect(() => {
-    let filtered = filterLinks(allLinks, searchQuery);
+    let filtered = filterLinks(allLinks, searchQuery, selectedCourse);
     
     // Update pagination based on filtered results
     const totalCount = filtered.length;
@@ -104,14 +116,74 @@ const UserLinks = () => {
     const paginatedResults = filtered.slice(startIndex, endIndex);
     
     setLinks(paginatedResults);
-  }, [searchQuery, allLinks, filterLinks, currentPage]);
+  }, [searchQuery, selectedCourse, allLinks, filterLinks, currentPage]);
 
-  // Reset to page 1 when search query changes
+  // Reset to page 1 when search query or course filter changes
   useEffect(() => {
-    if (searchQuery) {
+    if (searchQuery || selectedCourse !== 'All Courses') {
       setCurrentPage(1);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedCourse]);
+
+  // Extract available courses from admin assigned courses using existing APIs
+  useEffect(() => {
+    const fetchAdminAssignedCourses = async () => {
+      try {
+        // Fetch all admins using existing APIs
+        const [instituteRes, schoolRes, corporateRes] = await Promise.all([
+          axiosInstance.get("/admin/institutes"),
+          axiosInstance.get("/admin/schools"),
+          axiosInstance.get("/admin/corporates"),
+        ]);
+        
+        const allAdmins = [
+          ...instituteRes.data,
+          ...schoolRes.data,
+          ...corporateRes.data
+        ];
+        
+        const allAssignedCourses = new Set(['All Courses']);
+        
+        // Fetch courses for each admin using existing API
+        const coursePromises = allAdmins.map(async (admin) => {
+          try {
+            const response = await axiosInstance.get(`/admin/admin/${admin._id}/courses`);
+            return response.data.assignedCourses || [];
+          } catch (error) {
+            console.error(`Error fetching courses for admin ${admin._id}:`, error);
+            return [];
+          }
+        });
+        
+        const allCoursesArrays = await Promise.all(coursePromises);
+        
+        // Combine all courses
+        allCoursesArrays.forEach(coursesArray => {
+          if (Array.isArray(coursesArray)) {
+            coursesArray.forEach(course => {
+              if (course && course.trim()) {
+                allAssignedCourses.add(course.trim());
+              }
+            });
+          }
+        });
+        
+        setAvailableCourses(Array.from(allAssignedCourses).sort());
+      } catch (error) {
+        console.error('Error fetching admin assigned courses:', error);
+        // Fallback to extracting from current data if API fails
+        if (allLinks.length > 0) {
+          const courses = new Set(['All Courses']);
+          allLinks.forEach(link => {
+            if (link.selectedCourse) courses.add(link.selectedCourse);
+          });
+          setAvailableCourses(Array.from(courses).sort());
+        }
+      }
+    };
+
+    fetchAdminAssignedCourses();
+  }, [allLinks]);
 
   const fetchUserLinks = useCallback(async () => {
     try {
@@ -338,6 +410,12 @@ const UserLinks = () => {
     setCurrentPage(1);
   }, []);
 
+  const handleCourseChange = useCallback((course) => {
+    setSelectedCourse(course);
+    // Reset pagination when changing course
+    setCurrentPage(1);
+  }, []);
+
   const handleUserProfileClick = useCallback((username) => {
     if (username) {
       navigate(`/profile/${username}`);
@@ -512,7 +590,7 @@ const UserLinks = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-hover:text-[#fe6019]" />
                       <input
                         type="text"
-                        placeholder="Search by name, roll number, batch, course..."
+                        placeholder="Search by name, roll number, batch..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] transition-all duration-200 bg-white shadow-sm hover:border-gray-400 text-sm"
@@ -535,6 +613,22 @@ const UserLinks = () => {
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" 
                     />
                   </div>
+                  <div className="relative">
+                    <select
+                      value={selectedCourse}
+                      onChange={(e) => handleCourseChange(e.target.value)}
+                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] min-w-[180px] cursor-pointer transition-colors duration-200"
+                    >
+                      {availableCourses.map((course) => (
+                        <option key={course} value={course}>
+                          {course}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" 
+                    />
+                  </div>
                 </div>
                 {searchQuery && (
                   <div className="mt-2 text-sm text-gray-600">
@@ -543,6 +637,9 @@ const UserLinks = () => {
                         Found {pagination.totalCount} result{pagination.totalCount !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
                         {selectedLocation !== 'All Chapters' && (
                           <span className="text-gray-500"> in {selectedLocation}</span>
+                        )}
+                        {selectedCourse !== 'All Courses' && (
+                          <span className="text-gray-500"> for {selectedCourse} course</span>
                         )}
                         {pagination.totalPages > 1 && (
                           <span className="text-gray-500"> (Page {currentPage} of {pagination.totalPages})</span>
@@ -554,6 +651,9 @@ const UserLinks = () => {
                         {selectedLocation !== 'All Chapters' && (
                           <span className="text-gray-500"> in {selectedLocation}</span>
                         )}
+                        {selectedCourse !== 'All Courses' && (
+                          <span className="text-gray-500"> for {selectedCourse} course</span>
+                        )}
                       </>
                     )}
                   </div>
@@ -563,6 +663,9 @@ const UserLinks = () => {
                     Showing {pagination.totalCount} total connections
                     {selectedLocation !== 'All Chapters' && (
                       <span> from {selectedLocation}</span>
+                    )}
+                    {selectedCourse !== 'All Courses' && (
+                      <span> for {selectedCourse} course</span>
                     )}
                     {pagination.totalPages > 1 && (
                       <span> (Page {currentPage} of {pagination.totalPages})</span>
