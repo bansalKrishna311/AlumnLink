@@ -146,7 +146,7 @@ const ForCorporates = () => {
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Connect with top talent and build meaningful partnerships through our comprehensive alumni network platform.
+              Connect with quality talent and build meaningful partnerships through our comprehensive alumni network platform.
             </p>
           </motion.div>
 

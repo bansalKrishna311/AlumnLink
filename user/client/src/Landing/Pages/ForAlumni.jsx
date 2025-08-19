@@ -259,8 +259,8 @@ const ForAlumni = () => {
             
             <div className="grid md:grid-cols-3 gap-8 mt-12">
               {[
-                { number: "10,000+", label: "Active Alumni", color: "text-blue-600" },
-                { number: "500+", label: "Institutions", color: "text-green-600" },
+                { number: "Active", label: "Alumni Network", color: "text-blue-600" },
+                { number: "Growing", label: "Institutions", color: "text-green-600" },
                 { number: "95%", label: "Satisfaction Rate", color: "text-purple-600" }
               ].map((stat, index) => (
                 <motion.div

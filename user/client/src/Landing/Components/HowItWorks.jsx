@@ -221,7 +221,7 @@ const HowItWorks = () => {
               Ready to transform your alumni engagement?
             </h3>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Join leading institutions across India who trust AlumnLink to power their alumni communities. 
+              Join institutions who trust AlumnLink to power their alumni communities. 
               See how authentic connections drive real results.
             </p>
             

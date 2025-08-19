@@ -1,0 +1,11 @@
+Contact: security@alumnlink.com
+Contact: https://www.alumnlink.com/Landing/contact
+Expires: 2026-08-19T12:00:00.000Z
+Encryption: https://keys.openpgp.org/search?q=security@alumnlink.com
+Acknowledgments: https://www.alumnlink.com/security/acknowledgments
+Policy: https://www.alumnlink.com/security/policy
+Hiring: https://www.alumnlink.com/careers
+
+# AlumnLink Security Contact Information
+# For security vulnerabilities and responsible disclosure
+# Visit our website: https://www.alumnlink.com

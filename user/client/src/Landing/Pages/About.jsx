@@ -1,6 +1,7 @@
 import React from 'react';
 import { School, Building, Award, Briefcase, Users } from 'lucide-react';
 import CallToAction from '../Components/CallToAction';
+import SEO from '../../components/SEO';
 
 // Import our newly created components
 import AboutHero from '../Components/About/AboutHero';
@@ -131,6 +132,47 @@ const About = () => {
   };
 
   return (
+    <>
+      <SEO 
+        title="About AlumnLink - Alumni Management Platform | Our Story & Mission"
+        description="Discover how AlumnLink is transforming alumni engagement. Founded in 2023, we connect graduates through comprehensive networking tools. Learn about our mission to strengthen institutional relationships and alumni communities. Meet our team building the future of alumni management."
+        keywords="about alumnlink, alumni management company, alumni platform company india, educational technology company, alumni networking company, institutional software provider, alumni engagement solutions, educational institution partnerships, alumni platform development, alumni management team, alumni technology founders, educational innovation company"
+        url="https://www.alumnlink.com/Landing/about"
+        canonical="https://www.alumnlink.com/Landing/about"
+        lastModified="2025-08-19"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About AlumnLink - Our Story & Mission",
+          "description": "Learn about AlumnLink's mission to transform alumni engagement through innovative technology solutions.",
+          "url": "https://www.alumnlink.com/Landing/about",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "AlumnLink",
+            "foundingDate": "2023",
+            "description": "Alumni management platform",
+            "url": "https://www.alumnlink.com",
+            "founder": [
+              {
+                "@type": "Person",
+                "name": "Krishna Bansal"
+              },
+              {
+                "@type": "Person", 
+                "name": "Lokesh Tiwari"
+              },
+              {
+                "@type": "Person",
+                "name": "Laxmi Rajput"
+              }
+            ]
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "https://www.alumnlink.com" },
+          { name: "About", url: "https://www.alumnlink.com/Landing/about" }
+        ]}
+      />
     <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
       {/* About Hero Section */}
       <AboutHero />
@@ -169,6 +211,7 @@ const About = () => {
         secondaryButtonLink="/landing/contact"
       />
     </div>
+    </>
   );
 };
 

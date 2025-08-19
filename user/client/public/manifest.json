@@ -1,13 +1,61 @@
 {
-  "name": "AlumnLink - Alumni Management Platform",
+  "name": "AlumnLink - India's Leading Alumni Management Platform",
   "short_name": "AlumnLink",
-  "description": "The ultimate alumni engagement platform connecting educational institutions with their graduates",
+  "description": "Transform your institution's alumni engagement with India's premier networking platform. Connect 10,000+ graduates through comprehensive alumni management tools.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#fe6019",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["education", "business", "networking", "social", "productivity"],
+  "keywords": [
+    "alumni management",
+    "alumni networking",
+    "educational platform",
+    "institutional software",
+    "alumni portal",
+    "career networking",
+    "professional networking",
+    "alumni directory",
+    "alumni engagement"
+  ],
+  "screenshots": [
+    {
+      "src": "/banner.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "AlumnLink Platform Overview"
+    }
+  ],
   "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/favicon.png",
       "sizes": "192x192",
@@ -16,13 +64,61 @@
     },
     {
       "src": "/logo copy.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo copy.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo copy.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "categories": ["education", "business", "networking"],
-  "lang": "en-US",
-  "dir": "ltr",
-  "scope": "/",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Alumni Directory",
+      "short_name": "Directory",
+      "description": "Access alumni directory",
+      "url": "/network",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Career Portal",
+      "short_name": "Careers",
+      "description": "Browse career opportunities",
+      "url": "/careers",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "View upcoming events",
+      "url": "/events",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }

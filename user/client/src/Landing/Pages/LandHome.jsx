@@ -26,11 +26,45 @@ const LandHome = () => {
   return (
     <AnimatePresence>
       <SEO 
-        title="AlumnLink - Leading Alumni Management Platform | Connect, Engage, Grow"
-        description="AlumnLink is India's premier alumni networking platform. Transform your institution's alumni engagement with our comprehensive management tools, networking features, and career opportunities."
-        keywords="alumni portal, alumni management software, alumni network platform, educational institution software, alumni engagement tool, college alumni portal, university alumni management, alumni community platform"
+        title="AlumnLink - Alumni Management Platform | Connect, Engage, Grow"
+        description="Transform your institution's alumni engagement with AlumnLink. Build stronger alumni communities through comprehensive management tools including alumni directory, career portal, events management, and fundraising platform."
+        keywords="alumni management platform, alumni networking platform, educational institution software, college alumni portal, university alumni management, alumni engagement tools, alumni directory software, alumni community platform, alumni portal development, alumni database management, alumni networking events, alumni career portal, alumni fundraising platform, alumni social network, alumni management system, educational technology, institutional alumni relations, alumni communication platform, alumni mentorship programs, professional networking platform"
         url="https://www.alumnlink.com"
         canonical="https://www.alumnlink.com"
+        lastModified="2025-08-19"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "AlumnLink - Alumni Management Platform",
+          "description": "Transform your institution's alumni engagement with AlumnLink - alumni networking platform connecting graduates.",
+          "url": "https://www.alumnlink.com",
+          "mainEntity": {
+            "@type": "SoftwareApplication",
+            "name": "AlumnLink Alumni Platform",
+            "applicationCategory": "BusinessApplication",
+            "description": "Comprehensive alumni management and networking platform",
+            "operatingSystem": "Web Browser",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR"
+            }
+          },
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.alumnlink.com"
+              }
+            ]
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "https://www.alumnlink.com" }
+        ]}
       />
       <motion.div
         initial={{ opacity: 0 }}

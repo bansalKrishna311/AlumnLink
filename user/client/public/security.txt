@@ -1,0 +1,11 @@
+Contact: mailto:security@alumnlink.com
+Contact: https://www.alumnlink.com/Landing/contact
+Expires: 2026-08-19T12:00:00.000Z
+Encryption: https://www.alumnlink.com/pgp-key.txt
+Acknowledgments: https://www.alumnlink.com/security-acknowledgments
+Policy: https://www.alumnlink.com/security-policy
+Hiring: https://www.alumnlink.com/careers
+
+# Security Information for AlumnLink
+# If you discover a security vulnerability, please report it to us
+# We appreciate responsible disclosure and will respond promptly
