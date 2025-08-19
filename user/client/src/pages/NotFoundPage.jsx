@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Home, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
@@ -46,6 +47,14 @@ const NotFoundPage = () => {
   };
 
   return (
+    <>
+      <SEO 
+        title="Page Not Found - 404 Error | AlumnLink Alumni Management Platform"
+        description="The page you're looking for doesn't exist. Explore AlumnLink's alumni management features, return to homepage, or contact support for assistance."
+        keywords="404 error, page not found, alumnlink, alumni platform, alumni management, site navigation"
+        noindex={true}
+        canonical="https://www.alumnlink.com/404"
+      />
     <div className="h-screen w-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 flex items-center justify-center px-4 overflow-hidden">
       <motion.div
         variants={containerVariants}
@@ -233,6 +242,7 @@ const NotFoundPage = () => {
         </div>
       </motion.div>
     </div>
+    </>
   );
 };
 

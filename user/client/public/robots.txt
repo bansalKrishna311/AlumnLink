@@ -6,32 +6,106 @@ Disallow: /dashboard/
 Disallow: /profile/
 Disallow: /login/
 Disallow: /register/
+Disallow: /signup/
+Disallow: /forgot-password/
+Disallow: /reset-password/
+Disallow: /verify-email/
+Disallow: /messages/
+Disallow: /notifications/
+Disallow: /my-links/
+Disallow: /saved-posts/
+Disallow: /buildprofile/
+Disallow: /userrequests/
+Disallow: /post-creation/
+Disallow: /manage-alumni/
+Disallow: /rejected-requests/
+Disallow: /rejected-posts/
+Disallow: /adminposts/
+Disallow: /postrequest/
 
-# Allow specific landing pages
-Allow: /landing/
-Allow: /about/
-Allow: /contact/
-Allow: /terms/
-Allow: /privacy/
+# Allow specific landing pages for SEO
+Allow: /Landing/
+Allow: /Landing/about
+Allow: /Landing/contact
+Allow: /Landing/terms
+Allow: /Landing/privacy
+Allow: /Landing/for-institutes
+Allow: /Landing/for-corporates
+Allow: /Landing/for-schools
+Allow: /Landing/for-alumni
+
+# Allow important pages
+Allow: /about
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /blog/
+Allow: /resources/
+Allow: /features/
+Allow: /pricing/
+Allow: /case-studies/
 
 # Sitemap location
 Sitemap: https://www.alumnlink.com/sitemap.xml
 
-# Crawl delay
+# Crawl delay to be respectful to servers
 Crawl-delay: 1
 
-# Specific bots
+# Specific bot configurations
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /login/
+Disallow: /register/
+Disallow: /signup/
+Disallow: /messages/
+Crawl-delay: 0.5
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /login/
+Disallow: /register/
+Disallow: /signup/
+Disallow: /messages/
+Crawl-delay: 1
+
+User-agent: YandexBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Crawl-delay: 1
 
 User-agent: Baiduspider
 Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+# Block specific files and directories
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /*?sort=
+Disallow: /*?filter=
+Disallow: /*?page=
+Disallow: /*&sort=
+Disallow: /*&filter=
+Disallow: /*&page=

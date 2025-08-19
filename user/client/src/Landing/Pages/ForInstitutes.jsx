@@ -7,8 +7,8 @@ const ForInstitutes = () => {
   const benefits = [
     {
       icon: <TrendingUp size={28} />,
-      title: "Massive Profit Margins",
-      description: "Boost tuition and fundraising by keeping alumni actively engaged—see up to 10x the value of your investment.",
+      title: "Improved Engagement",
+      description: "Keep alumni actively engaged and boost institutional relationships with data-driven insights.",
       color: "from-green-500/20 to-emerald-400/20",
       iconColor: "text-green-600"
     },
@@ -56,11 +56,37 @@ const ForInstitutes = () => {
   return (
     <>
       <SEO 
-        title="AlumnLink for Educational Institutes - Alumni Management Platform"
-        description="Transform your alumni network with AlumnLink's comprehensive alumni management platform. Boost engagement, fundraising, and institutional growth. Get started today!"
-        keywords="alumni management platform, educational institutes, alumni engagement, university alumni network, college alumni portal, institute alumni management, alumni fundraising, alumni relations software"
-        url="https://www.alumnlink.com/landing/for-institutes"
-        canonical="https://www.alumnlink.com/landing/for-institutes"
+        title="AlumnLink for Educational Institutes - Alumni Management Platform | Boost Engagement & Fundraising"
+        description="Transform your educational institute's alumni network with AlumnLink's management platform. Increase alumni engagement and strengthen institutional relationships. Comprehensive tools for colleges, universities, and schools. Free demo available."
+        keywords="alumni management platform for colleges, university alumni software india, educational institute alumni portal, college alumni engagement platform, alumni fundraising software, institutional alumni relations, alumni network management, alumni directory software for universities, alumni management system for colleges, educational institution technology, alumni engagement tools india, college fundraising platform, university alumni database, institutional development software, alumni relationship management platform"
+        url="https://www.alumnlink.com/Landing/for-institutes"
+        canonical="https://www.alumnlink.com/Landing/for-institutes"
+        lastModified="2025-08-19"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "AlumnLink for Educational Institutes",
+          "description": "Comprehensive alumni management platform designed specifically for educational institutions to boost engagement and fundraising.",
+          "provider": {
+            "@type": "Organization",
+            "name": "AlumnLink"
+          },
+          "category": "Educational Technology",
+          "audience": {
+            "@type": "EducationalOrganization",
+            "name": "Educational Institutes"
+          },
+          "offers": {
+            "@type": "Offer",
+            "description": "Alumni Management Platform for Educational Institutes",
+            "category": "Software Service"
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "https://www.alumnlink.com" },
+          { name: "Solutions", url: "https://www.alumnlink.com/solutions" },
+          { name: "For Institutes", url: "https://www.alumnlink.com/Landing/for-institutes" }
+        ]}
       />
       <div className="pt-28 pb-16 bg-gradient-to-br from-white via-[#fff8f5] to-[#ffe8de]">
         {/* Hero Section */}
@@ -235,10 +261,10 @@ const ForInstitutes = () => {
                   ₹
                 </div>
                 <h4 className="text-2xl font-bold text-gray-900 mb-4">
-                  "With AlumnLink, our alumni feel valued—and so does our bottom line."
+                  "AlumnLink has helped us reconnect with our graduates effectively."
                 </h4>
                 <p className="text-gray-600 italic">
-                  - Leading Educational Institution
+                  - Educational Institution Administrator
                 </p>
               </div>
             </motion.div>
@@ -259,7 +285,7 @@ const ForInstitutes = () => {
               Ready to engage a new generation of graduates?
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Join leading institutions who are transforming their alumni networks with AlumnLink.
+              Join institutions who are building stronger alumni networks with AlumnLink.
             </p>
             <motion.button 
               className="px-8 py-4 bg-white text-[#fe6019] font-semibold rounded-full hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 mx-auto"

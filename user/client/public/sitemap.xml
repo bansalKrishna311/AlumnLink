@@ -1,73 +1,346 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
   <!-- Homepage -->
   <url>
     <loc>https://www.alumnlink.com/</loc>
-    <lastmod>2025-08-06</lastmod>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.alumnlink.com/banner.png</image:loc>
+      <image:title>AlumnLink - Alumni Management Platform</image:title>
+      <image:caption>AlumnLink alumni networking and management platform</image:caption>
+    </image:image>
   </url>
 
-  <!-- Landing Pages -->
+  <!-- Main Landing Pages -->
   <url>
-    <loc>https://www.alumnlink.com/landing/about</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/Landing/about</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/contact</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/Landing/contact</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Solution Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/Landing/for-institutes</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/Landing/for-alumni</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/Landing/for-corporates</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/Landing/for-schools</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Feature Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/features/alumni-directory</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/for-institutes</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/features/networking-tools</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/for-alumni</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/features/career-portal</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/for-corporates</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/features/event-management</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/for-schools</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/features/fundraising-platform</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Resource Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/resources/success-stories</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/resources/case-studies</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/resources/alumni-engagement-guide</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/resources/best-practices</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Blog Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/blog</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/blog/alumni-engagement-strategies</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/blog/building-strong-alumni-networks</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Industry-specific Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/industries/engineering-colleges</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/industries/business-schools</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/industries/universities</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/industries/medical-colleges</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- Legal Pages -->
   <url>
-    <loc>https://www.alumnlink.com/landing/terms</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/Landing/terms</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://www.alumnlink.com/landing/privacy</loc>
-    <lastmod>2025-08-06</lastmod>
+    <loc>https://www.alumnlink.com/Landing/privacy</loc>
+    <lastmod>2025-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+
+  <!-- Pricing and Demo Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/pricing</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/demo</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Help and Support -->
+  <url>
+    <loc>https://www.alumnlink.com/help</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/support</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Automated Industry Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-for-engineering-colleges</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-for-medical-colleges</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-for-business-schools</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Automated Location Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-mumbai</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-delhi</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-bangalore</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Competitor Comparison Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/vs-almaconnect</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/vs-graduway</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Search Intent Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/how-to-increase-alumni-engagement</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/best-alumni-management-platform</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-management-software-pricing</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- User-Generated Content Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/success-stories</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/testimonials</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Alumni by Industry -->
+  <url>
+    <loc>https://www.alumnlink.com/alumni-in-technology</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.alumnlink.com/alumni-in-finance</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Additional SEO Pages -->
+  <url>
+    <loc>https://www.alumnlink.com/sitemap</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>
