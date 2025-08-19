@@ -76,6 +76,13 @@ const userSchema = new mongoose.Schema(
 			},
 			default: null,  // Default type if admin role is selected
 		  },
+		assignedCourses: {
+			type: [String],
+			default: [],
+			required: function () {
+			  return false; // Make it optional for now to support existing admins
+			}
+		  },
 		// Activity tracking for contribution graph
 		activityHistory: [
 			{

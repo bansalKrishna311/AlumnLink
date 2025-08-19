@@ -70,6 +70,7 @@ const UserLinks = () => {
       const rollNumber = String(link.rollNumber || '').toLowerCase();
       const batch = String(link.batch || '').toLowerCase();
       const courseName = String(link.courseName || '').toLowerCase();
+      const selectedCourse = String(link.selectedCourse || '').toLowerCase();
       const location = link.user?.location?.toLowerCase() || '';
       
       return name.includes(searchTerm) ||
@@ -77,6 +78,7 @@ const UserLinks = () => {
              rollNumber.includes(searchTerm) ||
              batch.includes(searchTerm) ||
              courseName.includes(searchTerm) ||
+             selectedCourse.includes(searchTerm) ||
              location.includes(searchTerm);
     });
   }, []);
@@ -390,6 +392,7 @@ const UserLinks = () => {
           'Roll Number': link.rollNumber || 'N/A',
           'Batch': link.batch || 'N/A',
           'Course Name': link.courseName || 'N/A',
+          'Selected Course': link.selectedCourse || 'Not specified',
           'Location': user.location || 'N/A',
           'Experience': experienceData
         };
@@ -618,6 +621,7 @@ const UserLinks = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Selected Course</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -703,9 +707,19 @@ const UserLinks = () => {
                         <div className="flex items-center space-x-3">
                           <BookOpen size={18} className="text-[#fe6019]" />
                           <HighlightedText
-                            text={typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
+                            text={link.courseName || 'N/A'}
                             searchTerm={searchQuery}
                             className="text-sm text-gray-600"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <BookOpen size={18} className="text-[#fe6019]" />
+                          <HighlightedText
+                            text={link.selectedCourse || 'Not specified'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md"
                           />
                         </div>
                       </td>
@@ -740,7 +754,7 @@ const UserLinks = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 italic">
+                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
                       {searchQuery ? `No connections found matching "${searchQuery}"` : "No connections found"}
                     </td>
                   </tr>

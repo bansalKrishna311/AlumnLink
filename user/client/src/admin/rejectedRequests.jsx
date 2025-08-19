@@ -406,6 +406,7 @@ const RejectedRequests = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Selected Course</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -476,7 +477,15 @@ const RejectedRequests = () => {
                         <div className="flex items-center space-x-3">
                           <BookOpen size={18} className="text-[#fe6019]" />
                           <span className="text-sm text-gray-600">
-                            {typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
+                            {link.courseName || 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <BookOpen size={18} className="text-[#fe6019]" />
+                          <span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md">
+                            {link.selectedCourse || 'Not specified'}
                           </span>
                         </div>
                       </td>
@@ -515,7 +524,7 @@ const RejectedRequests = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
+                    <td colSpan={9} className="px-6 py-10 text-center text-gray-500 italic">
                       No rejected connections found
                     </td>
                   </tr>
