@@ -154,6 +154,7 @@ const JoinNetwork = () => {
             batch: "",
             courseName: "",
           });
+          
           setSelectedNetworkDetails(null);
           setShowSuccess(false);
           setIsDialogOpen(false);
