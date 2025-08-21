@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Loader2 } from "lucide-react"
+import "@/styles/smart-table.css"
 
 export default function adminLayout({ children }) {
   return (
@@ -26,7 +27,7 @@ export default function adminLayout({ children }) {
                 </div>
               }
             >
-              <div className="transition-all duration-200 ease-in-out">
+              <div className="transition-all duration-200 ease-in-out admin-content">
                 {children}
               </div>
             </Suspense>

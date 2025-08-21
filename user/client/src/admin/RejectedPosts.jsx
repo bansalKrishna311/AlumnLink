@@ -470,7 +470,11 @@ const RejectedPosts = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <table className="min-w-full divide-y divide-gray-200">
+            {/* Responsive table wrapper */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200"
+                     style={{ minWidth: '900px' }} /* Ensure minimum width for proper display */
+              >
               <thead>
                 <tr className="bg-[#fff5f0]">
                   <th className="px-3 py-4 text-left">
@@ -583,6 +587,7 @@ const RejectedPosts = () => {
                 })}
               </motion.tbody>
             </table>
+            </div> {/* Close responsive wrapper */}
           </motion.div>
 
           {selectedPosts.length > 0 && (

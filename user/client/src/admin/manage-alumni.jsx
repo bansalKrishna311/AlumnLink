@@ -773,12 +773,14 @@ const UserLinks = () => {
           </motion.div>
 
           <motion.div 
-            className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+            className="smart-table-container overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <table className="min-w-full divide-y divide-gray-200">
+            {/* Smart responsive table wrapper - only scroll when needed */}
+            <div className="smart-table-wrapper">
+              <table className="w-full divide-y divide-gray-200">
               <thead>
                 <tr className="bg-[#fff5f0]">
                   <th className="px-3 py-4 text-left">
@@ -834,22 +836,25 @@ const UserLinks = () => {
                           </label>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div className="flex items-center space-x-3">
                           {link.user?.profilePicture ? (
                             <img
                               src={link.user.profilePicture}
                               alt={link.user?.name || "User"}
-                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
                             />
                           ) : (
-                            <User size={18} className="text-[#fe6019]" />
+                            <User size={18} className="text-[#fe6019] flex-shrink-0" />
                           )}
-                          <div>
+                          <div className="min-w-0 smart-cell">
                             <HighlightedText
                               text={link.user?.name || "Unknown User"}
                               searchTerm={searchQuery}
-                              className="text-sm text-gray-900 font-medium block"
+                              className="text-sm text-gray-900 font-medium block smart-truncate"
+                              style={{
+                                maxWidth: '140px'
+                              }}
                             />
                             <HighlightedText
                               text={`@${link.user?.username || "username"}`}
@@ -859,61 +864,67 @@ const UserLinks = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 smart-cell">
                         <div className="flex items-center space-x-3">
-                          <Code size={18} className="text-[#fe6019]" />
+                          <Code size={18} className="text-[#fe6019] flex-shrink-0" />
                           <HighlightedText
                             text={typeof link.rollNumber === 'string' ? link.rollNumber : String(link.rollNumber) || 'N/A'}
                             searchTerm={searchQuery}
-                            className="text-sm text-gray-600"
+                            className="text-sm text-gray-600 smart-truncate"
                           />
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 smart-cell">
                         <div className="flex items-center space-x-3">
-                          <Calendar size={18} className="text-[#fe6019]" />
+                          <Calendar size={18} className="text-[#fe6019] flex-shrink-0" />
                           <HighlightedText
                             text={typeof link.batch === 'string' ? link.batch : String(link.batch) || 'N/A'}
                             searchTerm={searchQuery}
-                            className="text-sm text-gray-600"
+                            className="text-sm text-gray-600 smart-truncate"
                           />
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 smart-cell">
                         <div className="flex items-center space-x-3">
-                          <BookOpen size={18} className="text-[#fe6019]" />
+                          <BookOpen size={18} className="text-[#fe6019] flex-shrink-0" />
                           <HighlightedText
                             text={link.courseName || 'N/A'}
                             searchTerm={searchQuery}
-                            className="text-sm text-gray-600"
+                            className="text-sm text-gray-600 smart-truncate"
                           />
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 smart-cell">
                         <div className="flex items-center space-x-3">
-                          <BookOpen size={18} className="text-[#fe6019]" />
-                          <HighlightedText
-                            text={link.selectedCourse || link.courseName || 'Not specified'}
-                            searchTerm={searchQuery}
-                            className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md"
-                          />
+                          <BookOpen size={18} className="text-[#fe6019] flex-shrink-0" />
+                          <div className="min-w-0">
+                            <HighlightedText
+                              text={link.selectedCourse || link.courseName || 'Not specified'}
+                              searchTerm={searchQuery}
+                              className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md smart-truncate"
+                              style={{
+                                maxWidth: '120px',
+                                display: 'inline-block'
+                              }}
+                            />
+                          </div>
                           {/* Debug info */}
                           <span className="text-xs text-red-500" style={{display: 'none'}}>
                             [Debug: selectedCourse={link.selectedCourse}, courseName={link.courseName}]
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 smart-cell">
                         <div className="flex items-center space-x-3">
-                          <MapPin size={18} className="text-[#fe6019]" />
+                          <MapPin size={18} className="text-[#fe6019] flex-shrink-0" />
                           <HighlightedText
                             text={link.user?.location || 'N/A'}
                             searchTerm={searchQuery}
-                            className="text-sm text-gray-600"
+                            className="text-sm text-gray-600 smart-truncate"
                           />
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">{/* Actions column - no max-width needed */}
                         <div className="flex justify-center">
                           <motion.button
                             className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
@@ -941,6 +952,7 @@ const UserLinks = () => {
                 )}
               </motion.tbody>
             </table>
+            </div> {/* Close responsive wrapper */}
           </motion.div>
 
           {selectedLinks.length > 0 && (

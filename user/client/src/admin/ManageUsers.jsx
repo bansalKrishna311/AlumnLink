@@ -273,12 +273,14 @@ const ManageUsers = () => {
           </motion.div>
 
           <motion.div 
-            className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+            className="smart-table-container overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <table className="min-w-full divide-y divide-gray-200">
+            {/* Smart responsive table wrapper - only scroll when needed */}
+            <div className="smart-table-wrapper">
+              <table className="w-full divide-y divide-gray-200">
               <thead>
                 <tr className="bg-[#fff5f0]">
                   <th className="px-3 py-4 text-left">
@@ -410,6 +412,7 @@ const ManageUsers = () => {
                 )}
               </motion.tbody>
             </table>
+            </div> {/* Close responsive wrapper */}
           </motion.div>
 
           {selectedRequests.length > 0 && (

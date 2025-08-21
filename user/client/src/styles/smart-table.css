@@ -1,0 +1,104 @@
+/* Smart Table Responsive Styles */
+/* Only show scrollbar when content actually overflows */
+
+.smart-table-container {
+  position: relative;
+}
+
+.smart-table-wrapper {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+/* Show scrollbar only on hover/focus */
+.smart-table-wrapper:hover {
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.smart-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.smart-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.smart-table-wrapper::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.smart-table-wrapper:hover::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+.smart-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Smart text truncation - only when needed */
+.smart-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive breakpoints for tables */
+@media (max-width: 768px) {
+  .smart-table-wrapper {
+    margin: 0 -1rem;
+  }
+  
+  .smart-table-container {
+    border-radius: 0;
+  }
+  
+  /* Force minimum width only on mobile when content might be cramped */
+  .smart-table-wrapper table {
+    min-width: 700px;
+  }
+}
+
+@media (min-width: 769px) {
+  /* On larger screens, let table be natural width */
+  .smart-table-wrapper table {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  /* Hide scrollbar completely on desktop unless needed */
+  .smart-table-wrapper {
+    overflow-x: visible;
+  }
+  
+  /* Only enable scrolling if content overflows */
+  .smart-table-wrapper.has-overflow {
+    overflow-x: auto;
+  }
+}
+
+/* Visual indicator for long content */
+.truncated-content::after {
+  content: "...";
+  font-weight: bold;
+  color: #6b7280;
+}
+
+/* Hover effect to show full content on mobile */
+@media (max-width: 768px) {
+  .smart-cell:hover .smart-truncate {
+    position: relative;
+    z-index: 10;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 200px;
+  }
+}
