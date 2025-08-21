@@ -41,7 +41,7 @@ const validatePassword = (password) => {
 
 export const signup = async (req, res) => {
 	try {
-		let { name, username, email, password, role, adminType, location } = req.body;
+		let { name, username, email, password, role, adminType, location, assignedCourses } = req.body;
 		// Remove leading/trailing spaces from username
 		if (username) username = username.trim();
 		// Prevent spaces in username
@@ -76,6 +76,11 @@ export const signup = async (req, res) => {
 			return res.status(400).json({ message: "Admin type is required for admin role" });
 		}
 
+		// For "admin" role, assignedCourses should be provided (but not strictly required for backward compatibility)
+		if (role === "admin" && assignedCourses && assignedCourses.length === 0) {
+			console.warn("Admin created without assigned courses");
+		}
+
 		// Set headline based on role
 		let headline = "AlumnLink User"; // Default headline
 		if (role === "admin") {
@@ -91,6 +96,7 @@ export const signup = async (req, res) => {
 			username,
 			role: role || "user",
 			adminType: role === "admin" ? adminType : undefined, // Set adminType only if role is admin
+			assignedCourses: role === "admin" ? assignedCourses : [], // Set assignedCourses only if role is admin
 			headline,
 			location // Assign calculated headline
 		});

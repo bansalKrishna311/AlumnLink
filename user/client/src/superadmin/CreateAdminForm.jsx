@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { User, Lock, Mail } from "lucide-react";
+import { User, Lock, Mail, Plus, X } from "lucide-react";
 import Input from "../pages/auth/components/Input"; // Adjust the import path as needed
 
 const CreateAdminForm = () => {
@@ -12,6 +12,8 @@ const CreateAdminForm = () => {
   const [password, setPassword] = useState("");
   const [adminType, setAdminType] = useState("institute"); // Default type
   const [location, setLocation] = useState(""); // Added state for location
+  const [assignedCourses, setAssignedCourses] = useState([]); // Added state for courses
+  const [courseInput, setCourseInput] = useState(""); // Added state for course input
   const queryClient = useQueryClient();
 
   const { mutate: createAdmin, isLoading } = useMutation({
@@ -25,6 +27,8 @@ const CreateAdminForm = () => {
       setPassword("");
       setAdminType("institute"); // Reset to default type
       setLocation(""); // Reset location
+      setAssignedCourses([]); // Reset courses
+      setCourseInput(""); // Reset course input
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -33,7 +37,42 @@ const CreateAdminForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createAdmin({ name, username, email, password, role: "admin", adminType, location });
+    
+    if (assignedCourses.length === 0) {
+      toast.error("Please add at least one course for the admin");
+      return;
+    }
+    
+    createAdmin({ 
+      name, 
+      username, 
+      email, 
+      password, 
+      role: "admin", 
+      adminType, 
+      location,
+      assignedCourses 
+    });
+  };
+
+  const addCourse = () => {
+    if (courseInput.trim() && !assignedCourses.includes(courseInput.trim())) {
+      setAssignedCourses([...assignedCourses, courseInput.trim()]);
+      setCourseInput("");
+    } else if (assignedCourses.includes(courseInput.trim())) {
+      toast.error("Course already added");
+    }
+  };
+
+  const removeCourse = (courseToRemove) => {
+    setAssignedCourses(assignedCourses.filter(course => course !== courseToRemove));
+  };
+
+  const handleCourseKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCourse();
+    }
   };
 
   return (
@@ -121,6 +160,59 @@ const CreateAdminForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          {/* Assigned Courses Section */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Assigned Courses *
+            </label>
+            
+            {/* Display added courses */}
+            {assignedCourses.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {assignedCourses.map((course, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                  >
+                    {course}
+                    <button
+                      type="button"
+                      onClick={() => removeCourse(course)}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Course input */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={courseInput}
+                onChange={(e) => setCourseInput(e.target.value)}
+                onKeyPress={handleCourseKeyPress}
+                placeholder="Enter course name (e.g., Computer Science, Marketing)"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={addCourse}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {assignedCourses.length === 0 && (
+              <p className="text-sm text-gray-500 mt-1">
+                Add at least one course that this admin will manage
+              </p>
+            )}
+          </div>
 
           <button
             type="submit"
