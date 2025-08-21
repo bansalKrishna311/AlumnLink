@@ -424,6 +424,7 @@ export const getUserLinks = async (req, res) => {
                     rollNumber: request.rollNumber,
                     batch: request.batch,
                     courseName: request.courseName,
+                    selectedCourse: request.selectedCourse,
                     status: request.status,
                     createdAt: request.createdAt,
                     updatedAt: request.updatedAt,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from '@/lib/axios';
 import * as XLSX from 'xlsx';
 import { 
@@ -20,6 +21,21 @@ import HighlightedText from "@/components/HighlightedText";
 
 const UserLinks = () => {
   const navigate = useNavigate();
+  
+  // Get current authenticated user
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      try {
+        const res = await axiosInstance.get("/auth/me");
+        return res.data;
+      } catch (err) {
+        console.error("Error fetching auth user:", err);
+        return null;
+      }
+    },
+  });
+
   const [links, setLinks] = useState([]);
   const [allLinks, setAllLinks] = useState([]); // Store all links for client-side filtering
   const [isLoading, setIsLoading] = useState(true);
@@ -65,13 +81,28 @@ const UserLinks = () => {
     
     // First filter by course if not "All Courses"
     if (courseFilter && courseFilter !== 'All Courses') {
+      console.log('🔍 Debug - Filtering by course:', courseFilter);
+      
       filtered = filtered.filter((link) => {
         const linkSelectedCourse = String(link.selectedCourse || '').toLowerCase();
         const linkCourseName = String(link.courseName || '').toLowerCase();
         const filterCourse = courseFilter.toLowerCase();
         
-        return linkSelectedCourse.includes(filterCourse) || linkCourseName.includes(filterCourse);
+        const matches = linkSelectedCourse.includes(filterCourse) || linkCourseName.includes(filterCourse);
+        
+        if (!matches) {
+          console.log('🔍 Debug - Link filtered out:', {
+            id: link._id,
+            selectedCourse: link.selectedCourse,
+            courseName: link.courseName,
+            filterCourse: courseFilter
+          });
+        }
+        
+        return matches;
       });
+      
+      console.log('🔍 Debug - After course filtering:', filtered.length, 'links remaining');
     }
     
     // Then filter by search query if provided
@@ -80,24 +111,55 @@ const UserLinks = () => {
     }
     
     const searchTerm = query.toLowerCase().trim();
-    return filtered.filter((link) => {
+    console.log('🔍 Debug - Searching for:', searchTerm);
+    
+    const searchResults = filtered.filter((link) => {
       const name = link.user?.name?.toLowerCase() || '';
       const username = link.user?.username?.toLowerCase() || '';
       const rollNumber = String(link.rollNumber || '').toLowerCase();
       const batch = String(link.batch || '').toLowerCase();
       const location = link.user?.location?.toLowerCase() || '';
+      const courseName = String(link.courseName || '').toLowerCase();
+      const selectedCourse = String(link.selectedCourse || '').toLowerCase();
       
-      return name.includes(searchTerm) ||
+      const matches = name.includes(searchTerm) ||
              username.includes(searchTerm) ||
              rollNumber.includes(searchTerm) ||
              batch.includes(searchTerm) ||
-             location.includes(searchTerm);
+             location.includes(searchTerm) ||
+             courseName.includes(searchTerm) ||
+             selectedCourse.includes(searchTerm);
+      
+      // Debug log for course name matches
+      if ((courseName.includes(searchTerm) || selectedCourse.includes(searchTerm)) && matches) {
+        console.log('🔍 Debug - Course match found:', {
+          userName: link.user?.name,
+          courseName: link.courseName,
+          selectedCourse: link.selectedCourse,
+          searchTerm
+        });
+      }
+      
+      return matches;
     });
+    
+    console.log('🔍 Debug - Search results:', searchResults.length, 'matches found');
+    return searchResults;
   }, []);
 
   // Apply client-side filtering and pagination when search query, course filter, or page changes
   useEffect(() => {
     let filtered = filterLinks(allLinks, searchQuery, selectedCourse);
+    
+    // Debug: Log which links match the current course filter
+    if (selectedCourse !== 'All Courses') {
+      console.log('🔍 Debug - Links matching course filter:', filtered.map(link => ({
+        id: link._id,
+        selectedCourse: link.selectedCourse,
+        courseName: link.courseName,
+        userName: link.user?.name
+      })));
+    }
     
     // Update pagination based on filtered results
     const totalCount = filtered.length;
@@ -125,56 +187,51 @@ const UserLinks = () => {
     }
   }, [searchQuery, selectedCourse]);
 
-  // Extract available courses from admin assigned courses using existing APIs
+  // Debug: Log all available data when component mounts
+  useEffect(() => {
+    console.log('🟦 COMPONENT DEBUG INFO:');
+    console.log('- authUser:', authUser);
+    console.log('- allLinks length:', allLinks.length);
+    console.log('- availableCourses:', availableCourses);
+    console.log('- selectedLocation:', selectedLocation);
+    console.log('- selectedCourse:', selectedCourse);
+    console.log('- Sample links with course data:', allLinks.slice(0, 3).map(link => ({
+      id: link._id,
+      selectedCourse: link.selectedCourse,
+      courseName: link.courseName,
+      location: link.user?.location,
+      userName: link.user?.name
+    })));
+  }, [authUser, allLinks, availableCourses, selectedLocation, selectedCourse]);
+
+  // Extract available courses from current admin's assigned courses
   useEffect(() => {
     const fetchAdminAssignedCourses = async () => {
+      if (!authUser || !authUser._id) {
+        console.log("No authenticated admin user found");
+        return;
+      }
+
       try {
-        // Fetch all admins using existing APIs
-        const [instituteRes, schoolRes, corporateRes] = await Promise.all([
-          axiosInstance.get("/admin/institutes"),
-          axiosInstance.get("/admin/schools"),
-          axiosInstance.get("/admin/corporates"),
-        ]);
+        console.log("Fetching courses for current admin:", authUser._id);
         
-        const allAdmins = [
-          ...instituteRes.data,
-          ...schoolRes.data,
-          ...corporateRes.data
-        ];
+        // Only fetch courses for the current admin instead of all admins
+        const response = await axiosInstance.get(`/admin/admin/${authUser._id}/courses`);
         
-        const allAssignedCourses = new Set(['All Courses']);
+        const assignedCourses = response.data.assignedCourses || [];
+        console.log("Current admin's assigned courses:", assignedCourses);
         
-        // Fetch courses for each admin using existing API
-        const coursePromises = allAdmins.map(async (admin) => {
-          try {
-            const response = await axiosInstance.get(`/admin/admin/${admin._id}/courses`);
-            return response.data.assignedCourses || [];
-          } catch (error) {
-            console.error(`Error fetching courses for admin ${admin._id}:`, error);
-            return [];
-          }
-        });
+        // Set available courses to only include current admin's courses
+        const courseOptions = ['All Courses', ...assignedCourses.filter(course => course && course.trim())];
+        setAvailableCourses(courseOptions);
         
-        const allCoursesArrays = await Promise.all(coursePromises);
-        
-        // Combine all courses
-        allCoursesArrays.forEach(coursesArray => {
-          if (Array.isArray(coursesArray)) {
-            coursesArray.forEach(course => {
-              if (course && course.trim()) {
-                allAssignedCourses.add(course.trim());
-              }
-            });
-          }
-        });
-        
-        setAvailableCourses(Array.from(allAssignedCourses).sort());
       } catch (error) {
-        console.error('Error fetching admin assigned courses:', error);
+        console.error('Error fetching current admin assigned courses:', error);
         // Fallback to extracting from current data if API fails
         if (allLinks.length > 0) {
           const courses = new Set(['All Courses']);
           allLinks.forEach(link => {
+            if (link.courseName) courses.add(link.courseName);
             if (link.selectedCourse) courses.add(link.selectedCourse);
           });
           setAvailableCourses(Array.from(courses).sort());
@@ -183,7 +240,7 @@ const UserLinks = () => {
     };
 
     fetchAdminAssignedCourses();
-  }, [allLinks]);
+  }, [authUser, allLinks]);
 
   const fetchUserLinks = useCallback(async () => {
     try {
@@ -204,6 +261,18 @@ const UserLinks = () => {
       // Ensure we have valid data before setting state
       if (response && response.data && Array.isArray(response.data)) {
         const allData = response.data;
+        
+        // Debug log to check course data (only in development)
+        if (import.meta.env.DEV) {
+          console.log('🔍 Debug - Fetched Links Data:', allData.slice(0, 3));
+          console.log('🔍 Debug - Sample course data:', allData.slice(0, 3).map(link => ({
+            id: link._id,
+            selectedCourse: link.selectedCourse,
+            courseName: link.courseName,
+            location: link.user?.location
+          })));
+        }
+        
         setAllLinks(allData);
         
         // Calculate pagination for all data
@@ -251,6 +320,8 @@ const UserLinks = () => {
   }, [fetchUserLinks]);
 
   const handleStatusUpdate = async (id, status) => {
+    // Status update functionality
+    console.log('Status update:', id, status);
     try {
       const route = status === "accepted" ? "/accept" : "/reject";
       await axiosInstance.put(`/links${route}/${id}`);
@@ -284,6 +355,8 @@ const UserLinks = () => {
   };
 
   const handleBulkStatusUpdate = async (status) => {
+    // Bulk status update functionality
+    console.log('Bulk status update:', status);
     if (selectedLinks.length === 0) {
       toast.error("Please select at least one connection");
       return;
@@ -590,7 +663,7 @@ const UserLinks = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-hover:text-[#fe6019]" />
                       <input
                         type="text"
-                        placeholder="Search by name, roll number, batch..."
+                        placeholder="Search by name, roll number, batch, course..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] transition-all duration-200 bg-white shadow-sm hover:border-gray-400 text-sm"
@@ -820,10 +893,14 @@ const UserLinks = () => {
                         <div className="flex items-center space-x-3">
                           <BookOpen size={18} className="text-[#fe6019]" />
                           <HighlightedText
-                            text={link.selectedCourse || 'Not specified'}
+                            text={link.selectedCourse || link.courseName || 'Not specified'}
                             searchTerm={searchQuery}
                             className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md"
                           />
+                          {/* Debug info */}
+                          <span className="text-xs text-red-500" style={{display: 'none'}}>
+                            [Debug: selectedCourse={link.selectedCourse}, courseName={link.courseName}]
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

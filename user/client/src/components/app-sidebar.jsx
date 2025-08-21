@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "react-router-dom"
-import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users, TrendingUp } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users } from "lucide-react"
 
 import { VersionSwitcher } from "@/components/version-switcher"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
@@ -25,6 +25,7 @@ import { axiosInstance } from "@/lib/axios"
 
 export function AppSidebar({ ...props }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
 
   // Fetch the authenticated user data
@@ -35,7 +36,7 @@ export function AppSidebar({ ...props }) {
   const username = authUser?.username || "" // Fallback to empty string if not logged in
 
   // Navigation items with icons
-  const navItems = [
+  const navItems = React.useMemo(() => [
     { title: "Dashboard", url: "/", icon: Home },
     { title: "Manage User Requests", url: "/userrequests", icon: Users },
     { title: "Manage Alumni", url: "/manage-alumni", icon: User },
@@ -45,7 +46,7 @@ export function AppSidebar({ ...props }) {
     { title: "Rejected Posts", url: "/rejected-posts", icon: ThumbsDown },
     { title: "Post Request", url: "/postrequest", icon: MessageSquare },
     { title: "Build Admin Profile", url: `/buildprofile/${username}`, icon: User },
-  ]
+  ], [username])
 
   const data = {
     versions: ["Admin"],
@@ -61,7 +62,7 @@ export function AppSidebar({ ...props }) {
 
   React.useEffect(() => {
     // Set active item based on current path
-    const path = window.location.pathname
+    const path = location.pathname
     const currentItem = navItems.find((item) => path === item.url || (item.url !== "/" && path.startsWith(item.url)))
 
     if (currentItem) {
@@ -69,7 +70,7 @@ export function AppSidebar({ ...props }) {
     } else {
       setActiveItem("")
     }
-  }, [])
+  }, [location.pathname, navItems])
 
   // Logout mutation
   const { mutate: logout } = useMutation({
@@ -103,13 +104,16 @@ export function AppSidebar({ ...props }) {
                         <SidebarMenuButton
                           asChild
                           isActive={activeItem === item.title}
-                          onClick={() => setActiveItem(item.title)}
+                          onClick={() => {
+                            setActiveItem(item.title)
+                            navigate(item.url)
+                          }}
                           className={activeItem === item.title ? "bg-[#fe6019]/20 text-[#fe6019] font-medium" : "hover:bg-[#fe6019]/10 hover:text-[#fe6019]"}
                         >
-                          <a href={item.url} className="flex items-center">
+                          <div className="flex items-center cursor-pointer w-full">
                             {item.icon && <item.icon className={`w-4 h-4 mr-2 ${activeItem === item.title ? "text-[#fe6019]" : ""}`} />}
                             <span>{item.title}</span>
-                          </a>
+                          </div>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
