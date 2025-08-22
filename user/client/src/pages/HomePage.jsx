@@ -1,24 +1,17 @@
 import React, { useState } from 'react';
-import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { axiosInstance } from "../lib/axios";
 import Sidebar from "../components/Sidebar";
 import PostCreation from "../components/PostCreation";
 import Post from "../components/Post";
 import SelfLinks from "../components/SelfLinks";
 import { Users } from 'lucide-react';
+import { useAuthUser, usePosts } from "@/hooks/useAppData";
 
 const HomePage = () => {
-  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+  const { data: authUser } = useAuthUser();
   const [selectedType, setSelectedType] = useState("all");
 
-  const { data: posts, isLoading } = useQuery({
-    queryKey: ["posts"],
-    queryFn: async () => {
-      const res = await axiosInstance.get("/posts");
-      return res.data;
-    },
-  });
+  const { data: posts, isLoading } = usePosts();
 
   const handleTypeChange = (type) => {
     setSelectedType(type);

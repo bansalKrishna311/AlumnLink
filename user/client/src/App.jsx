@@ -94,6 +94,8 @@ function App() {
                 {authUser && <Route path="*" element={<NotFoundPage />} />}
             </Routes>
             <Toaster />
+            {/* <PerformanceMonitor /> */}
+
         </ErrorBoundary>
     );
 }

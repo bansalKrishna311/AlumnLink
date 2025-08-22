@@ -1,39 +1,24 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "@/lib/axios";
 import { Hash, TrendingUp, Loader, Search, ArrowRight } from "lucide-react";
+import { useTrendingTags, useOptimizedSearch } from "@/hooks/useAppData";
 
 const TrendingHashtagsPage = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredTags, setFilteredTags] = useState([]);
   
-  // Fetch all trending hashtags
-  const { data: trendingTags, isLoading } = useQuery({
-    queryKey: ["allTrendingTags"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/posts/admin/trending-tags");
-      return response.data || [];
-    }
-  });
+  // Use Zustand store for trending tags
+  const { data: trendingTags, isLoading } = useTrendingTags();
   
-  // Filter hashtags based on search query
-  useEffect(() => {
-    if (trendingTags) {
-      if (!searchQuery) {
-        setFilteredTags(trendingTags);
-      } else {
-        const filtered = trendingTags.filter(tag => 
-          tag.tag.toLowerCase().replace('#', '').includes(searchQuery.toLowerCase())
-        );
-        setFilteredTags(filtered);
-      }
-    }
-  }, [searchQuery, trendingTags]);
+  // Use optimized search hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredData: filteredTags,
+  } = useOptimizedSearch(trendingTags || [], ['tag']);
   
   const handleHashtagClick = (tag) => {
-    navigate(`/hashtag/${tag.replace('#', '')}`);
+    const cleanTag = typeof tag === 'string' ? tag : tag.tag || '';
+    navigate(`/hashtag/${cleanTag.replace('#', '')}`);
   };
 
   return (

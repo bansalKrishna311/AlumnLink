@@ -4,11 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
+    "dev:clean": "rm -rf node_modules/.vite && npm run dev",
+    "dev:optimized": "bash start-optimized.sh",
     "build": "vite build",
+    "build:analyze": "vite build && npx vite-bundle-analyzer dist/stats.html",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite start"
+    "start": "vite start",
+    "analyze": "npx vite-bundle-analyzer"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
