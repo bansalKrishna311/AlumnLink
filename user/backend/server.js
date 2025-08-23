@@ -95,8 +95,11 @@ app.use(securityLogging);
 
 // Request timeout protection
 app.use(requestTimeout(30000)); // 30 second timeout
-// CORS configuration - Allow all
-app.use(cors());
+// CORS configuration - Allow credentials with specific origins
+app.use(cors({
+  origin: true, // This will mirror the request origin
+  credentials: true
+}));
 
 // Enhanced CORS security - DISABLED for production debugging
 // app.use(corsSecurityEnhancement);
