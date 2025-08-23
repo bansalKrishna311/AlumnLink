@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import VirtualizedList from "@/components/VirtualizedList"
 import OptimizedVirtualList from "@/components/OptimizedVirtualList"
 import { useLargeDataset } from "@/hooks/useLargeDataset"
-import { usePerformanceBenchmark } from "@/utils/performanceBenchmark"
+// import { usePerformanceBenchmark } from "@/utils/performanceBenchmark"
 
 // Main color: #fe6019 (vibrant orange)
 const THEME_COLOR = "#fe6019"
@@ -28,8 +28,8 @@ const NotificationsPage = () => {
   const queryClient = useQueryClient()
   const prefersReducedMotion = useReducedMotion()
 
-  // Performance monitoring
-  const benchmarks = usePerformanceBenchmark('NotificationsPage');
+  // Performance monitoring (commented out for now)
+  // const benchmarks = usePerformanceBenchmark('NotificationsPage');
 
   // Responsive handler
   useEffect(() => {
