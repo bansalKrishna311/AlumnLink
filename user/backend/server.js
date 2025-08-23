@@ -95,23 +95,12 @@ app.use(securityLogging);
 
 // Request timeout protection
 app.use(requestTimeout(30000)); // 30 second timeout
-// CORS configuration with enhanced security
+// CORS configuration
 if (process.env.NODE_ENV !== "production") {
   app.use(
     cors({
       origin: (origin, callback) => {
-        const allowedOrigins = [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'http://127.0.0.1:3000',
-          'http://127.0.0.1:5173'
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          logger.warn('CORS blocked origin', { origin });
-          callback(new Error('Not allowed by CORS'));
-        }
+        callback(null, origin || "*"); // Allow all origins
       },
       credentials: true,
     })
@@ -119,22 +108,8 @@ if (process.env.NODE_ENV !== "production") {
 } else {
   app.use(
     cors({
-      origin: [
-        process.env.CLIENT_URL,
-        'https://alumnlink.com',
-        'https://www.alumnlink.com',
-        'https://api.alumnlink.com',
-        'http://alumnlink.com',
-        'http://www.alumnlink.com',
-        'http://api.alumnlink.com',
-        'http://139.59.66.21:5173',
-        'https://139.59.66.21:5173'
-      ].filter(Boolean),
+      origin: process.env.CLIENT_URL || 'https://alumnlink.com',
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-      exposedHeaders: ['X-Total-Count', 'X-Cache'],
-      optionsSuccessStatus: 200 // Some legacy browsers choke on 204
     })
   );
 }
@@ -144,7 +119,7 @@ app.use(corsSecurityEnhancement);
 
 // Body parsing with size limits and sanitization
 app.use(express.json({ 
-  limit: "10mb", // Reduced from 50mb for security
+  limit: "50mb", // Reduced from 50mb for security
   verify: (req, res, buf) => {
     // Verify JSON payload
     try {
@@ -155,7 +130,7 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ 
-  limit: "10mb", 
+  limit: "50mb", 
   extended: true,
   parameterLimit: 100 // Limit URL parameters
 }));
