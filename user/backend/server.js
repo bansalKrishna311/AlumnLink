@@ -123,12 +123,18 @@ if (process.env.NODE_ENV !== "production") {
         process.env.CLIENT_URL,
         'https://alumnlink.com',
         'https://www.alumnlink.com',
+        'https://api.alumnlink.com',
         'http://alumnlink.com',
         'http://www.alumnlink.com',
+        'http://api.alumnlink.com',
         'http://139.59.66.21:5173',
         'https://139.59.66.21:5173'
       ].filter(Boolean),
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+      exposedHeaders: ['X-Total-Count', 'X-Cache'],
+      optionsSuccessStatus: 200 // Some legacy browsers choke on 204
     })
   );
 }
