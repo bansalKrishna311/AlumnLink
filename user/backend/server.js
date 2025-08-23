@@ -80,7 +80,7 @@ app.use(customSecurity);
 app.use(ipValidation);
 app.use(methodValidation);
 app.use(contentTypeValidation);
-app.use(requestSizeLimit);
+// app.use(requestSizeLimit); // DISABLED - causing request entity too large
 
 // DDoS and burst protection
 app.use('/api/', ddosProtection);
@@ -106,7 +106,7 @@ app.use(cors({
 
 // Body parsing with size limits and sanitization
 app.use(express.json({ 
-  limit: "50mb", // Reduced from 50mb for security
+  limit: "100mb", // Increased for large image uploads
   verify: (req, res, buf) => {
     // Verify JSON payload
     try {
@@ -117,9 +117,9 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ 
-  limit: "50mb", 
+  limit: "100mb", 
   extended: true,
-  parameterLimit: 100 // Limit URL parameters
+  parameterLimit: 1000 // Increased URL parameters limit
 }));
 app.use(cookieParser());
 
