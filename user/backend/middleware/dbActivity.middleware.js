@@ -1,24 +1,18 @@
 // dbActivity.middleware.js - Database Activity Tracking and Optimization
-import { updateLastActivity, isConnectionHealthy, forceReconnect } from '../lib/db.js';
-import keepAliveService from '../lib/keepAlive.js';
+import connectionManager from '../lib/smartConnectionManager.js';
 
 // Track database activity and optimize for M0 tier
 const dbActivityMiddleware = async (req, res, next) => {
   // Update activity timestamp
-  updateLastActivity();
+  connectionManager.updateActivity();
 
   // Check connection health before proceeding
-  if (!isConnectionHealthy()) {
-    console.log('Connection health check failed, attempting reconnection...');
-    try {
-      await forceReconnect();
-    } catch (error) {
-      console.error('Failed to reconnect:', error);
-      return res.status(503).json({
-        error: 'Database connection unavailable',
-        message: 'Please try again in a moment'
-      });
-    }
+  if (!connectionManager.isHealthy()) {
+    console.log('⚠️ Connection health check failed');
+    
+    // Don't attempt auto-reconnect here - let the connection manager handle it
+    // Just add a warning header
+    res.setHeader('X-DB-Warning', 'Connection-Not-Optimal');
   }
 
   // Add database optimization headers for responses
@@ -27,7 +21,7 @@ const dbActivityMiddleware = async (req, res, next) => {
   // Track request completion for activity monitoring
   const originalSend = res.send;
   res.send = function(data) {
-    updateLastActivity();
+    connectionManager.updateActivity();
     return originalSend.call(this, data);
   };
 
@@ -40,8 +34,8 @@ const dbHealthMiddleware = (req, res, next) => {
     const originalJson = res.json;
     res.json = function(data) {
       const healthInfo = {
-        dbHealth: isConnectionHealthy(),
-        keepAliveStats: keepAliveService.getStats()
+        dbHealth: connectionManager.isHealthy(),
+        connectionStats: connectionManager.getStats()
       };
       
       // Add health info to response in development
