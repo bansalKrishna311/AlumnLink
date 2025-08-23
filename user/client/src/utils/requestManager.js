@@ -7,6 +7,8 @@ class RequestManager {
     this.pendingRequests = new Map();
     this.cache = new Map();
     this.cacheExpiry = new Map();
+    this.maxCacheSize = 100; // Maximum number of cached entries
+    this.maxMemorySize = 50 * 1024 * 1024; // 50MB max cache size
   }
 
   // Generate a unique key for the request
@@ -29,10 +31,52 @@ class RequestManager {
     return this.cache.get(key);
   }
 
-  // Set data in cache with expiry
+  // Calculate approximate memory usage of cached data
+  getMemoryUsage() {
+    let totalSize = 0;
+    for (const [key, value] of this.cache) {
+      totalSize += new Blob([JSON.stringify({ key, value })]).size;
+    }
+    return totalSize;
+  }
+
+  // Remove oldest cache entries when limits are exceeded
+  evictOldEntries() {
+    // Remove expired entries first
+    this.cleanupExpiredEntries();
+    
+    // If still over limits, remove oldest entries
+    while (this.cache.size > this.maxCacheSize || this.getMemoryUsage() > this.maxMemorySize) {
+      if (this.cache.size === 0) break;
+      
+      // Remove the oldest entry (first inserted)
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+      this.cacheExpiry.delete(firstKey);
+    }
+  }
+
+  // Clean up expired cache entries
+  cleanupExpiredEntries() {
+    const now = Date.now();
+    for (const [key, expiry] of this.cacheExpiry) {
+      if (now > expiry) {
+        this.cache.delete(key);
+        this.cacheExpiry.delete(key);
+      }
+    }
+  }
+
+  // Set data in cache with expiry and size management
   setCachedData(key, data, ttl = 5 * 60 * 1000) { // 5 minutes default
+    // Check if we need to evict entries before adding new one
+    this.evictOldEntries();
+    
     this.cache.set(key, data);
     this.cacheExpiry.set(key, Date.now() + ttl);
+    
+    // Check again after adding in case this entry is too large
+    this.evictOldEntries();
   }
 
   // Deduplicated request method
@@ -83,9 +127,15 @@ class RequestManager {
 
   // Get cache statistics
   getCacheStats() {
+    this.cleanupExpiredEntries(); // Clean up before reporting stats
+    
     return {
       cacheSize: this.cache.size,
+      maxCacheSize: this.maxCacheSize,
       pendingRequests: this.pendingRequests.size,
+      memoryUsage: this.getMemoryUsage(),
+      maxMemorySize: this.maxMemorySize,
+      memoryUsagePercentage: Math.round((this.getMemoryUsage() / this.maxMemorySize) * 100),
       expiredEntries: Array.from(this.cacheExpiry.entries())
         .filter(([, expiry]) => Date.now() > expiry).length
     };

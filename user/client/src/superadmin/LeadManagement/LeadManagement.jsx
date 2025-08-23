@@ -7,6 +7,7 @@ import LeadDetails from './LeadDetails';
 import LeadStats from './LeadStats';
 import { axiosInstance } from '../../lib/axios';
 import { toast } from 'react-hot-toast';
+import { useComprehensiveCleanup } from '../../utils/memoryCleanup';
 
 const LeadManagement = React.memo(() => {
   const [leads, setLeads] = useState([]);
@@ -27,6 +28,9 @@ const LeadManagement = React.memo(() => {
     total: 1,
     limit: 20 // Increased for fewer requests
   });
+
+  // Memory cleanup utilities
+  const { addTimer, addURL, addElement } = useComprehensiveCleanup();
 
   // Memoized filter parameters to prevent unnecessary API calls
   const filterParams = useMemo(() => {
@@ -81,8 +85,11 @@ const LeadManagement = React.memo(() => {
       fetchLeads();
     }, 300); // Debounce API calls
     
+    // Register timer for cleanup
+    addTimer(timeoutId, 'timeout');
+    
     return () => clearTimeout(timeoutId);
-  }, [filterParams]);
+  }, [filterParams, addTimer]);
 
   useEffect(() => {
     fetchStats();
@@ -134,6 +141,11 @@ const LeadManagement = React.memo(() => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Register URL and element for cleanup
+      addURL(url);
+      
+      // Clean up immediately since we're done with these
       window.URL.revokeObjectURL(url);
       
       toast.success('Leads exported successfully');

@@ -71,8 +71,9 @@ const PerformanceMonitor = () => {
       
       <div style={{ marginBottom: '6px' }}>
         <strong>Request Cache:</strong>
-        <div>Cached: {stats.requestCache.cacheSize}</div>
+        <div>Cached: {stats.requestCache.cacheSize}/{stats.requestCache.maxCacheSize}</div>
         <div>Pending: {stats.requestCache.pendingRequests}</div>
+        <div>Memory: {Math.round(stats.requestCache.memoryUsage / 1024)}KB ({stats.requestCache.memoryUsagePercentage}%)</div>
         <div>Expired: {stats.requestCache.expiredEntries}</div>
       </div>
 

@@ -23,6 +23,7 @@ import ForCorporates from "./Landing/Pages/ForCorporates";
 import ForSchools from "./Landing/Pages/ForSchools";
 import ForAlumni from "./Landing/Pages/ForAlumni";
 import ForInstitutes from "./Landing/Pages/ForInstitutes";
+import RealTimePerformanceMonitor from "./components/RealTimePerformanceMonitor";
 
 function App() {
     const { data: authUser, isLoading } = useQuery({
@@ -94,6 +95,7 @@ function App() {
                 {authUser && <Route path="*" element={<NotFoundPage />} />}
             </Routes>
             <Toaster />
+            {/* <RealTimePerformanceMonitor /> */}
             {/* <PerformanceMonitor /> */}
 
         </ErrorBoundary>
