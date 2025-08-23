@@ -22,14 +22,7 @@ import {
     deleteComment,
     deleteReply,
 } from "../controllers/post.controller.js";
-import { 
-    validateCreatePost, 
-    validateCreateComment, 
-    validateMongoId,
-    validatePagination,
-    sanitizeInput 
-} from "../middleware/validation.middleware.js";
-import Post from "../models/post.model.js";
+import Post from "../models/post.model.js"; // Added import for Post model
 
 const router = express.Router();
 
@@ -54,13 +47,13 @@ const upload = multer({
 });
 
 // Getting posts
-router.get("/", protectRoute, validatePagination, getFeedPosts);
-router.get("/bookmarked", protectRoute, validatePagination, getBookmarkedPosts);
-router.get("/user/:username", protectRoute, validatePagination, getPostsByUsername);
-router.get("/:id", protectRoute, validateMongoId('id'), getPostById);
+router.get("/", protectRoute, getFeedPosts);
+router.get("/bookmarked", protectRoute, getBookmarkedPosts);
+router.get("/user/:username", protectRoute, getPostsByUsername);
+router.get("/:id", protectRoute, getPostById);
 
 // Creating posts with error handling for file uploads
-router.post("/create", protectRoute, sanitizeInput, (req, res, next) => {
+router.post("/create", protectRoute, (req, res, next) => {
     upload.array('images', 5)(req, res, (err) => {
         if (err) {
             if (err.code === 'LIMIT_FILE_SIZE') {
@@ -88,23 +81,23 @@ router.post("/create", protectRoute, sanitizeInput, (req, res, next) => {
         }
         next();
     });
-}, validateCreatePost, createPost);
-router.post("/createAdminPost", protectRoute, isAdmin, sanitizeInput, validateCreatePost, createAdminPost);
+}, createPost);
+router.post("/createAdminPost", protectRoute, createAdminPost);
 
 // Deleting posts
 router.delete("/delete/:id", protectRoute, deletePost);
 
 // Comments and replies
-router.post("/:id/comment", protectRoute, sanitizeInput, validateCreateComment, createComment);
-router.delete("/:postId/comment/:commentId", protectRoute, validateMongoId('postId'), deleteComment);
-router.post("/:postId/comment/:commentId/reply", protectRoute, sanitizeInput, validateCreateComment, replyToComment);
-router.delete("/:postId/comment/:commentId/reply/:replyId", protectRoute, validateMongoId('postId'), deleteReply);
-router.post("/:postId/comment/:commentId/like", protectRoute, validateMongoId('postId'), likeComment);
-router.post("/:postId/comment/:commentId/reply/:replyId/like", protectRoute, validateMongoId('postId'), likeReply);
+router.post("/:id/comment", protectRoute, createComment);
+router.delete("/:postId/comment/:commentId", protectRoute, deleteComment);
+router.post("/:postId/comment/:commentId/reply", protectRoute, replyToComment);
+router.delete("/:postId/comment/:commentId/reply/:replyId", protectRoute, deleteReply);
+router.post("/:postId/comment/:commentId/like", protectRoute, likeComment);
+router.post("/:postId/comment/:commentId/reply/:replyId/like", protectRoute, likeReply);
 
 // Reactions and bookmarks
-router.post("/:id/react", protectRoute, validateMongoId('id'), reactToPost);
-router.post("/:id/bookmark", protectRoute, validateMongoId('id'), bookmarkPost);
+router.post("/:id/react", protectRoute, reactToPost);
+router.post("/:id/bookmark", protectRoute, bookmarkPost);
 
 // Hashtag routes
 router.get("/hashtag/:tag", protectRoute, async (req, res) => {
