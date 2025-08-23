@@ -95,27 +95,11 @@ app.use(securityLogging);
 
 // Request timeout protection
 app.use(requestTimeout(30000)); // 30 second timeout
-// CORS configuration
-if (process.env.NODE_ENV !== "production") {
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        callback(null, origin || "*"); // Allow all origins
-      },
-      credentials: true,
-    })
-  );
-} else {
-  app.use(
-    cors({
-      origin: process.env.CLIENT_URL || 'https://alumnlink.com',
-      credentials: true,
-    })
-  );
-}
+// CORS configuration - Allow all
+app.use(cors());
 
-// Enhanced CORS security
-app.use(corsSecurityEnhancement);
+// Enhanced CORS security - DISABLED for production debugging
+// app.use(corsSecurityEnhancement);
 
 // Body parsing with size limits and sanitization
 app.use(express.json({ 
