@@ -51,106 +51,67 @@ class SmartConnectionManager {
       return this.cachedConnection;
     }
 
-    // Prevent multiple connection attempts
+    // Use a shared promise for concurrent connection attempts
     if (this.isConnecting) {
-      console.log('🔄 Connection attempt already in progress, waiting...');
-      return new Promise((resolve, reject) => {
-        const checkConnection = setInterval(() => {
-          if (!this.isConnecting) {
-            clearInterval(checkConnection);
-            if (this.cachedConnection && mongoose.connection.readyState === 1) {
-              resolve(this.cachedConnection);
-            } else {
-              reject(new Error('Connection attempt failed'));
-            }
-          }
-        }, 500);
-        
-        // Timeout after 15 seconds
-        setTimeout(() => {
-          clearInterval(checkConnection);
-          reject(new Error('Connection timeout'));
-        }, 15000);
-      });
+      return this.isConnecting;
     }
 
-    this.isConnecting = true;
+    this.isConnecting = (async () => {
+      try {
+        console.log('🔌 Connecting to MongoDB...');
+        // Optimized settings for M0 tier
+        const options = {
+          serverSelectionTimeoutMS: 10000,
+          socketTimeoutMS: 45000,
+          connectTimeoutMS: 10000,
+          maxPoolSize: 2,
+          minPoolSize: 0,
+          maxIdleTimeMS: 30000,
+          heartbeatFrequencyMS: 30000,
+          retryWrites: false,
+          retryReads: false,
+          family: 4,
+          bufferCommands: false,
+          autoIndex: false,
+          autoCreate: false
+        };
 
-    try {
-      console.log('🔌 Connecting to MongoDB...');
-      
-      // Optimized settings for M0 tier
-      const options = {
-        // Connection timeouts
-        serverSelectionTimeoutMS: 10000,
-        socketTimeoutMS: 45000,
-        connectTimeoutMS: 10000,
-        
-        // Connection pool (CRITICAL: Small pool for M0 tier)
-        maxPoolSize: 2, // Reduced from 3 to 2
-        minPoolSize: 0, // Allow pool to shrink to 0
-        maxIdleTimeMS: 30000, // Shorter idle time
-        
-        // Keep-alive (but let our service handle it)
-        heartbeatFrequencyMS: 30000, // Less frequent heartbeat
-        
-        // Prevent automatic retries (we handle this)
-        retryWrites: false,
-        retryReads: false,
-        
-        // Network settings
-        family: 4, // IPv4 only
-        bufferCommands: false,
-        autoIndex: false,
-        autoCreate: false
-      };
+        // Clear any existing connection first
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
 
-      // Clear any existing connection first
-      if (mongoose.connection.readyState !== 0) {
-        await mongoose.disconnect();
+        const conn = await mongoose.connect(process.env.MONGO_URI, options);
+        this.cachedConnection = conn;
+        this.health.isHealthy = true;
+        this.health.consecutiveFailures = 0;
+        this.circuitBreaker.failureCount = 0;
+        this.updateActivity();
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+        this.setupEventListeners();
+        if (!this.isServiceStarted) {
+          this.startKeepAliveService();
+          this.isServiceStarted = true;
+        }
+        return conn;
+      } catch (error) {
+        console.error(`❌ MongoDB Connection Failed: ${error.message}`);
+        this.circuitBreaker.failureCount++;
+        this.circuitBreaker.lastFailureTime = Date.now();
+        if (this.circuitBreaker.failureCount >= this.circuitBreaker.threshold) {
+          this.circuitBreaker.isOpen = true;
+          console.log(`🚨 Circuit breaker opened after ${this.circuitBreaker.failureCount} failures`);
+        }
+        this.cachedConnection = null;
+        this.health.isHealthy = false;
+        this.health.consecutiveFailures++;
+        throw error;
+      } finally {
+        this.isConnecting = false;
       }
+    })();
 
-      const conn = await mongoose.connect(process.env.MONGO_URI, options);
-      
-      this.cachedConnection = conn;
-      this.health.isHealthy = true;
-      this.health.consecutiveFailures = 0;
-      this.circuitBreaker.failureCount = 0;
-      this.updateActivity();
-      
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-      
-      // Setup event listeners ONCE
-      this.setupEventListeners();
-      
-      // Start keep-alive service ONCE
-      if (!this.isServiceStarted) {
-        this.startKeepAliveService();
-        this.isServiceStarted = true;
-      }
-      
-      return conn;
-      
-    } catch (error) {
-      console.error(`❌ MongoDB Connection Failed: ${error.message}`);
-      
-      // Update circuit breaker
-      this.circuitBreaker.failureCount++;
-      this.circuitBreaker.lastFailureTime = Date.now();
-      
-      if (this.circuitBreaker.failureCount >= this.circuitBreaker.threshold) {
-        this.circuitBreaker.isOpen = true;
-        console.log(`🚨 Circuit breaker opened after ${this.circuitBreaker.failureCount} failures`);
-      }
-      
-      this.cachedConnection = null;
-      this.health.isHealthy = false;
-      this.health.consecutiveFailures++;
-      
-      throw error;
-    } finally {
-      this.isConnecting = false;
-    }
+    return this.isConnecting;
   }
 
   // Setup event listeners (ONLY ONCE)
