@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Image, Loader, Hash } from "lucide-react";
 import Select from 'react-select';
 import MentionDropdown from "./MentionDropdown";
+import { useTrendingTags } from "@/hooks/useAppData";
 
 const PostCreation = ({ user, selectedPostType, closeModal }) => {
   const [content, setContent] = useState("");
@@ -37,25 +38,18 @@ const PostCreation = ({ user, selectedPostType, closeModal }) => {
 
   const queryClient = useQueryClient();
 
-  // Fetch trending hashtags
-  const { data: trendingTags } = useQuery({
-    queryKey: ['trendingTags'],
-    queryFn: async () => {
-      try {
-        const response = await axiosInstance.get("/posts/admin/trending-tags");
-        return response.data?.map(tag => tag.tag.replace('#', '')) || [];
-      } catch (error) {
-        console.error("Error fetching trending tags:", error);
-        return [];
-      }
-    }
-  });
+  // Fetch trending hashtags using Zustand store
+  const { data: trendingTags } = useTrendingTags();
 
   useEffect(() => {
     if (trendingTags && trendingTags.length > 0) {
       setPopularHashtags(prev => {
+        // Process trending tags data properly
+        const processedTags = trendingTags.map(tag => 
+          typeof tag === 'string' ? tag : tag.tag?.replace('#', '') || tag
+        );
         // Combine trending tags with existing popular hashtags, removing duplicates
-        const combined = [...new Set([...trendingTags, ...prev])];
+        const combined = [...new Set([...processedTags, ...prev])];
         return combined.slice(0, 10); // Limit to 10 hashtags
       });
     }

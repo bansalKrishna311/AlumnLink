@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
@@ -14,6 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import VirtualizedList from "@/components/VirtualizedList"
+import OptimizedVirtualList from "@/components/OptimizedVirtualList"
+import { useLargeDataset } from "@/hooks/useLargeDataset"
+// import { usePerformanceBenchmark } from "@/utils/performanceBenchmark"
 
 // Main color: #fe6019 (vibrant orange)
 const THEME_COLOR = "#fe6019"
@@ -25,6 +27,9 @@ const NotificationsPage = () => {
   const [isMobile, setIsMobile] = useState(false)
   const queryClient = useQueryClient()
   const prefersReducedMotion = useReducedMotion()
+
+  // Performance monitoring (commented out for now)
+  // const benchmarks = usePerformanceBenchmark('NotificationsPage');
 
   // Responsive handler
   useEffect(() => {
@@ -45,6 +50,30 @@ const NotificationsPage = () => {
     queryFn: () => axiosInstance.get("/notifications"),
   })
 
+  // Memory-optimized data handling for large notification lists
+  const filteredNotifications = notifications?.data?.filter((notification) => {
+    if (activeTab === "all") return true
+    if (activeTab === "unread") return !notification.read
+    return notification.type === activeTab
+  }) || []
+
+  const {
+    currentData: paginatedNotifications,
+    totalItems,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+    goToPage
+  } = useLargeDataset(filteredNotifications, {
+    pageSize: 20, // Show 20 notifications per page
+    maxMemoryItems: 100, // Keep max 100 notifications in memory
+    debounceMs: 200
+  })
+
+  // Mutation hooks for notification actions
   const { mutate: markAsReadMutation } = useMutation({
     mutationFn: (id) => axiosInstance.put(`/notifications/${id}/read`),
     onSuccess: () => {
@@ -76,13 +105,12 @@ const NotificationsPage = () => {
     },
   })
 
-  const filteredNotifications = notifications?.data?.filter((notification) => {
-    if (activeTab === "all") return true
-    if (activeTab === "unread") return !notification.read
-    return notification.type === activeTab
-  })
-
   const unreadCount = notifications?.data?.filter((n) => !n.read).length || 0
+
+  // Reset to first page when tab changes
+  useEffect(() => {
+    goToPage(0);
+  }, [activeTab, goToPage]);
 
   // Animation variants for smooth transitions
   const containerVariants = {
@@ -213,25 +241,79 @@ const NotificationsPage = () => {
           <div className="p-4 md:p-6">
             {isLoading ? (
               <NotificationSkeleton />
-            ) : filteredNotifications && filteredNotifications.length > 0 ? (
-              <AnimatePresence initial={false} mode="popLayout">
-                <motion.ul 
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-4"
-                >
-                  {filteredNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification._id}
-                      notification={notification}
-                      onMarkAsRead={markAsReadMutation}
-                      onDelete={deleteNotificationMutation}
-                      prefersReducedMotion={prefersReducedMotion}
-                    />
-                  ))}
-                </motion.ul>
-              </AnimatePresence>
+            ) : paginatedNotifications && paginatedNotifications.length > 0 ? (
+              <div className="space-y-4">
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.ul 
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-4"
+                  >
+                    {paginatedNotifications.map((notification) => (
+                      <NotificationItem
+                        key={notification._id}
+                        notification={notification}
+                        onMarkAsRead={markAsReadMutation}
+                        onDelete={deleteNotificationMutation}
+                        prefersReducedMotion={prefersReducedMotion}
+                      />
+                    ))}
+                  </motion.ul>
+                </AnimatePresence>
+                
+                {/* Pagination controls for large datasets */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t border-gray-100">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={prevPage}
+                      disabled={!hasPrevPage}
+                      className="text-sm"
+                    >
+                      Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        const pageNum = Math.max(0, Math.min(currentPage - 2, totalPages - 5)) + i;
+                        if (pageNum >= totalPages) return null;
+                        
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => goToPage(pageNum)}
+                            className="w-8 h-8 p-0 text-xs"
+                            style={{
+                              backgroundColor: currentPage === pageNum ? THEME_COLOR : 'transparent',
+                              borderColor: currentPage === pageNum ? THEME_COLOR : undefined,
+                            }}
+                          >
+                            {pageNum + 1}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={nextPage}
+                      disabled={!hasNextPage}
+                      className="text-sm"
+                    >
+                      Next
+                    </Button>
+                    
+                    <span className="text-xs text-gray-500 ml-3">
+                      {totalItems} total notifications
+                    </span>
+                  </div>
+                )}
+              </div>
             ) : (
               <EmptyState type={activeTab} prefersReducedMotion={prefersReducedMotion} />
             )}
