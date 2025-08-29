@@ -18,6 +18,16 @@ import SavedPostsPage from "@/pages/SavedPostsPage";
 import UserPostsPage from "@/pages/UserPostsPage";
 import ConversationsPage from "@/pages/ConversationsPage";
 import ChatPage from "@/pages/ChatPage";
+import UserDashboard from "@/components/UserDashboard";
+import MemberList from "@/components/MemberList";
+import NetworkActions from "@/components/NetworkActions";
+import AccessControl from "@/components/AccessControl";
+import UserLayout from "@/components/layout/user/UserLayout";
+import ContentModeration from "@/components/ContentModeration";
+import UserManagement from "@/components/UserManagement";
+import NetworkSettings from "@/components/NetworkSettings";
+import AdminPanel from "@/components/AdminPanel";
+import SystemControl from "@/components/SystemControl";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -187,6 +197,107 @@ const ProtectedRoute = ({ children }) => {
             </ProtectedRoute>
         ),
     },
+    // NEW ACCESS LEVEL FEATURES - ADDED ALONGSIDE EXISTING ROUTES
+    {
+        path: "/access-dashboard",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Access Level Dashboard | AlumnLink" />
+                    <UserDashboard />
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/network-members",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Network Members | AlumnLink" />
+                    <AccessControl requiredLevel="level1" fallback={<div>Access Denied</div>}>
+                        <MemberList />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/network-actions",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Network Actions | AlumnLink" />
+                    <NetworkActions userAccessLevel={0} />
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/moderation",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Content Moderation | AlumnLink" />
+                    <AccessControl requiredLevel="level1" fallback={<div>Access Denied</div>}>
+                        <ContentModeration />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/user-management",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="User Management | AlumnLink" />
+                    <AccessControl requiredLevel="level2" fallback={<div>Access Denied</div>}>
+                        <UserManagement />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/network-settings",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Network Settings | AlumnLink" />
+                    <AccessControl requiredLevel="level3" fallback={<div>Access Denied</div>}>
+                        <NetworkSettings />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/admin-panel",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="Admin Panel | AlumnLink" />
+                    <AccessControl requiredLevel="level4" fallback={<div>Access Denied</div>}>
+                        <AdminPanel />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/access/system-control",
+        element: (
+            <ProtectedRoute>
+                <UserLayout>
+                    <PageTitle title="System Control | AlumnLink" />
+                    <AccessControl requiredLevel="level5" fallback={<div>Access Denied</div>}>
+                        <SystemControl />
+                    </AccessControl>
+                </UserLayout>
+            </ProtectedRoute>
+        ),
+    }
 ];
 
 

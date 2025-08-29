@@ -110,6 +110,14 @@ const Navbar = () => {
 							/>
 							<span className={`text-xs text-black hidden md:block ${isNetworkPage ? "font-semibold" : ""} transition-all duration-300`}>My Network</span>
 							{/* REMOVED: Link requests badge as the API call was unnecessary */}
+						</Link>
+						<Link to='/access-dashboard' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative' onClick={handleNavClick}>	
+							<Hash 
+								size={20} 
+								fill={location.pathname === "/access-dashboard" ? "#fe6019" : "none"}
+								className={`${location.pathname === "/access-dashboard" ? "font-bold" : ""} transform transition-transform duration-300 hover:rotate-12`}
+							/>
+							<span className={`text-xs text-black hidden md:block ${location.pathname === "/access-dashboard" ? "font-semibold" : ""} transition-all duration-300`}>Access</span>
 						</Link>						
 						<Link to='/notifications' className='text-[#fe6019] flex flex-col items-center hover:text-[#fe6019] transition-all duration-300 hover:scale-110 relative' onClick={handleNavClick}>
 							<Bell 

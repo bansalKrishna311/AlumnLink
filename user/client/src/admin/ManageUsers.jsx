@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { FaCheck, FaTimes, FaSearch, FaCheckSquare } from "react-icons/fa";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
-import { User, MapPin, Calendar, BookOpen, Code, AlertTriangle } from "lucide-react";
+import { User, MapPin, Calendar, BookOpen, Code, AlertTriangle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import Pagination from "@/components/Pagination";
+import AccessLevelDropdown from "@/components/AccessLevelDropdown";
 
 const ManageUsers = () => {
   const [requests, setRequests] = useState([]);
@@ -21,6 +22,9 @@ const ManageUsers = () => {
     hasNextPage: false,
     hasPreviousPage: false
   });
+  const [accessLevels, setAccessLevels] = useState({});
+  const [showAccessLevelModal, setShowAccessLevelModal] = useState(false);
+  const [selectedRequestForAccess, setSelectedRequestForAccess] = useState(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -29,6 +33,14 @@ const ManageUsers = () => {
         const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
         setRequests(response.data.data);
         setPagination(response.data.pagination);
+        
+        // Initialize access levels for each request
+        const initialAccessLevels = {};
+        response.data.data.forEach(request => {
+          initialAccessLevels[request._id] = 'level0';
+        });
+        setAccessLevels(initialAccessLevels);
+        
         setError(null);
       } catch (error) {
         console.error("Error fetching requests:", error);
@@ -56,21 +68,61 @@ const ManageUsers = () => {
 
   const handleStatusUpdate = async (id, status) => {
     try {
-      const route = status === "Approved" ? "/accept" : "/reject";
-      await axiosInstance.put(`/links${route}/${id}`);
+      if (status === "Approved") {
+        // Show access level modal for approval
+        setSelectedRequestForAccess({ id, status });
+        setShowAccessLevelModal(true);
+      } else {
+        // Direct rejection
+        await axiosInstance.put(`/links/reject/${id}`);
+        setRequests((prevRequests) =>
+          prevRequests.filter((request) => request._id !== id)
+        );
+        toast.success(`Request rejected successfully!`);
+        
+        // Update pagination after removing item
+        setPagination(prev => ({
+          ...prev,
+          totalRequests: Math.max(0, prev.totalRequests - 1)
+        }));
+      }
+    } catch (error) {
+      console.error("Error updating request status:", error);
+      toast.error("Error updating request status.");
+    }
+  };
+
+  const handleApproveWithAccessLevel = async () => {
+    if (!selectedRequestForAccess) return;
+    
+    try {
+      const { id } = selectedRequestForAccess;
+      const accessLevel = accessLevels[id] || 'level0';
+      
+      // Accept the request with the selected access level
+      await axiosInstance.put(`/links/accept/${id}`, {
+        networkAccessLevel: accessLevel
+      });
+      
       setRequests((prevRequests) =>
         prevRequests.filter((request) => request._id !== id)
       );
-      toast.success(`Request ${status === "Approved" ? "approved" : "rejected"} successfully!`);
+      
+      toast.success(`Request approved with ${accessLevel} access level!`);
       
       // Update pagination after removing item
       setPagination(prev => ({
         ...prev,
         totalRequests: Math.max(0, prev.totalRequests - 1)
       }));
+      
+      // Close modal and reset
+      setShowAccessLevelModal(false);
+      setSelectedRequestForAccess(null);
+      
     } catch (error) {
-      console.error("Error updating request status:", error);
-      toast.error("Error updating request status.");
+      console.error("Error approving request with access level:", error);
+      toast.error("Error approving request.");
     }
   };
 
@@ -80,50 +132,101 @@ const ManageUsers = () => {
       return;
     }
 
-    setProcessing(true);
-    const route = status === "Approved" ? "/accept" : "/reject";
-    const successCount = { value: 0 };
-    const failCount = { value: 0 };
+    if (status === "Approved") {
+      // For bulk approval, use default level0 access level
+      setProcessing(true);
+      const successCount = { value: 0 };
+      const failCount = { value: 0 };
 
-    try {
-      const updatePromises = selectedRequests.map(async (id) => {
-        try {
-          await axiosInstance.put(`/links${route}/${id}`);
-          successCount.value++;
-          return id;
-        } catch (error) {
-          console.error(`Error ${status === "Approved" ? "approving" : "rejecting"} request ${id}:`, error);
-          failCount.value++;
-          return null;
+      try {
+        const updatePromises = selectedRequests.map(async (id) => {
+          try {
+            await axiosInstance.put(`/links/accept/${id}`, {
+              networkAccessLevel: 'level0'
+            });
+            successCount.value++;
+            return id;
+          } catch (error) {
+            console.error(`Error approving request ${id}:`, error);
+            failCount.value++;
+            return null;
+          }
+        });
+
+        const successfulIds = (await Promise.all(updatePromises)).filter(id => id !== null);
+        
+        setRequests(prevRequests => 
+          prevRequests.filter(request => !successfulIds.includes(request._id))
+        );
+        
+        setSelectedRequests([]);
+        
+        // Update pagination after removing items
+        setPagination(prev => ({
+          ...prev,
+          totalRequests: Math.max(0, prev.totalRequests - successCount.value)
+        }));
+        
+        if (successCount.value > 0) {
+          toast.success(`${successCount.value} request${successCount.value > 1 ? 's' : ''} approved successfully with Member access level!`);
         }
-      });
+        
+        if (failCount.value > 0) {
+          toast.error(`Failed to approve ${failCount.value} request${failCount.value > 1 ? 's' : ''}`);
+        }
+      } catch (error) {
+        console.error(`Error in bulk approval:`, error);
+        toast.error("An error occurred during batch processing");
+      } finally {
+        setProcessing(false);
+      }
+    } else {
+      // Bulk rejection
+      setProcessing(true);
+      const route = "/reject";
+      const successCount = { value: 0 };
+      const failCount = { value: 0 };
 
-      const successfulIds = (await Promise.all(updatePromises)).filter(id => id !== null);
-      
-      setRequests(prevRequests => 
-        prevRequests.filter(request => !successfulIds.includes(request._id))
-      );
-      
-      setSelectedRequests([]);
-      
-      // Update pagination after removing items
-      setPagination(prev => ({
-        ...prev,
-        totalRequests: Math.max(0, prev.totalRequests - successCount.value)
-      }));
-      
-      if (successCount.value > 0) {
-        toast.success(`${successCount.value} request${successCount.value > 1 ? 's' : ''} ${status === "Approved" ? "approved" : "rejected"} successfully!`);
+      try {
+        const updatePromises = selectedRequests.map(async (id) => {
+          try {
+            await axiosInstance.put(`/links${route}/${id}`);
+            successCount.value++;
+            return id;
+          } catch (error) {
+            console.error(`Error ${status === "Approved" ? "approving" : "rejecting"} request ${id}:`, error);
+            failCount.value++;
+            return null;
+          }
+        });
+
+        const successfulIds = (await Promise.all(updatePromises)).filter(id => id !== null);
+        
+        setRequests(prevRequests => 
+          prevRequests.filter(request => !successfulIds.includes(request._id))
+        );
+        
+        setSelectedRequests([]);
+        
+        // Update pagination after removing items
+        setPagination(prev => ({
+          ...prev,
+          totalRequests: Math.max(0, prev.totalRequests - successCount.value)
+        }));
+        
+        if (successCount.value > 0) {
+          toast.success(`${successCount.value} request${successCount.value > 1 ? 's' : ''} ${status === "Approved" ? "approved" : "rejected"} successfully!`);
+        }
+        
+        if (failCount.value > 0) {
+          toast.error(`Failed to ${status === "Approved" ? "approve" : "reject"} ${failCount.value} request${failCount.value > 1 ? 's' : ''}`);
+        }
+      } catch (error) {
+        console.error(`Error in bulk ${status}:`, error);
+        toast.error("An error occurred during batch processing");
+      } finally {
+        setProcessing(false);
       }
-      
-      if (failCount.value > 0) {
-        toast.error(`Failed to ${status === "Approved" ? "approve" : "reject"} ${failCount.value} request${failCount.value > 1 ? 's' : ''}`);
-      }
-    } catch (error) {
-      console.error(`Error in bulk ${status}:`, error);
-      toast.error("An error occurred during batch processing");
-    } finally {
-      setProcessing(false);
     }
   };
 
@@ -447,6 +550,56 @@ const ManageUsers = () => {
             </motion.div>
           )}
         </>
+      )}
+
+      {/* Access Level Modal */}
+      {showAccessLevelModal && selectedRequestForAccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div 
+            className="bg-white rounded-xl p-6 max-w-md w-full mx-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="w-6 h-6 text-[#fe6019]" />
+              <h3 className="text-lg font-semibold text-gray-900">Set Access Level</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Choose the network access level for this user when approving their request.
+            </p>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Network Access Level
+              </label>
+              <AccessLevelDropdown
+                selectedLevel={accessLevels[selectedRequestForAccess.id] || 'level0'}
+                onLevelChange={(level) => setAccessLevels(prev => ({ ...prev, [selectedRequestForAccess.id]: level }))}
+                showLabels={true}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAccessLevelModal(false);
+                  setSelectedRequestForAccess(null);
+                }}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveWithAccessLevel}
+                className="flex-1 px-4 py-2 bg-[#fe6019] text-white rounded-lg hover:bg-[#e05617] transition-colors"
+              >
+                Approve Request
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );

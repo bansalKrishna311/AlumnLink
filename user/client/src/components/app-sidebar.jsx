@@ -38,6 +38,7 @@ export function AppSidebar({ ...props }) {
   const navItems = [
     { title: "Dashboard", url: "/", icon: Home },
     { title: "Manage User Requests", url: "/userrequests", icon: Users },
+    { title: "Network Members", url: "/network-members", icon: Users },
     { title: "Manage Alumni", url: "/manage-alumni", icon: User },
     { title: "Rejected Requests", url: "/rejected-requests", icon: ThumbsDown },
     { title: "Make Post", url: "/post-creation", icon: PlusCircle },

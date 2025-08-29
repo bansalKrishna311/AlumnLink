@@ -14,6 +14,7 @@ import UserPostsPage from "@/pages/UserPostsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import adminLayout from './../components/layout/admin/adminLayout';
 import SavedPostsPage from "@/pages/SavedPostsPage";
+import MemberList from "@/components/MemberList";
 
 export const adminRoutes = [
     { 
@@ -40,6 +41,15 @@ export const adminRoutes = [
             <AdminLayout>
                 <PageTitle title="Manage User | AlumnLink" />
                 <LinkRequestsTable />
+            </AdminLayout>
+        )
+    },
+    { 
+        path: "/network-members", 
+        element: (
+            <AdminLayout>
+                <PageTitle title="Network Members | AlumnLink" />
+                <MemberList />
             </AdminLayout>
         )
     },
