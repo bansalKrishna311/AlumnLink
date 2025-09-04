@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "react-router-dom"
-import { BarChart3, FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users, TrendingUp } from "lucide-react"
+import { useNavigate, Link, useLocation } from "react-router-dom"
+import { FileText, Home, LogOut, MessageSquare, PlusCircle, ThumbsDown, User, Users } from "lucide-react"
 
 import { VersionSwitcher } from "@/components/version-switcher"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
@@ -25,6 +24,7 @@ import { axiosInstance } from "@/lib/axios"
 
 export function AppSidebar({ ...props }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
 
   // Fetch the authenticated user data
@@ -56,21 +56,6 @@ export function AppSidebar({ ...props }) {
     ],
   }
 
-  // Determine active item based on current path
-  const [activeItem, setActiveItem] = React.useState("")
-
-  React.useEffect(() => {
-    // Set active item based on current path
-    const path = window.location.pathname
-    const currentItem = navItems.find((item) => path === item.url || (item.url !== "/" && path.startsWith(item.url)))
-
-    if (currentItem) {
-      setActiveItem(currentItem.title)
-    } else {
-      setActiveItem("")
-    }
-  }, [])
-
   // Logout mutation
   const { mutate: logout } = useMutation({
     mutationFn: () => axiosInstance.post("/auth/logout"),
@@ -98,21 +83,23 @@ export function AppSidebar({ ...props }) {
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {navGroup.items.map((item, itemIndex) => (
-                      <SidebarMenuItem key={`menu-item-${groupIndex}-${itemIndex}`}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={activeItem === item.title}
-                          onClick={() => setActiveItem(item.title)}
-                          className={activeItem === item.title ? "bg-[#fe6019]/20 text-[#fe6019] font-medium" : "hover:bg-[#fe6019]/10 hover:text-[#fe6019]"}
-                        >
-                          <a href={item.url} className="flex items-center">
-                            {item.icon && <item.icon className={`w-4 h-4 mr-2 ${activeItem === item.title ? "text-[#fe6019]" : ""}`} />}
-                            <span>{item.title}</span>
-                          </a>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {navGroup.items.map((item, itemIndex) => {
+                      const isActive = location.pathname === item.url || (item.url !== "/" && location.pathname.startsWith(item.url))
+                      return (
+                        <SidebarMenuItem key={`menu-item-${groupIndex}-${itemIndex}`}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            className={isActive ? "bg-[#fe6019]/20 text-[#fe6019] font-medium" : "hover:bg-[#fe6019]/10 hover:text-[#fe6019]"}
+                          >
+                            <Link to={item.url} className="flex items-center">
+                              {item.icon && <item.icon className={`w-4 h-4 mr-2 ${isActive ? "text-[#fe6019]" : ""}`} />}
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
+                    })}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
