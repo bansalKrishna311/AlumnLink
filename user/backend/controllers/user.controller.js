@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { uploadBase64ToSpaces } from "../lib/digitalocean.js";
+import { getUserContributions, getContributionsByUsername } from "../utils/activityTracker.js";
 
 
 
@@ -160,5 +161,61 @@ export const getMentionSuggestions = async (req, res) => {
   } catch (error) {
     console.error("Error in getMentionSuggestions controller:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get user contributions for the contribution graph
+export const getUserContributionData = async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // Find the user first to check their role
+    const user = await User.findOne({ username }).select('role');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Only return contribution data for regular users
+    if (user.role !== 'user') {
+      return res.json({
+        success: true,
+        data: [] // Return empty array for non-users
+      });
+    }
+    
+    const contributions = await getContributionsByUsername(username);
+    
+    res.json({
+      success: true,
+      data: contributions
+    });
+  } catch (error) {
+    console.error("Error in getUserContributionData controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get current user's contributions
+export const getMyContributions = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Only return contribution data for regular users
+    if (req.user.role !== 'user') {
+      return res.json({
+        success: true,
+        data: [] // Return empty array for non-users
+      });
+    }
+    
+    const contributions = await getUserContributions(userId);
+    
+    res.json({
+      success: true,
+      data: contributions
+    });
+  } catch (error) {
+    console.error("Error in getMyContributions controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

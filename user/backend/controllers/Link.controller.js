@@ -40,6 +40,7 @@ export const sendLinkRequest = async (req, res) => {
             rollNumber: req.body.rollNumber,
             batch: req.body.batch,
             courseName: req.body.courseName,
+            selectedCourse: req.body.selectedCourse,
             status: "pending", // Set initial status to pending
         });
 
@@ -161,7 +162,7 @@ export const getPendingRequests = async (req, res) => {
             status: 'pending',
             recipient: new mongoose.Types.ObjectId(recipientId)
         })
-            .select('sender recipient rollNumber batch courseName status createdAt updatedAt')
+            .select('sender recipient rollNumber batch courseName selectedCourse status createdAt updatedAt')
             .populate('sender', 'name email location') // Assuming User model has these fields
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -181,6 +182,7 @@ export const getPendingRequests = async (req, res) => {
             academicDetails: {
                 rollNumber: request.rollNumber,
                 courseName: request.courseName,
+                selectedCourse: request.selectedCourse,
                 batch: request.batch
             }
         }));
@@ -327,6 +329,7 @@ export const getUserLinks = async (req, res) => {
                     rollNumber: request.rollNumber,
                     batch: request.batch,
                     courseName: request.courseName,
+                    selectedCourse: request.selectedCourse,
                     status: request.status,
                     createdAt: request.createdAt,
                     updatedAt: request.updatedAt,
@@ -493,6 +496,7 @@ export const getUserLinks = async (req, res) => {
                     rollNumber: request.rollNumber,
                     batch: request.batch,
                     courseName: request.courseName,
+                    selectedCourse: request.selectedCourse,
                     status: request.status,
                     createdAt: request.createdAt,
                     updatedAt: request.updatedAt,
@@ -557,6 +561,7 @@ export const getRejectedLinks = async (req, res) => {
             rollNumber: request.rollNumber,
             batch: request.batch,
             courseName: request.courseName,
+            selectedCourse: request.selectedCourse,
             status: request.status,
             createdAt: request.createdAt,
             updatedAt: request.updatedAt

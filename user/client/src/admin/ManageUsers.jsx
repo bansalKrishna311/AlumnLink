@@ -297,6 +297,7 @@ const ManageUsers = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Selected Course</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Date</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
@@ -356,6 +357,14 @@ const ManageUsers = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
+                        <BookOpen size={18} className="text-[#fe6019]" />
+                        <span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md">
+                          {request?.selectedCourse || 'Not specified'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
                         <MapPin size={18} className="text-[#fe6019]" />
                         <span className="text-sm text-gray-600">{request?.sender?.location}</span>
                       </div>
@@ -394,7 +403,7 @@ const ManageUsers = () => {
                 ))}
                 {filteredRequests.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
+                    <td colSpan={9} className="px-6 py-10 text-center text-gray-500 italic">
                       No requests found
                     </td>
                   </tr>

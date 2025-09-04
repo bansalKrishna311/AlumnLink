@@ -17,10 +17,7 @@ import { verifySession } from "./middleware/auth.middleware.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { cleanupOldLinkRequests, notifyExpiringRequests } from "./utils/cleanup.js";
 
-import connectDB, { updateLastActivity, isConnectionHealthy } from "./lib/db.js";
-import keepAliveService from "./lib/keepAlive.js";
-import databaseMonitor from "./lib/dbMonitor.js";
-import m0Optimizer from "./lib/m0TierOptimizer.js";
+import connectionManager from "./lib/smartConnectionManager.js";
 import {
   dbActivityMiddleware,
   dbHealthMiddleware,
@@ -71,48 +68,41 @@ app.get("/health", (req, res) => {
     status: "ok",
     message: "AlumnLink API is healthy",
     timestamp: new Date().toISOString(),
-    dbHealth: isConnectionHealthy(),
-    keepAlive: keepAliveService.getStats()
+    dbHealth: connectionManager.isHealthy(),
+    connectionStats: connectionManager.getStats()
   };
   res.status(200).json(healthStatus);
 });
 
-// MongoDB connection status endpoint with M0 optimization stats
+// MongoDB connection status endpoint with unified stats
 app.get("/health/db", async (req, res) => {
   try {
-    const dbConnection = await getDbConnection();
-    const isHealthy = isConnectionHealthy();
+    const stats = connectionManager.getStats();
+    const isHealthy = connectionManager.isHealthy();
     
     res.status(200).json({
       status: isHealthy ? "healthy" : "unhealthy",
-      connection: dbConnection ? "connected" : "disconnected",
-      keepAlive: keepAliveService.getStats(),
-      performance: databaseMonitor.getStats(),
-      m0Optimization: m0Optimizer.getStats(),
+      connection: stats.connection.stateName,
+      ...stats,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     res.status(503).json({
       status: "error",
       message: error.message,
-      keepAlive: keepAliveService.getStats(),
-      m0Optimization: m0Optimizer.getStats(),
       timestamp: new Date().toISOString()
     });
   }
 });
 
 // Connect to database lazily - only when needed
-let dbPromise = null;
-const getDbConnection = () => {
-  if (!dbPromise) {
-    dbPromise = connectDB().catch(err => {
-      console.error('Failed to connect to database:', err);
-      dbPromise = null;
-      throw err;
-    });
+const getDbConnection = async () => {
+  try {
+    return await connectionManager.connect();
+  } catch (error) {
+    console.error('Failed to get database connection:', error);
+    throw error;
   }
-  return dbPromise;
 };
 
 // Middleware to handle database connection with activity tracking
@@ -126,21 +116,31 @@ const withDb = async (req, res, next) => {
     // Set a timeout for the DB connection
     const connectionPromise = getDbConnection();
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('DB connection timeout')), 5000)
+      setTimeout(() => reject(new Error('DB connection timeout')), 8000)
     );
 
     await Promise.race([connectionPromise, timeoutPromise]);
     
     // Track database activity
-    updateLastActivity();
+    connectionManager.updateActivity();
     
     next();
   } catch (error) {
     console.error('Database connection failed:', error);
+    
+    // Check if it's a circuit breaker error
+    if (error.message.includes('Circuit breaker')) {
+      return res.status(503).json({ 
+        error: 'Database temporarily unavailable', 
+        message: 'Service is recovering from connection issues',
+        retryAfter: 30
+      });
+    }
+    
     return res.status(503).json({ 
       error: 'Database connection failed', 
       message: 'Service temporarily unavailable',
-      retryAfter: 30 // seconds
+      retryAfter: 15
     });
   }
 };
@@ -191,37 +191,19 @@ app.use('/api/v1/leads', verifySession, leadRoutes);
 // For local development
 if (process.env.NODE_ENV !== "production") {
   // Connect to DB immediately in development
-  connectDB().then(() => {
-    // Start monitoring services in development
-    keepAliveService.start();
-    databaseMonitor.startMonitoring();
-    m0Optimizer.init();
-    
+  connectionManager.connect().then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log('Auto-cleanup scheduler initialized');
-      console.log('MongoDB keep-alive service started');
-      console.log('Database performance monitoring started');
-      console.log('M0 Tier Optimizer initialized');
+      console.log('✅ Smart connection manager initialized');
+      console.log('🚀 Auto-cleanup scheduler initialized');
     });
   }).catch(error => {
     console.error('Failed to start server:', error);
     process.exit(1);
   });
 } else {
-  // In production (serverless), start services when first request comes in
-  let servicesStarted = false;
-  
-  app.use((req, res, next) => {
-    if (!servicesStarted) {
-      servicesStarted = true;
-      keepAliveService.start();
-      databaseMonitor.startMonitoring();
-      m0Optimizer.init();
-      console.log('Database services started for production');
-    }
-    next();
-  });
+  // In production (serverless), connection manager handles everything
+  console.log('🚀 Production mode - connection manager ready');
 }
 
 // Export for Vercel serverless deployment

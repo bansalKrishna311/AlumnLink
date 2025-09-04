@@ -123,6 +123,7 @@ const Post = ({ post }) => {
   });
 
   const { mutate: createComment, isPending: isAddingComment } = useMutation({
+    mutationKey: ["createComment"],
     mutationFn: async (newComment) => {
       await axiosInstance.post(`/posts/${post._id}/comment`, {
         content: newComment,
@@ -138,6 +139,7 @@ const Post = ({ post }) => {
   });
 
   const { mutate: createReply, isPending: isAddingReply } = useMutation({
+    mutationKey: ["createReply"],
     mutationFn: async ({ postId, commentId, content }) => {
       await axiosInstance.post(`/posts/${postId}/comment/${commentId}/reply`, {
         content,
@@ -168,12 +170,13 @@ const Post = ({ post }) => {
   });
 
   const { mutate: reactToPost, isPending: isReacting } = useMutation({
+    mutationKey: ["reactToPost"],
     mutationFn: async ({ postId, reactionType }) => {
       await axiosInstance.post(`/posts/${postId}/react`, {
         reactionType,
       });
     },
-    onSuccess: (_, { reactionType }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
@@ -186,6 +189,7 @@ const Post = ({ post }) => {
   });
 
   const { mutate: likeComment, isPending: isLikingComment } = useMutation({
+    mutationKey: ["likeComment"],
     mutationFn: async ({ postId, commentId }) => {
       await axiosInstance.post(`/posts/${postId}/comment/${commentId}/like`);
     },
@@ -199,6 +203,7 @@ const Post = ({ post }) => {
   });
 
   const { mutate: likeReply, isPending: isLikingReply } = useMutation({
+    mutationKey: ["likeReply"],
     mutationFn: async ({ postId, commentId, replyId }) => {
       await axiosInstance.post(`/posts/${postId}/comment/${commentId}/reply/${replyId}/like`);
     },

@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '@/lib/axios';
 import * as XLSX from 'xlsx';
 import { 
-  UserCircle2, 
   Clock, 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
   MapPin, 
   Search,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   User,
   Calendar,
@@ -19,24 +13,23 @@ import {
   Code,
   Download
 } from 'lucide-react';
-import { FaCheck, FaTimes, FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Pagination from "@/components/Pagination";
-import SearchBar from "@/components/SearchBar";
 import HighlightedText from "@/components/HighlightedText";
 
 const UserLinks = () => {
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
+  const [allLinks, setAllLinks] = useState([]); // Store all links for client-side filtering
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('All Chapters');
+  const [selectedCourse, setSelectedCourse] = useState('All Courses');
+  const [availableCourses, setAvailableCourses] = useState(['All Courses']);
   
   // Location options for the filter
   const locationOptions = [
@@ -65,19 +58,141 @@ const UserLinks = () => {
     currentPage: 1,
     pageSize: 10
   });
+  
+  // Client-side filtering function with course filter first, then search
+  const filterLinks = useCallback((linksArray, query, courseFilter) => {
+    let filtered = linksArray;
+    
+    // First filter by course if not "All Courses"
+    if (courseFilter && courseFilter !== 'All Courses') {
+      filtered = filtered.filter((link) => {
+        const linkSelectedCourse = String(link.selectedCourse || '').toLowerCase();
+        const linkCourseName = String(link.courseName || '').toLowerCase();
+        const filterCourse = courseFilter.toLowerCase();
+        
+        return linkSelectedCourse.includes(filterCourse) || linkCourseName.includes(filterCourse);
+      });
+    }
+    
+    // Then filter by search query if provided
+    if (!query || !query.trim()) {
+      return filtered;
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    return filtered.filter((link) => {
+      const name = link.user?.name?.toLowerCase() || '';
+      const username = link.user?.username?.toLowerCase() || '';
+      const rollNumber = String(link.rollNumber || '').toLowerCase();
+      const batch = String(link.batch || '').toLowerCase();
+      const location = link.user?.location?.toLowerCase() || '';
+      
+      return name.includes(searchTerm) ||
+             username.includes(searchTerm) ||
+             rollNumber.includes(searchTerm) ||
+             batch.includes(searchTerm) ||
+             location.includes(searchTerm);
+    });
+  }, []);
+
+  // Apply client-side filtering and pagination when search query, course filter, or page changes
+  useEffect(() => {
+    let filtered = filterLinks(allLinks, searchQuery, selectedCourse);
+    
+    // Update pagination based on filtered results
+    const totalCount = filtered.length;
+    const pageSize = 10;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    
+    setPagination(prev => ({
+      ...prev,
+      totalCount,
+      totalPages
+    }));
+    
+    // Apply pagination to filtered results
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedResults = filtered.slice(startIndex, endIndex);
+    
+    setLinks(paginatedResults);
+  }, [searchQuery, selectedCourse, allLinks, filterLinks, currentPage]);
+
+  // Reset to page 1 when search query or course filter changes
+  useEffect(() => {
+    if (searchQuery || selectedCourse !== 'All Courses') {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, selectedCourse]);
+
+  // Extract available courses from admin assigned courses using existing APIs
+  useEffect(() => {
+    const fetchAdminAssignedCourses = async () => {
+      try {
+        // Fetch all admins using existing APIs
+        const [instituteRes, schoolRes, corporateRes] = await Promise.all([
+          axiosInstance.get("/admin/institutes"),
+          axiosInstance.get("/admin/schools"),
+          axiosInstance.get("/admin/corporates"),
+        ]);
+        
+        const allAdmins = [
+          ...instituteRes.data,
+          ...schoolRes.data,
+          ...corporateRes.data
+        ];
+        
+        const allAssignedCourses = new Set(['All Courses']);
+        
+        // Fetch courses for each admin using existing API
+        const coursePromises = allAdmins.map(async (admin) => {
+          try {
+            const response = await axiosInstance.get(`/admin/admin/${admin._id}/courses`);
+            return response.data.assignedCourses || [];
+          } catch (error) {
+            console.error(`Error fetching courses for admin ${admin._id}:`, error);
+            return [];
+          }
+        });
+        
+        const allCoursesArrays = await Promise.all(coursePromises);
+        
+        // Combine all courses
+        allCoursesArrays.forEach(coursesArray => {
+          if (Array.isArray(coursesArray)) {
+            coursesArray.forEach(course => {
+              if (course && course.trim()) {
+                allAssignedCourses.add(course.trim());
+              }
+            });
+          }
+        });
+        
+        setAvailableCourses(Array.from(allAssignedCourses).sort());
+      } catch (error) {
+        console.error('Error fetching admin assigned courses:', error);
+        // Fallback to extracting from current data if API fails
+        if (allLinks.length > 0) {
+          const courses = new Set(['All Courses']);
+          allLinks.forEach(link => {
+            if (link.selectedCourse) courses.add(link.selectedCourse);
+          });
+          setAvailableCourses(Array.from(courses).sort());
+        }
+      }
+    };
+
+    fetchAdminAssignedCourses();
+  }, [allLinks]);
 
   const fetchUserLinks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
-      });
       
-      // Add search query to server request if it exists
-      if (debouncedSearchQuery && debouncedSearchQuery.trim()) {
-        params.append('search', debouncedSearchQuery.trim());
-      }
+      // Fetch ALL data for client-side filtering and pagination
+      const params = new URLSearchParams({
+        limit: '10000' // Get all records
+      });
       
       // Add location filter to server request if it's not "All Chapters"
       if (selectedLocation && selectedLocation !== 'All Chapters') {
@@ -86,23 +201,27 @@ const UserLinks = () => {
       
       const response = await axiosInstance.get(`/links?${params}`);
       
-      // Handle pagination data from headers
-      const totalCount = parseInt(response.headers['x-total-count'] || '0');
-      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
-      
-      setPagination({
-        totalCount,
-        totalPages,
-        currentPage: parseInt(response.headers['x-current-page'] || currentPage),
-        pageSize: 10
-      });
-      
       // Ensure we have valid data before setting state
       if (response && response.data && Array.isArray(response.data)) {
-        setLinks(response.data);
+        const allData = response.data;
+        setAllLinks(allData);
+        
+        // Calculate pagination for all data
+        const totalCount = allData.length;
+        const pageSize = 10;
+        const totalPages = Math.ceil(totalCount / pageSize);
+        
+        setPagination({
+          totalCount,
+          totalPages,
+          currentPage: 1,
+          pageSize
+        });
+        
         setError(null);
       } else {
         setLinks([]);
+        setAllLinks([]);
         setError("Received invalid data format");
       }
       setIsLoading(false);
@@ -111,6 +230,7 @@ const UserLinks = () => {
       // Handle 404 specifically as "no data" rather than an error
       if (err.response && err.response.status === 404) {
         setLinks([]);
+        setAllLinks([]);
         setPagination({
           totalCount: 0,
           totalPages: 0,
@@ -123,24 +243,9 @@ const UserLinks = () => {
       }
       setIsLoading(false);
     }
-  }, [currentPage, debouncedSearchQuery, selectedLocation]);
+  }, [selectedLocation]);
 
-  // Debounce search query and handle search changes
-  useEffect(() => {
-    setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      setIsSearching(false);
-      // Reset to page 1 when starting a new search
-      if (searchQuery && currentPage !== 1) {
-        setCurrentPage(1);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Fetch data when dependencies change
+  // Fetch data when location changes or on initial load
   useEffect(() => {
     fetchUserLinks();
   }, [fetchUserLinks]);
@@ -299,20 +404,15 @@ const UserLinks = () => {
     }
   };
 
-  const handleSearchChange = useCallback((query) => {
-    setSearchQuery(query);
-  }, []);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
-    // Reset pagination when clearing search
-    setCurrentPage(1);
-  }, []);
-
   const handleLocationChange = useCallback((location) => {
     setSelectedLocation(location);
     // Reset pagination when changing location
+    setCurrentPage(1);
+  }, []);
+
+  const handleCourseChange = useCallback((course) => {
+    setSelectedCourse(course);
+    // Reset pagination when changing course
     setCurrentPage(1);
   }, []);
 
@@ -370,6 +470,7 @@ const UserLinks = () => {
           'Roll Number': link.rollNumber || 'N/A',
           'Batch': link.batch || 'N/A',
           'Course Name': link.courseName || 'N/A',
+          'Selected Course': link.selectedCourse || 'Not specified',
           'Location': user.location || 'N/A',
           'Experience': experienceData
         };
@@ -439,19 +540,6 @@ const UserLinks = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="h-4 w-4 text-amber-500" />;
-      case 'accepted':
-        return <CheckCircle className="h-4 w-4 text-emerald-500" />;
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-rose-500" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="p-8 w-full max-w-[1400px] mx-auto">
       <motion.h1 
@@ -498,16 +586,16 @@ const UserLinks = () => {
               <div className="max-w-2xl w-full">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1">
-                    <SearchBar
-                      placeholder="Search by name, roll number, batch, course..."
-                      onSearch={handleSearchChange}
-                      onClear={handleClearSearch}
-                      initialValue={searchQuery}
-                      className="w-full"
-                      size="md"
-                      showClearButton={true}
-                      debounceDelay={0}
-                    />
+                    <div className="relative group">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-hover:text-[#fe6019]" />
+                      <input
+                        type="text"
+                        placeholder="Search by name, roll number, batch..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] transition-all duration-200 bg-white shadow-sm hover:border-gray-400 text-sm"
+                      />
+                    </div>
                   </div>
                   <div className="relative">
                     <select
@@ -525,18 +613,24 @@ const UserLinks = () => {
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" 
                     />
                   </div>
-                </div>
-                {isSearching && (
-                  <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
-                    <motion.div 
-                      className="w-3 h-3 border border-gray-300 border-t-[#fe6019] rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  <div className="relative">
+                    <select
+                      value={selectedCourse}
+                      onChange={(e) => handleCourseChange(e.target.value)}
+                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#fe6019]/20 focus:border-[#fe6019] min-w-[180px] cursor-pointer transition-colors duration-200"
+                    >
+                      {availableCourses.map((course) => (
+                        <option key={course} value={course}>
+                          {course}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" 
                     />
-                    Searching across all pages...
                   </div>
-                )}
-                {searchQuery && !isSearching && (
+                </div>
+                {searchQuery && (
                   <div className="mt-2 text-sm text-gray-600">
                     {pagination.totalCount > 0 ? (
                       <>
@@ -544,8 +638,11 @@ const UserLinks = () => {
                         {selectedLocation !== 'All Chapters' && (
                           <span className="text-gray-500"> in {selectedLocation}</span>
                         )}
+                        {selectedCourse !== 'All Courses' && (
+                          <span className="text-gray-500"> for {selectedCourse} course</span>
+                        )}
                         {pagination.totalPages > 1 && (
-                          <span className="text-gray-500"> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                          <span className="text-gray-500"> (Page {currentPage} of {pagination.totalPages})</span>
                         )}
                       </>
                     ) : (
@@ -553,6 +650,9 @@ const UserLinks = () => {
                         No results found for &quot;{searchQuery}&quot;
                         {selectedLocation !== 'All Chapters' && (
                           <span className="text-gray-500"> in {selectedLocation}</span>
+                        )}
+                        {selectedCourse !== 'All Courses' && (
+                          <span className="text-gray-500"> for {selectedCourse} course</span>
                         )}
                       </>
                     )}
@@ -564,8 +664,11 @@ const UserLinks = () => {
                     {selectedLocation !== 'All Chapters' && (
                       <span> from {selectedLocation}</span>
                     )}
+                    {selectedCourse !== 'All Courses' && (
+                      <span> for {selectedCourse} course</span>
+                    )}
                     {pagination.totalPages > 1 && (
-                      <span> (Page {pagination.currentPage} of {pagination.totalPages})</span>
+                      <span> (Page {currentPage} of {pagination.totalPages})</span>
                     )}
                   </div>
                 )}
@@ -621,6 +724,7 @@ const UserLinks = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Selected Course</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -706,9 +810,19 @@ const UserLinks = () => {
                         <div className="flex items-center space-x-3">
                           <BookOpen size={18} className="text-[#fe6019]" />
                           <HighlightedText
-                            text={typeof link.courseName === 'string' ? link.courseName : 'Unknown Course'}
+                            text={link.courseName || 'N/A'}
                             searchTerm={searchQuery}
                             className="text-sm text-gray-600"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <BookOpen size={18} className="text-[#fe6019]" />
+                          <HighlightedText
+                            text={link.selectedCourse || 'Not specified'}
+                            searchTerm={searchQuery}
+                            className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md"
                           />
                         </div>
                       </td>
@@ -743,7 +857,7 @@ const UserLinks = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 italic">
+                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
                       {searchQuery ? `No connections found matching "${searchQuery}"` : "No connections found"}
                     </td>
                   </tr>
@@ -780,7 +894,7 @@ const UserLinks = () => {
               transition={{ delay: 0.3 }}
             >
               <Pagination
-                currentPage={pagination.currentPage}
+                currentPage={currentPage}
                 totalPages={pagination.totalPages}
                 onPageChange={(newPage) => setCurrentPage(newPage)}
               />

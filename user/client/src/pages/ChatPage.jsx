@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { axiosInstance } from "@/lib/axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,6 +21,8 @@ import {
   Search
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { debounce } from "lodash.debounce";
+import { useAuthUser, useUserConnections, useSameAdminUsers, useConversations, useOptimizedSearch } from "@/hooks/useAppData";
 
 const ChatPage = () => {
   const { username } = useParams();
@@ -31,44 +33,22 @@ const ChatPage = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { data: authUser } = useQuery({
-    queryKey: ["authUser"],
-  });
+  // Use Zustand store for efficient data management
+  const { data: authUser } = useAuthUser();
+  const { data: userConnections, isLoading: isLoadingConnections } = useUserConnections();
+  const { data: sameAdminUsers, isLoading: isLoadingSameAdminUsers } = useSameAdminUsers();
+  const { data: conversations } = useConversations();
 
+  // Single conversation query (this still needs real-time updates)
   const { data: conversation, isLoading } = useQuery({
     queryKey: ["conversation", username],
     queryFn: async () => {
       const response = await axiosInstance.get(`/messages/${username}`);
       return response.data;
     },
-    refetchInterval: 10000, // Refresh every 10 seconds
-  });
-  
-  // Fetch existing conversations for sidebar
-  const { data: conversations } = useQuery({
-    queryKey: ["conversations"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/messages/conversations");
-      return response.data;
-    },
-  });
-  
-  // Fetch users linked to the same admin for suggested contacts
-  const { data: sameAdminUsers, isLoading: isLoadingSameAdminUsers } = useQuery({
-    queryKey: ["sameAdminMessagingConnections"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/users/suggestions");
-      return response.data;
-    },
-  });
-  
-  // Fetch all user's connections
-  const { data: userConnections, isLoading: isLoadingConnections } = useQuery({
-    queryKey: ["userMessagingConnections"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/links");
-      return response.data;
-    },
+    enabled: !!username,
+    staleTime: 30 * 1000, // 30 seconds for real-time feel
+    refetchInterval: 30000, // Reduced from 10 seconds to 30 seconds
   });
 
   // Group connections by user name instead of by organization
@@ -95,21 +75,31 @@ const ChatPage = () => {
     return Object.keys(groupedConnections).sort();
   }, [groupedConnections]);
 
-  // Filter contacts based on search query
-  const filteredSameAdminUsers = sameAdminUsers?.filter(user => 
-    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const filteredConnections = userConnections?.filter(connection => 
-    connection.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    connection.username?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const filteredConversations = conversations?.filter(convo => 
-    convo.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    convo.user.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Use optimized search hooks for better performance
+  const {
+    searchQuery: sameAdminSearchQuery,
+    setSearchQuery: setSameAdminSearchQuery,
+    filteredData: filteredSameAdminUsers,
+  } = useOptimizedSearch(sameAdminUsers || [], ['name', 'username']);
+
+  const {
+    searchQuery: connectionsSearchQuery,
+    setSearchQuery: setConnectionsSearchQuery,
+    filteredData: filteredConnections,
+  } = useOptimizedSearch(userConnections || [], ['name', 'username']);
+
+  const {
+    searchQuery: conversationsSearchQuery,
+    setSearchQuery: setConversationsSearchQuery,
+    filteredData: filteredConversations,
+  } = useOptimizedSearch(conversations || [], ['user.name', 'user.username']);
+
+  // Sync all search queries
+  useEffect(() => {
+    setSameAdminSearchQuery(searchQuery);
+    setConnectionsSearchQuery(searchQuery);
+    setConversationsSearchQuery(searchQuery);
+  }, [searchQuery, setSameAdminSearchQuery, setConnectionsSearchQuery, setConversationsSearchQuery]);
 
   // Mark messages as read when viewing conversation
   const { mutate: markAsRead } = useMutation({
@@ -139,37 +129,42 @@ const ChatPage = () => {
     }
   });
 
-  // Scroll to bottom of messages when new messages arrive
-  useEffect(() => {
+  // Scroll to bottom of messages when new messages arrive - optimized
+  const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [conversation?.messages]);
+  }, []);
 
-  // Mark messages as read when viewing conversation
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversation?.messages?.length, scrollToBottom]);
+
+  // Mark messages as read when viewing conversation - optimized
   useEffect(() => {
     if (username && conversation?.messages?.length) {
-      markAsRead();
+      const timeoutId = setTimeout(() => markAsRead(), 1000); // Debounce marking as read
+      return () => clearTimeout(timeoutId);
     }
-  }, [username, conversation?.messages?.length]);
+  }, [username, conversation?.messages?.length, markAsRead]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = useCallback((e) => {
     e.preventDefault();
     if (messageContent.trim() && !isSending) {
       sendMessage(messageContent.trim());
     }
-  };
+  }, [messageContent, isSending, sendMessage]);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     navigate("/messages");
-  };
+  }, [navigate]);
 
-  const goToProfile = () => {
+  const goToProfile = useCallback(() => {
     navigate(`/profile/${username}`);
-  };
+  }, [navigate, username]);
 
-  // Group messages by date
-  const groupMessagesByDate = (messages) => {
+  // Group messages by date - optimized with useMemo
+  const groupMessagesByDate = useCallback((messages) => {
     if (!messages || messages.length === 0) return {};
     
     const groups = {};
@@ -183,19 +178,22 @@ const ChatPage = () => {
     });
     
     return groups;
-  };
+  }, []);
   
-  const messageGroups = groupMessagesByDate(conversation?.messages || []);
+  const messageGroups = useMemo(() => 
+    groupMessagesByDate(conversation?.messages || []),
+    [conversation?.messages, groupMessagesByDate]
+  );
   
   // Function to determine if a sequence of messages is from the same sender
-  const isConsecutiveMessage = (messages, index) => {
+  const isConsecutiveMessage = useCallback((messages, index) => {
     if (index === 0) return false;
     
     const currentMessage = messages[index];
     const previousMessage = messages[index - 1];
     
     return currentMessage.sender._id === previousMessage.sender._id;
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

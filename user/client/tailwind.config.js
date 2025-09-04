@@ -30,7 +30,27 @@ export default {
             },
         },
     },
-    plugins: [daisyui, tailwindcssAnimate],
+    plugins: [
+        daisyui, 
+        tailwindcssAnimate,
+        function({ addUtilities }) {
+            addUtilities({
+                '.scrollbar-hide': {
+                    '-ms-overflow-style': 'none',
+                    'scrollbar-width': 'none',
+                    '&::-webkit-scrollbar': {
+                        display: 'none',
+                    },
+                },
+                '.line-clamp-3': {
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    '-webkit-box-orient': 'vertical',
+                    '-webkit-line-clamp': '3',
+                },
+            });
+        },
+    ],
     daisyui: {
         themes: [
             {

@@ -26,6 +26,10 @@ const LinkRequestSchema = new mongoose.Schema(
       type: String,
       required: [true, "Course Name is required"],
     },
+    selectedCourse: {
+      type: String,
+      required: false, // Make optional for backward compatibility
+    },
 	status: {
 		type: String,
 		enum: ["pending", "accepted", "rejected"],

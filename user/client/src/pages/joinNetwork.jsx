@@ -51,9 +51,12 @@ const JoinNetwork = () => {
     rollNumber: "",
     batch: "",
     courseName: "",
+    selectedCourse: "",
   });
   const [errors, setErrors] = useState({});
   const [selectedNetworkDetails, setSelectedNetworkDetails] = useState(null);
+  const [adminCourses, setAdminCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -116,15 +119,45 @@ const JoinNetwork = () => {
     if (!formData.batch || !/^\d+$/.test(formData.batch))
       newErrors.batch = "Must be a number";
     if (!formData.courseName) newErrors.courseName = "Course name is required";
+    
+    // Only require selectedCourse if admin has assigned courses
+    if (adminCourses.length > 0 && !formData.selectedCourse) {
+      newErrors.selectedCourse = "Please select a course from the admin's assigned courses";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const fetchAdminCourses = async (adminId) => {
+    if (!adminId) return;
+    
+    console.log("Fetching courses for admin ID:", adminId);
+    setLoadingCourses(true);
+    try {
+      const response = await axiosInstance.get(`/admin/admin/${adminId}/courses`);
+      console.log("Admin courses response:", response.data);
+      setAdminCourses(response.data.assignedCourses || []);
+      console.log("Set admin courses:", response.data.assignedCourses || []);
+    } catch (error) {
+      console.error("Error fetching admin courses:", error);
+      console.error("Error response:", error.response?.data);
+      setAdminCourses([]);
+      toast.error("Failed to load courses for this admin");
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
   const handleNetworkSelect = (value) => {
     const selected = allNetworks.find(network => network.id === value);
     setSelectedNetworkDetails(selected);
-    setFormData((prev) => ({ ...prev, network: value }));
+    setFormData((prev) => ({ ...prev, network: value, selectedCourse: "" })); // Reset selected course
+    
+    // Fetch courses for the selected admin
+    if (selected && selected.id) {
+      fetchAdminCourses(selected.id);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -153,8 +186,11 @@ const JoinNetwork = () => {
             rollNumber: "",
             batch: "",
             courseName: "",
+            selectedCourse: "",
           });
+          
           setSelectedNetworkDetails(null);
+          setAdminCourses([]);
           setShowSuccess(false);
           setIsDialogOpen(false);
         }, 2000);
@@ -174,8 +210,10 @@ const JoinNetwork = () => {
       rollNumber: "",
       batch: "",
       courseName: "",
+      selectedCourse: "",
     });
     setSelectedNetworkDetails(null);
+    setAdminCourses([]);
     setErrors({});
   };
 
@@ -281,7 +319,7 @@ const JoinNetwork = () => {
                                 type="button"
                                 onClick={() => {
                                   setSelectedNetworkDetails(null);
-                                  setFormData(prev => ({ ...prev, network: "" }));
+                                  setFormData(prev => ({ ...prev, network: "", selectedCourse: "" }));
                                 }}
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                               >
@@ -384,6 +422,56 @@ const JoinNetwork = () => {
                           />
                           {errors.courseName && <p className="text-sm text-red-500 mt-1">{errors.courseName}</p>}
                         </div>
+
+                        {/* Selected Course */}
+                        {selectedNetworkDetails && (
+                          <div className="space-y-2">
+                            <Label htmlFor="selectedCourse" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Select Course (from admin&apos;s assigned courses) *
+                            </Label>
+                            {loadingCourses ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader size={16} className="animate-spin mr-2" />
+                                <span className="text-sm text-gray-500">Loading courses...</span>
+                              </div>
+                            ) : adminCourses.length > 0 ? (
+                              <>
+                                <Select 
+                                  value={formData.selectedCourse}
+                                  onValueChange={(value) => {
+                                    console.log("Selected course:", value);
+                                    setFormData(prev => ({ ...prev, selectedCourse: value }));
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full rounded-lg border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019]">
+                                    <SelectValue placeholder="Choose a course" />
+                                  </SelectTrigger>
+                                  <SelectContent 
+                                    className="z-[1010] bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 shadow-lg"
+                                    position="popper"
+                                    sideOffset={5}
+                                  >
+                                    {adminCourses.map((course, index) => (
+                                      <SelectItem key={index} value={course} className="hover:bg-gray-100 dark:hover:bg-gray-800">
+                                        {course}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </>
+                            ) : (
+                              <div className="space-y-2">
+                                <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                                  No courses assigned to this admin yet. Please contact the superadmin.
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Admin ID: {selectedNetworkDetails.id}
+                                </p>
+                              </div>
+                            )}
+                            {errors.selectedCourse && <p className="text-sm text-red-500 mt-1">{errors.selectedCourse}</p>}
+                          </div>
+                        )}
 
                         <div className="flex gap-3 pt-2">
                           <Button
