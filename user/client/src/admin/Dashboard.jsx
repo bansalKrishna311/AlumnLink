@@ -70,6 +70,7 @@ const AdminPage = () => {
             <SelectItem value="today">Today</SelectItem>
             <SelectItem value="week">This week</SelectItem>
             <SelectItem value="month">This month</SelectItem>
+            <SelectItem value="year">This year</SelectItem>
           </SelectContent>
         </Select>
         <Button 
@@ -167,7 +168,9 @@ const AdminPage = () => {
           <Badge variant="outline" className="ml-2 text-xs">
             {timeframe === 'all' ? 'All time' : 
              timeframe === 'today' ? 'Today' : 
-             timeframe === 'week' ? 'This week' : 'This month'}
+             timeframe === 'week' ? 'This week' : 
+             timeframe === 'month' ? 'This month' :
+             timeframe === 'year' ? 'This year' : 'All time'}
           </Badge>
         </div>
       </div>
@@ -214,7 +217,9 @@ const AdminPage = () => {
                     <Calendar className="h-3.5 w-3.5 mr-1" />
                     {timeframe === 'all' ? 'All time' : 
                      timeframe === 'today' ? 'Today' : 
-                     timeframe === 'week' ? 'This week' : 'This month'}
+                     timeframe === 'week' ? 'This week' : 
+                     timeframe === 'month' ? 'This month' :
+                     timeframe === 'year' ? 'This year' : 'All time'}
                   </div>
                   <Button variant="ghost" size="sm" asChild className="gap-1">
                     <Link to={REQUEST_ROUTES[item.status.toLowerCase()]}>
@@ -281,7 +286,7 @@ const AdminPage = () => {
                       <Legend
                         verticalAlign="bottom"
                         height={36}
-                        formatter={(value, entry) => <span className="text-gray-700 dark:text-gray-300">{value}</span>}
+                        formatter={(value) => <span className="text-gray-700 dark:text-gray-300">{value}</span>}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -359,7 +364,9 @@ const AdminPage = () => {
             <CardFooter className="bg-muted/30 text-sm text-muted-foreground">
               Data shown for {timeframe === 'all' ? 'all time' : 
                 timeframe === 'today' ? 'today' : 
-                timeframe === 'week' ? 'this week' : 'this month'}
+                timeframe === 'week' ? 'this week' : 
+                timeframe === 'month' ? 'this month' :
+                timeframe === 'year' ? 'this year' : 'all time'}
             </CardFooter>
           </Card>
           

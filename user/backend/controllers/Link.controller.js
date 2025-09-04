@@ -749,26 +749,79 @@ export const resetToPending = async (req, res) => {
 export const getDashboardStats = async (req, res) => {
     try {
         const userId = req.user._id;
+        const { timeframe } = req.query;
+        
+        // Calculate date range based on timeframe
+        let dateFilter = {};
+        const now = new Date();
+        
+        switch (timeframe) {
+            case 'today':
+                dateFilter = {
+                    createdAt: {
+                        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+                        $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+                    }
+                };
+                break;
+            case 'week':
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay()); // Start of the week (Sunday)
+                weekStart.setHours(0, 0, 0, 0);
+                dateFilter = {
+                    createdAt: {
+                        $gte: weekStart,
+                        $lt: now
+                    }
+                };
+                break;
+            case 'month':
+                dateFilter = {
+                    createdAt: {
+                        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+                        $lt: new Date(now.getFullYear(), now.getMonth() + 1, 1)
+                    }
+                };
+                break;
+            case 'year':
+                dateFilter = {
+                    createdAt: {
+                        $gte: new Date(now.getFullYear(), 0, 1),
+                        $lt: new Date(now.getFullYear() + 1, 0, 1)
+                    }
+                };
+                break;
+            case 'all':
+            default:
+                // No date filter for 'all' timeframe
+                dateFilter = {};
+                break;
+        }
+        
+        // Build queries with date filter
+        const baseQueries = {
+            pending: {
+                status: 'pending',
+                recipient: userId,
+                ...dateFilter
+            },
+            accepted: {
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "accepted",
+                ...dateFilter
+            },
+            rejected: {
+                $or: [{ sender: userId }, { recipient: userId }],
+                status: "rejected",
+                ...dateFilter
+            }
+        };
         
         // Run all queries in parallel for better performance
         const [pendingCount, acceptedCount, rejectedCount] = await Promise.all([
-            // Count pending requests
-            LinkRequest.countDocuments({
-                status: 'pending',
-                recipient: userId
-            }),
-            
-            // Count accepted links
-            LinkRequest.countDocuments({
-                $or: [{ sender: userId }, { recipient: userId }],
-                status: "accepted"
-            }),
-            
-            // Count rejected requests
-            LinkRequest.countDocuments({
-                $or: [{ sender: userId }, { recipient: userId }],
-                status: "rejected"
-            })
+            LinkRequest.countDocuments(baseQueries.pending),
+            LinkRequest.countDocuments(baseQueries.accepted),
+            LinkRequest.countDocuments(baseQueries.rejected)
         ]);
         
         // Format the data for the dashboard
