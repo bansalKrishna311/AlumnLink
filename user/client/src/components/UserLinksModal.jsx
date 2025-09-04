@@ -18,6 +18,7 @@ const UserLinksPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [skillSearch, setSkillSearch] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -33,7 +34,7 @@ const UserLinksPage = () => {
       setSearchQuery(query);
       setPage(1); // Reset to first page on new search
     }, 400),
-    []
+    [setSearchQuery, setPage]
   );
 
   useEffect(() => {
@@ -41,7 +42,7 @@ const UserLinksPage = () => {
       fetchUserLinks();
     }
     // eslint-disable-next-line
-  }, [userId, page, itemsPerPage, sortBy, sortOrder, searchQuery, selectedLocation, skillSearch]);
+  }, [userId, page, itemsPerPage, sortBy, sortOrder, searchQuery, selectedLocation, skillSearch, companySearch]);
 
   const fetchUserLinks = async () => {
     try {
@@ -54,7 +55,8 @@ const UserLinksPage = () => {
           sortOrder,
           search: searchQuery,
           location: selectedLocation,
-          skill: skillSearch
+          skill: skillSearch,
+          company: companySearch
         }
       });
       setLinks(response.data || []);
@@ -114,6 +116,7 @@ const UserLinksPage = () => {
   const resetFilters = () => {
     setSelectedLocation("");
     setSkillSearch("");
+    setCompanySearch("");
     setSearchQuery("");
     setSortBy("name");
     setSortOrder("asc");
@@ -184,7 +187,7 @@ const UserLinksPage = () => {
           
           {/* Expanded Filters Section */}
           {filtersVisible && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-orange-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-orange-100">
               {/* Skills Search Bar */}
               <div className="flex flex-col space-y-1">
                 <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
@@ -199,6 +202,24 @@ const UserLinksPage = () => {
                     setPage(1);
                   }}
                   placeholder="Type skill (e.g. React)"
+                  className="px-2 py-1 sm:px-3 sm:py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300 text-xs sm:text-sm"
+                />
+              </div>
+              
+              {/* Company Search Bar */}
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
+                  <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-[#fe6019]" />
+                  Company Search
+                </label>
+                <input
+                  type="text"
+                  value={companySearch}
+                  onChange={e => {
+                    setCompanySearch(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Type company (e.g. Google)"
                   className="px-2 py-1 sm:px-3 sm:py-2 border border-orange-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fe6019] bg-white/50 backdrop-blur-sm transition-all duration-300 text-xs sm:text-sm"
                 />
               </div>
@@ -256,9 +277,10 @@ const UserLinksPage = () => {
           {filteredLinks.length > 0 ? (
             <p>
               Showing {filteredLinks.length} connection{filteredLinks.length !== 1 ? 's' : ''}
-              {(selectedLocation || skillSearch || searchQuery) && ' • Filtered by: '}
+              {(selectedLocation || skillSearch || companySearch || searchQuery) && ' • Filtered by: '}
               {selectedLocation && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{selectedLocation}</span>}
               {skillSearch && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{skillSearch}</span>}
+              {companySearch && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">{companySearch}</span>}
               {searchQuery && <span className="mx-1 bg-orange-100 text-[#fe6019] px-2 py-1 rounded-full">&quot;{searchQuery}&quot;</span>}
             </p>
           ) : !isLoading && (
@@ -388,10 +410,10 @@ const UserLinksPage = () => {
           <div className="text-center py-12 bg-white/70 backdrop-blur-sm rounded-xl border border-orange-100">
             <UserCircle2 className="mx-auto h-16 w-16 text-[#fe6019]" />
             <h3 className="mt-4 text-xl font-medium text-gray-900">
-              {searchQuery || selectedLocation || skillSearch ? "No matches found" : "No connections yet"}
+              {searchQuery || selectedLocation || skillSearch || companySearch ? "No matches found" : "No connections yet"}
             </h3>
             <p className="mt-2 text-gray-600">
-              {searchQuery || selectedLocation || skillSearch
+              {searchQuery || selectedLocation || skillSearch || companySearch
                 ? "Try adjusting your search terms or filters"
                 : "Start connecting with other users to build your network."}
             </p>

@@ -221,6 +221,12 @@ export const getUserLinks = async (req, res) => {
         const sortOrder = req.query.sortOrder || 'desc';
         const search = req.query.search; // Get search query
         const location = req.query.location; // Get location filter
+        const company = req.query.company; // Get company filter
+        
+        // Debug logging
+        console.log('Filter params:', { search, location, company });
+        console.log('Company filter active:', !!(company && company.trim()));
+        
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -236,11 +242,14 @@ export const getUserLinks = async (req, res) => {
             status: "accepted",
         };
 
-        // If search is provided, use a simpler aggregation approach
-        if (search && search.trim()) {
-            const searchRegex = new RegExp(search.trim(), 'i');
+        // If search, company filter, or location filter is provided, use aggregation approach
+        if ((search && search.trim()) || (company && company.trim()) || (location && location !== 'All Chapters')) {
+            console.log('Using aggregation approach with filters:', { search, company, location });
+            console.log('Company regex:', company && company.trim() ? new RegExp(company.trim(), 'i') : null);
             
-            // Build aggregation pipeline with search
+            const searchRegex = search && search.trim() ? new RegExp(search.trim(), 'i') : null;
+            
+            // Build aggregation pipeline with search and/or company filter
             const pipeline = [
                 { $match: baseQuery },
                 {
@@ -277,9 +286,10 @@ export const getUserLinks = async (req, res) => {
                     }
                 },
                 {
-                    $match: {
-                        $and: [
-                            {
+                    $match: (() => {
+                        const conditions = [
+                            // Only add search condition if search is provided
+                            ...(searchRegex ? [{
                                 $or: [
                                     { 'otherUser.name': searchRegex },
                                     { 'otherUser.username': searchRegex },
@@ -287,15 +297,39 @@ export const getUserLinks = async (req, res) => {
                                     { 'otherUser.location': searchRegex },
                                     { rollNumber: searchRegex },
                                     { batch: searchRegex },
-                                    { courseName: searchRegex }
+                                    { courseName: searchRegex },
+                                    { 'otherUser.experience': { $elemMatch: { 'company': searchRegex } } }
                                 ]
-                            },
+                            }] : []),
                             // Add location filter if provided
-                            ...(location && location !== 'All Chapters' ? [{ 'otherUser.location': location }] : [])
-                        ]
-                    }
+                            ...(location && location !== 'All Chapters' ? [{ 'otherUser.location': location }] : []),
+                            // Add company filter if provided
+                            ...(company && company.trim() ? [{ 
+                                'otherUser.experience': { 
+                                    $elemMatch: { 
+                                        'company': new RegExp(company.trim(), 'i') 
+                                    } 
+                                } 
+                            }] : [])
+                        ];
+                        
+                        console.log('Generated conditions:', JSON.stringify(conditions, null, 2));
+                        
+                        // If no conditions, return empty object (match all)
+                        if (conditions.length === 0) {
+                            return {};
+                        }
+                        
+                        // If only one condition, return it directly
+                        if (conditions.length === 1) {
+                            return conditions[0];
+                        }
+                        
+                        // Multiple conditions, use $and
+                        return { $and: conditions };
+                    })()
                 },
-                { $sort: { createdAt: -1 } }
+                { $sort: sortOptions }
             ];
 
             // Get total count
@@ -347,101 +381,7 @@ export const getUserLinks = async (req, res) => {
             return res.json(transformedLinks);
         }
 
-        // Handle location filtering when no search is provided
-        if (location && location !== 'All Chapters') {
-            // Use aggregation pipeline for location filtering
-            const pipeline = [
-                { $match: baseQuery },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'sender',
-                        foreignField: '_id',
-                        as: 'senderData'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'recipient',
-                        foreignField: '_id',
-                        as: 'recipientData'
-                    }
-                },
-                {
-                    $unwind: '$senderData'
-                },
-                {
-                    $unwind: '$recipientData'
-                },
-                {
-                    $addFields: {
-                        otherUser: {
-                            $cond: {
-                                if: { $eq: ['$sender', userId] },
-                                then: '$recipientData',
-                                else: '$senderData'
-                            }
-                        }
-                    }
-                },
-                {
-                    $match: {
-                        'otherUser.location': location
-                    }
-                },
-                { $sort: sortOptions }
-            ];
-
-            // Get total count
-            const countPipeline = [...pipeline, { $count: 'total' }];
-            const countResult = await LinkRequest.aggregate(countPipeline);
-            const totalCount = countResult.length > 0 ? countResult[0].total : 0;
-
-            // Add pagination
-            pipeline.push({ $skip: skip });
-            pipeline.push({ $limit: limit });
-
-            // Execute aggregation
-            const linkRequests = await LinkRequest.aggregate(pipeline);
-
-            // Transform data
-            const transformedLinks = linkRequests.map((request) => {
-                const otherUser = request.otherUser;
-                
-                return {
-                    _id: request._id,
-                    connection: request.sender.equals(userId) ? "sent" : "received",
-                    user: otherUser,
-                    name: otherUser.name,
-                    username: otherUser.username,
-                    location: otherUser.location,
-                    profilePicture: otherUser.profilePicture,
-                    headline: otherUser.headline,
-                    skills: otherUser.skills,
-                    experience: otherUser.experience,
-                    education: otherUser.education,
-                    rollNumber: request.rollNumber,
-                    batch: request.batch,
-                    courseName: request.courseName,
-                    status: request.status,
-                    createdAt: request.createdAt,
-                    updatedAt: request.updatedAt,
-                };
-            });
-
-            const totalPages = Math.ceil(totalCount / limit);
-
-            // Set pagination headers
-            res.set('X-Total-Count', totalCount.toString());
-            res.set('X-Total-Pages', totalPages.toString());
-            res.set('X-Current-Page', page.toString());
-            res.set('Access-Control-Expose-Headers', 'X-Total-Count, X-Total-Pages, X-Current-Page');
-
-            return res.json(transformedLinks);
-        }
-
-        // No search and no location filter - use simpler query
+        // No search, company, and location filter - use simpler query
         const totalCount = await LinkRequest.countDocuments(baseQuery);
         
         // Fetch all accepted link requests with pagination
@@ -645,6 +585,10 @@ export const getUsersLinks = async (req, res) => {
     const search = req.query.search ? req.query.search.trim() : '';
     const location = req.query.location ? req.query.location.trim() : '';
     const skill = req.query.skill ? req.query.skill.trim() : '';
+    const company = req.query.company ? req.query.company.trim() : '';
+    
+    console.log('getUsersLinks Filter params:', { search, location, skill, company });
+    
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -678,6 +622,13 @@ export const getUsersLinks = async (req, res) => {
       filteredLinks = filteredLinks.filter(link =>
         Array.isArray(link.skills) &&
         link.skills.some(s => s && s.toLowerCase().includes(skillLower))
+      );
+    }
+    if (company) {
+      const companyLower = company.toLowerCase();
+      filteredLinks = filteredLinks.filter(link =>
+        Array.isArray(link.experience) &&
+        link.experience.some(exp => exp.company && exp.company.toLowerCase().includes(companyLower))
       );
     }
 
