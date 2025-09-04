@@ -82,7 +82,6 @@ router.post("/create", protectRoute, (req, res, next) => {
         next();
     });
 }, createPost);
-router.post("/createAdminPost", protectRoute, createAdminPost);
 
 // Deleting posts
 router.delete("/delete/:id", protectRoute, deletePost);
@@ -122,7 +121,7 @@ router.get("/admin/rejected", protectRoute, isAdmin, getRejectedPosts);
 router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
 router.post("/admin/:postId/review", protectRoute, isAdmin, reviewPost); // Support both parameter names
 router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
-router.post('/admin/create', protectRoute, (req, res, next) => {
+router.post('/admin/create', protectRoute, isAdmin, (req, res, next) => {
     upload.single('image')(req, res, (err) => {
         if (err) {
             if (err.code === 'LIMIT_FILE_SIZE') {
