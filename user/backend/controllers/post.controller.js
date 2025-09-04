@@ -848,6 +848,7 @@ export const createAdminPost = async (req, res) => {
         content,
         type,
         status: "approved", // Ensure admin posts are approved by default
+        images: [], // Initialize images array properly
       };
   
       // Include details based on AdminPost type
@@ -861,14 +862,23 @@ export const createAdminPost = async (req, res) => {
   
       // Upload image to DigitalOcean Spaces if provided
       if (imageBuffer) {
-        // Upload directly to DigitalOcean Spaces
-        const imageUrl = await uploadToSpaces(
-          imageBuffer, 
-          req.file.originalname, 
-          req.file.mimetype, 
-          'admin-posts'
-        );
-        newAdminPostData.image = imageUrl;
+        try {
+          // Upload directly to DigitalOcean Spaces
+          const imageUrl = await uploadToSpaces(
+            imageBuffer, 
+            req.file.originalname, 
+            req.file.mimetype, 
+            'admin-posts'
+          );
+          newAdminPostData.images = [imageUrl]; // Store as array in images field
+          console.log("✅ Image uploaded successfully:", imageUrl);
+        } catch (uploadError) {
+          console.error("❌ Error uploading image:", uploadError);
+          return res.status(500).json({ 
+            message: "Error uploading image", 
+            error: uploadError.message 
+          });
+        }
       }
   
       // Create the post
