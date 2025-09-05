@@ -125,64 +125,48 @@ const UserLinks = () => {
     }
   }, [searchQuery, selectedCourse]);
 
-  // Extract available courses from admin assigned courses using existing APIs
+  // Extract available courses from current admin's assigned courses only
   useEffect(() => {
-    const fetchAdminAssignedCourses = async () => {
+    const fetchCurrentAdminCourses = async () => {
       try {
-        // Fetch all admins using existing APIs
-        const [instituteRes, schoolRes, corporateRes] = await Promise.all([
-          axiosInstance.get("/admin/institutes"),
-          axiosInstance.get("/admin/schools"),
-          axiosInstance.get("/admin/corporates"),
-        ]);
+        // First, get current user data to get admin ID
+        const currentUserResponse = await axiosInstance.get("/auth/me");
+        const currentAdmin = currentUserResponse.data;
         
-        const allAdmins = [
-          ...instituteRes.data,
-          ...schoolRes.data,
-          ...corporateRes.data
-        ];
+        if (!currentAdmin || currentAdmin.role !== 'admin') {
+          console.error('Current user is not an admin');
+          return;
+        }
         
-        const allAssignedCourses = new Set(['All Courses']);
+        // Then fetch current admin's courses using existing endpoint
+        const response = await axiosInstance.get(`/admin/admin/${currentAdmin._id}/courses`);
         
-        // Fetch courses for each admin using existing API
-        const coursePromises = allAdmins.map(async (admin) => {
-          try {
-            const response = await axiosInstance.get(`/admin/admin/${admin._id}/courses`);
-            return response.data.assignedCourses || [];
-          } catch (error) {
-            console.error(`Error fetching courses for admin ${admin._id}:`, error);
-            return [];
+        const assignedCourses = response.data.assignedCourses || [];
+        const coursesSet = new Set(['All Courses']);
+        
+        // Add current admin's assigned courses
+        assignedCourses.forEach(course => {
+          if (course && course.trim()) {
+            coursesSet.add(course.trim());
           }
         });
         
-        const allCoursesArrays = await Promise.all(coursePromises);
-        
-        // Combine all courses
-        allCoursesArrays.forEach(coursesArray => {
-          if (Array.isArray(coursesArray)) {
-            coursesArray.forEach(course => {
-              if (course && course.trim()) {
-                allAssignedCourses.add(course.trim());
-              }
-            });
-          }
-        });
-        
-        setAvailableCourses(Array.from(allAssignedCourses).sort());
+        setAvailableCourses(Array.from(coursesSet).sort());
       } catch (error) {
-        console.error('Error fetching admin assigned courses:', error);
+        console.error('Error fetching current admin courses:', error);
         // Fallback to extracting from current data if API fails
         if (allLinks.length > 0) {
           const courses = new Set(['All Courses']);
           allLinks.forEach(link => {
             if (link.selectedCourse) courses.add(link.selectedCourse);
+            if (link.courseName) courses.add(link.courseName);
           });
           setAvailableCourses(Array.from(courses).sort());
         }
       }
     };
 
-    fetchAdminAssignedCourses();
+    fetchCurrentAdminCourses();
   }, [allLinks]);
 
   const fetchUserLinks = useCallback(async () => {
