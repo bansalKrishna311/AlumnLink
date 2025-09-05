@@ -98,3 +98,84 @@ export const getSchools = async (req, res) => {
     }
   };
 
+  // Update institute/school/corporate admin details
+  export const updateAdmin = async (req, res) => {
+    try {
+      const { adminId } = req.params;
+      const { name, email, username, assignedCourses, location, adminType } = req.body;
+      
+      if (!adminId) {
+        return res.status(400).json({ message: 'Admin ID is required' });
+      }
+
+      const admin = await User.findById(adminId);
+      
+      if (!admin) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
+
+      if (admin.role !== 'admin') {
+        return res.status(400).json({ message: 'User is not an admin' });
+      }
+
+      // Update fields if provided
+      if (name) admin.name = name;
+      if (email) admin.email = email;
+      if (username) admin.username = username;
+      if (location) admin.location = location;
+      if (adminType) admin.adminType = adminType;
+      if (assignedCourses && Array.isArray(assignedCourses)) {
+        admin.assignedCourses = assignedCourses;
+      }
+
+      await admin.save();
+
+      res.status(200).json({
+        message: 'Admin updated successfully',
+        admin: {
+          _id: admin._id,
+          name: admin.name,
+          email: admin.email,
+          username: admin.username,
+          location: admin.location,
+          adminType: admin.adminType,
+          assignedCourses: admin.assignedCourses,
+          createdAt: admin.createdAt
+        }
+      });
+    } catch (error) {
+      console.error('Error updating admin:', error);
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyValue)[0];
+        return res.status(400).json({ message: `${field} already exists` });
+      }
+      res.status(500).json({ message: 'Error updating admin', error: error.message });
+    }
+  };
+
+  // Get single admin details
+  export const getAdminById = async (req, res) => {
+    try {
+      const { adminId } = req.params;
+      
+      if (!adminId) {
+        return res.status(400).json({ message: 'Admin ID is required' });
+      }
+
+      const admin = await User.findById(adminId).select('-password');
+      
+      if (!admin) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
+
+      if (admin.role !== 'admin') {
+        return res.status(400).json({ message: 'User is not an admin' });
+      }
+
+      res.status(200).json(admin);
+    } catch (error) {
+      console.error('Error fetching admin:', error);
+      res.status(500).json({ message: 'Error fetching admin', error: error.message });
+    }
+  };
+
