@@ -1,5 +1,5 @@
 import express from "express";
-import { protectRoute, isAdmin } from "../middleware/auth.middleware.js";
+import { protectRoute, isAdmin, isAdminOrSubAdmin } from "../middleware/auth.middleware.js";
 import {
     createPost,
     getFeedPosts,
@@ -116,12 +116,12 @@ router.get("/hashtag/:tag", protectRoute, async (req, res) => {
 });
 
 // Admin routes
-router.get("/admin/pending", protectRoute, isAdmin, getPendingPosts);
-router.get("/admin/rejected", protectRoute, isAdmin, getRejectedPosts);
-router.post("/admin/:id/review", protectRoute, isAdmin, reviewPost);
-router.post("/admin/:postId/review", protectRoute, isAdmin, reviewPost); // Support both parameter names
-router.patch('/admin/:postId/status', protectRoute, isAdmin, updatePostStatus);
-router.post('/admin/create', protectRoute, isAdmin, (req, res, next) => {
+router.get("/admin/pending", protectRoute, isAdminOrSubAdmin, getPendingPosts);
+router.get("/admin/rejected", protectRoute, isAdminOrSubAdmin, getRejectedPosts);
+router.post("/admin/:id/review", protectRoute, isAdminOrSubAdmin, reviewPost);
+router.post("/admin/:postId/review", protectRoute, isAdminOrSubAdmin, reviewPost); // Support both parameter names
+router.patch('/admin/:postId/status', protectRoute, isAdminOrSubAdmin, updatePostStatus);
+router.post('/admin/create', protectRoute, isAdminOrSubAdmin, (req, res, next) => {
     upload.single('image')(req, res, (err) => {
         if (err) {
             if (err.code === 'LIMIT_FILE_SIZE') {
@@ -144,6 +144,6 @@ router.post('/admin/create', protectRoute, isAdmin, (req, res, next) => {
         next();
     });
 }, createAdminPost);
-router.get('/admin/recent', protectRoute, isAdmin, getRecentAdminPosts);
+router.get('/admin/recent', protectRoute, isAdminOrSubAdmin, getRecentAdminPosts);
 
 export default router;

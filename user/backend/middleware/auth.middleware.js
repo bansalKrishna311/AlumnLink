@@ -59,3 +59,51 @@ export const isAdmin = async (req, res, next) => {
         return res.status(500).json({ message: "An error occurred while verifying admin rights.", error: error.message });
     }
 };
+
+export const isAdminOrSubAdmin = async (req, res, next) => {
+    try {
+        const { role, adminHierarchy } = req.user;
+
+        console.log("🔐 isAdminOrSubAdmin middleware check:");
+        console.log("  User ID:", req.user._id);
+        console.log("  User role:", role);
+        console.log("  Admin hierarchy:", adminHierarchy);
+        console.log("  Full user object keys:", Object.keys(req.user));
+        console.log("  User name:", req.user.name);
+        console.log("  User username:", req.user.username);
+        console.log("  User isAdmin:", req.user.isAdmin);
+
+        // Allow admins and superadmins
+        if (role === 'admin' || role === 'superadmin') {
+            console.log("  ✅ Access granted - User is admin/superadmin");
+            return next();
+        }
+
+        // Allow users with any adminHierarchy OTHER than 'alumni' (default users)
+        // This includes: hod, subadmin, moderator, faculty, institute_management, etc.
+        if (adminHierarchy && adminHierarchy !== 'alumni') {
+            console.log("  ✅ Access granted - User has elevated hierarchy:", adminHierarchy);
+            return next();
+        }
+
+        // Also check if user has isAdmin flag (legacy check)
+        if (req.user.isAdmin === true) {
+            console.log("  ✅ Access granted - User has isAdmin flag");
+            return next();
+        }
+
+        console.log("  ❌ Access denied - User is regular alumni or has no special privileges");
+        console.log("  Available fields:", {
+            role,
+            adminHierarchy,
+            isAdmin: req.user.isAdmin,
+            allFields: Object.keys(req.user)
+        });
+        
+        return res.status(403).json({ message: "Access denied. Admin or elevated hierarchy rights required." });
+
+    } catch (error) {
+        console.error("Error in isAdminOrSubAdmin middleware:", error);
+        return res.status(500).json({ message: "An error occurred while verifying admin rights.", error: error.message });
+    }
+};

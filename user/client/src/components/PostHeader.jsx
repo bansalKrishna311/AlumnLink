@@ -26,11 +26,17 @@ const PostHeader = ({
   
   // Determine the admin status text
   let adminStatusText = null;
-  if ((isAdminAuthor && !post.adminId) || (post.adminId && post.adminId._id === post.author?._id)) {
+  
+  // Check if this post was created by SubAdmin on behalf of someone else
+  if (post.createdBy && post.onBehalfOf && post.createdBy._id !== post.onBehalfOf._id) {
+    adminStatusText = `Admin Announcement by ${post.createdBy.name}`;
+  } else if ((isAdminAuthor && !post.adminId) || (post.adminId && post.adminId._id === post.author?._id)) {
     adminStatusText = "Admin Announcement";
   } else if (post.adminId) {
-    adminStatusText = `Posted for ${post.adminId.name}`;
+    adminStatusText = `Posted for  ${post.adminId.name}`;
   }
+
+  // Remove the separate subAdminStatusText since we merged it with adminStatusText
 
   return (
     <div className="flex items-center justify-between mb-3">
@@ -76,6 +82,10 @@ const PostHeader = ({
                   <>
                     Posted for <Link to={`/profile/${post.adminId?.username}`} className="text-[#fe6019] hover:underline">{post.adminId?.name}</Link>
                   </>
+                ) : adminStatusText.startsWith("Admin Announcement by") ? (
+                  <span className="text-green-600">
+                    Admin Announcement by <Link to={`/profile/${post.createdBy?.username}`} className="text-[#fe6019] hover:underline">{post.createdBy?.name}</Link>
+                  </span>
                 ) : (
                   adminStatusText
                 )}

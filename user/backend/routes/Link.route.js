@@ -12,13 +12,30 @@ import {
 	removeLink,
 	resetToPending,
 	sendLinkRequest,
-	getDashboardStats
+	getDashboardStats,
+	getSubAdminDashboardStats,
+	getSubAdminPendingRequests,
+	getSubAdminRejectedRequests,
+	getSubAdminManagedAlumni,
+	approveHierarchyUpgrade,
+	getHierarchyRequests,
+	getAvailableHierarchies,
+	fixAdminHierarchies,
+	getCurrentUserHierarchy
 } from "../controllers/Link.controller.js";
 import User from '../models/user.model.js';
 const router = express.Router();
 
 // Dashboard route
 router.get("/dashboard-stats", protectRoute, getDashboardStats);
+router.get("/subadmin/dashboard-stats", protectRoute, getSubAdminDashboardStats);
+
+// Hierarchy management routes
+router.put("/hierarchy/approve/:linkRequestId", protectRoute, approveHierarchyUpgrade);
+router.get("/hierarchy/requests", protectRoute, getHierarchyRequests);
+router.get("/hierarchy/available", protectRoute, getAvailableHierarchies);
+router.get("/hierarchy/my-hierarchy", protectRoute, getCurrentUserHierarchy);
+router.post("/hierarchy/fix-admin-hierarchies", protectRoute, fixAdminHierarchies);
 
 // Route to send a Link request with additional fields (like name, rollNumber, etc.)
 router.post("/request/:userId", protectRoute, sendLinkRequest);
@@ -31,14 +48,16 @@ router.put("/reject/:requestId", protectRoute, rejectLinkRequest);
 
 // Route to fetch all pending Link requests for the current user
 router.get("/link-requests", protectRoute, getPendingRequests );
+router.get("/subadmin/link-requests", protectRoute, getSubAdminPendingRequests);
 
-
-// Route to fetch all accepted Links for the current user
-router.get("/", protectRoute, getUserLinks);
-
+// Route to fetch all rejected Link requests
 router.get("/rejected", protectRoute, getRejectedLinks);
+router.get("/subadmin/rejected", protectRoute, getSubAdminRejectedRequests);
 
+// Route to fetch managed alumni for SubAdmin
+router.get("/subadmin/managed-alumni", protectRoute, getSubAdminManagedAlumni);
 
+router.get("/", protectRoute, getUserLinks);
 // Route to remove an existing Link
 router.delete("/:userId", protectRoute, removeLink);
 

@@ -1,81 +1,17 @@
-import Rea  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [selectedRequests, setSelectedRequests] = useState([]);
-  const [processing, setProcessing] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalRequests: 0,
-    hasNextPage: false,
-    hasPreviousPage: false
-  });
-
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((query) => {
-      setSearchQuery(query);
-      setPage(1); // Reset to first page when searching
-    }, 300),
-    []
-  );
-
-  const fetchRequests = useCallback(async () => {
-    try {
-      setLoading(true);
-      if (searchQuery) {
-        setIsSearching(true);
-      }
-      
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10'
-      });
-      
-      if (searchQuery && searchQuery.trim()) {
-        params.append('search', searchQuery.trim());
-      }
-      
-      const response = await axiosInstance.get(`/api/Link/link-requests?${params}`);
-      setRequests(response.data);
-      
-      // Extract pagination from headers
-      const totalCount = parseInt(response.headers['x-total-count'] || '0');
-      const totalPages = parseInt(response.headers['x-total-pages'] || '1');
-      const currentPage = parseInt(response.headers['x-current-page'] || '1');
-      
-      setPagination({
-        currentPage,
-        totalPages,
-        totalRequests: totalCount,
-        hasNextPage: currentPage < totalPages,
-        hasPreviousPage: currentPage > 1
-      });
-      
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching requests:", error);
-      setError("Failed to fetch requests");
-      setRequests([]);
-    } finally {
-      setLoading(false);
-      setIsSearching(false);
-    }
-  }, [page, searchQuery]);
-
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]); useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCheck, FaTimes, FaSearch, FaCheckSquare } from "react-icons/fa";
 import { axiosInstance } from "@/lib/axios";
+import { useSubAdmin } from "../context/SubAdminContext";
 import toast from "react-hot-toast";
 import { User, MapPin, Calendar, BookOpen, Code, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import Pagination from "@/components/Pagination";
 
-const ManageUsers = () => {
+const SubAdminManageUsers = () => {
+  const { targetAdminId } = useSubAdmin();
+  
+  console.log('🎯 ManageUsers - targetAdminId:', targetAdminId);
+  
   const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -95,7 +31,24 @@ const ManageUsers = () => {
     const fetchRequests = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(`/links/link-requests?page=${page}&limit=10`);
+        
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: '10'
+        });
+        
+        // Add target admin ID if available
+        if (targetAdminId) {
+          console.log('🎯 ManageUsers - Adding targetAdminId to API call:', targetAdminId);
+          params.append('adminId', targetAdminId);
+        } else {
+          console.log('⚠️ ManageUsers - No targetAdminId found, using current user');
+        }
+        
+        console.log('🌐 ManageUsers - Final API URL params:', params.toString());
+        
+        const response = await axiosInstance.get(`/links/subadmin/link-requests?${params.toString()}`);
         setRequests(response.data.data);
         setPagination(response.data.pagination);
         setError(null);
@@ -121,12 +74,23 @@ const ManageUsers = () => {
     };
 
     fetchRequests();
-  }, [page]);
+  }, [page, targetAdminId]);
 
   const handleStatusUpdate = async (id, status) => {
     try {
       const route = status === "Approved" ? "/accept" : "/reject";
-      await axiosInstance.put(`/links${route}/${id}`);
+      
+      // Build URL with adminId parameter if available
+      const params = new URLSearchParams();
+      if (targetAdminId) {
+        params.append('adminId', targetAdminId);
+      }
+      const queryString = params.toString();
+      const url = `/links${route}/${id}${queryString ? `?${queryString}` : ''}`;
+      
+      console.log(`🎯 ManageUsers - ${status} request ${id} on behalf of admin:`, targetAdminId);
+      
+      await axiosInstance.put(url);
       setRequests((prevRequests) =>
         prevRequests.filter((request) => request._id !== id)
       );
@@ -157,7 +121,17 @@ const ManageUsers = () => {
     try {
       const updatePromises = selectedRequests.map(async (id) => {
         try {
-          await axiosInstance.put(`/links${route}/${id}`);
+          // Build URL with adminId parameter if available
+          const params = new URLSearchParams();
+          if (targetAdminId) {
+            params.append('adminId', targetAdminId);
+          }
+          const queryString = params.toString();
+          const url = `/links${route}/${id}${queryString ? `?${queryString}` : ''}`;
+          
+          console.log(`🎯 ManageUsers - ${status} request ${id} on behalf of admin:`, targetAdminId);
+          
+          await axiosInstance.put(url);
           successCount.value++;
           return id;
         } catch (error) {
@@ -196,14 +170,7 @@ const ManageUsers = () => {
     }
   };
 
-  const handleSearchChange = useCallback((query) => {
-    debouncedSearch(query);
-  }, [debouncedSearch]);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery("");
-    setPage(1);
-  }, []);
+  const handleSearchChange = (e) => setSearchTerm(e.target.value.toLowerCase());
 
   const toggleRequestSelection = (id) => {
     setSelectedRequests(prev => 
@@ -221,8 +188,11 @@ const ManageUsers = () => {
     }
   };
 
-  // Remove the client-side filtering since we now use server-side search
-  // const filteredRequests = requests.filter(...)
+  const filteredRequests = requests.filter(
+    (request) =>
+      request?.sender?.name?.toLowerCase().includes(searchTerm) ||
+      request?.rollNumber?.toLowerCase().includes(searchTerm)
+  );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -370,6 +340,7 @@ const ManageUsers = () => {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Roll Number</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Course Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Selected Course</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Date</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#fe6019] uppercase tracking-wider">Actions</th>
@@ -429,6 +400,14 @@ const ManageUsers = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
+                        <BookOpen size={18} className="text-[#fe6019]" />
+                        <span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-md">
+                          {request?.selectedCourse || 'Not specified'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
                         <MapPin size={18} className="text-[#fe6019]" />
                         <span className="text-sm text-gray-600">{request?.sender?.location}</span>
                       </div>
@@ -467,7 +446,7 @@ const ManageUsers = () => {
                 ))}
                 {filteredRequests.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-6 py-10 text-center text-gray-500 italic">
+                    <td colSpan={9} className="px-6 py-10 text-center text-gray-500 italic">
                       No requests found
                     </td>
                   </tr>
@@ -516,4 +495,4 @@ const ManageUsers = () => {
   );
 };
 
-export default ManageUsers;
+export default SubAdminManageUsers;

@@ -85,6 +85,8 @@ export const getFeedPosts = async (req, res) => {
             .populate("comments.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline")
             .populate("adminId", "name username") // Populate admin who approved the post
+            .populate("createdBy", "name username profilePicture headline") // SubAdmin who created the post
+            .populate("onBehalfOf", "name username profilePicture headline") // Admin on whose behalf post was created
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -288,7 +290,9 @@ export const getPostById = async (req, res) => {
             .populate("author", "name username profilePicture headline")
             .populate("comments.user", "name profilePicture username headline")
             .populate("reactions.user", "name username profilePicture headline")
-            .populate("adminId", "name username"); // Populate admin who approved the post
+            .populate("adminId", "name username") // Populate admin who approved the post
+            .populate("createdBy", "name username profilePicture headline") // SubAdmin who created the post
+            .populate("onBehalfOf", "name username profilePicture headline"); // Admin on whose behalf post was created
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
@@ -645,22 +649,48 @@ export const reactToPost = async (req, res) => {
 export const getPendingPosts = async (req, res) => {
     try {
         const userId = req.user.id; // Extract the logged-in user's ID
+        const { adminId } = req.query; // Get adminId for SubAdmin hierarchy
         
-        // Check if this is an admin request
-        if (req.user.isAdmin) {
+        console.log("🎯 getPendingPosts - SubAdmin hierarchy check:");
+        console.log("  Current user (SubAdmin):", userId);
+        console.log("  adminId from query:", adminId);
+        
+        // Check if this is an admin request or SubAdmin with elevated privileges
+        if (req.user.isAdmin || (req.user.role === 'admin') || (req.user.adminHierarchy && req.user.adminHierarchy !== 'alumni')) {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
 
-            // Get all pending posts for admin
-            const posts = await Post.find({ status: "pending" })
+            // Determine the target admin - use adminId if provided (for SubAdmin viewing admin's posts)
+            const targetAdminId = adminId || userId;
+            console.log("  Final target admin ID for pending posts:", targetAdminId);
+
+            // Build query to get pending posts
+            let query = { status: "pending" };
+            
+            // If adminId is provided (SubAdmin viewing specific admin's posts), filter by that admin in links
+            if (adminId) {
+                // SubAdmin case: Show posts where links contains the target admin
+                query.links = new mongoose.Types.ObjectId(adminId);
+                console.log("  SubAdmin filtering: pending posts where links contains admin:", adminId);
+            } else {
+                // Regular Admin case: Show all pending posts (original behavior)
+                console.log("  Admin view: Getting all pending posts (no filter)");
+            }
+
+            // Get pending posts for the target admin
+            const posts = await Post.find(query)
                 .populate("author", "name username profilePicture headline")
+                .populate("createdBy", "name username profilePicture headline") // SubAdmin who created the post
+                .populate("onBehalfOf", "name username profilePicture headline") // Admin on whose behalf post was created
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
 
-            const totalItems = await Post.countDocuments({ status: "pending" });
+            const totalItems = await Post.countDocuments(query);
             const totalPages = Math.ceil(totalItems / limit);
+
+            console.log("  Retrieved", posts.length, "pending posts for admin:", targetAdminId);
 
             return res.status(200).json({
                 success: true,
@@ -701,7 +731,14 @@ export const updatePostStatus = async (req, res) => {
     try {
       const { postId } = req.params;
       const { status } = req.body;
+      const { adminId } = req.query;
   
+      console.log("🎯 updatePostStatus - SubAdmin hierarchy check:");
+      console.log("  Current user (SubAdmin):", req.user._id);
+      console.log("  adminId from query:", adminId);
+      console.log("  Post ID:", postId);
+      console.log("  Status:", status);
+
       if (!['approved', 'rejected'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status' });
       }
@@ -715,9 +752,11 @@ export const updatePostStatus = async (req, res) => {
       post.status = status;
       post.reviewedAt = new Date();
       
-      // Save admin ID who approved the post
+      // Save admin ID who approved the post - use target admin if specified (for SubAdmin actions)
       if (status === 'approved') {
-        post.adminId = req.user._id;
+        const reviewingAdminId = adminId || req.user._id;
+        post.adminId = reviewingAdminId;
+        console.log("  Final admin ID for approval:", reviewingAdminId);
       }
       
       await post.save();
@@ -835,21 +874,37 @@ export const reviewPost = async (req, res) => {
 
 export const createAdminPost = async (req, res) => {
     try {
-      const { title, content, type, jobDetails, internshipDetails, eventDetails } = req.body;
+      const { title, content, type, jobDetails, internshipDetails, eventDetails, onBehalfOf } = req.body;
+      const { adminId } = req.query;
       
       // Modified to use buffer data from multer's memory storage instead of file path
       const imageBuffer = req.file ? req.file.buffer : null;
   
       console.log("Received data:", { title, content, type, jobDetails, internshipDetails, eventDetails, hasImage: !!imageBuffer });
+      console.log("🎯 createAdminPost - SubAdmin hierarchy check:");
+      console.log("  Current user (SubAdmin):", req.user._id);
+      console.log("  adminId from query:", adminId);
+      console.log("  onBehalfOf from body:", onBehalfOf);
+      
+      // Determine the author - use target admin if specified (for SubAdmin creating on behalf of admin)
+      const authorId = onBehalfOf || adminId || req.user._id;
+      console.log("  Final author ID:", authorId);
   
       let newAdminPostData = {
-        author: req.user._id,
+        author: authorId,
         title,
         content,
         type,
         status: "approved", // Ensure admin posts are approved by default
         images: [], // Initialize images array properly
       };
+
+      // Add SubAdmin tracking if post is created on behalf of someone else
+      if (onBehalfOf && onBehalfOf !== req.user._id.toString()) {
+        newAdminPostData.createdBy = req.user._id; // Who actually created it (SubAdmin)
+        newAdminPostData.onBehalfOf = onBehalfOf; // Admin on whose behalf
+        console.log("  📝 SubAdmin post tracking added - Created by:", req.user._id, "On behalf of:", onBehalfOf);
+      }
   
       // Include details based on AdminPost type
       if (type === "job" && jobDetails) {
@@ -1203,26 +1258,57 @@ export const getPostsByUsername = async (req, res) => {
 // Get recent posts with analytics data for admin dashboard
 export const getRecentAdminPosts = async (req, res) => {
   try {
-    // Get recent posts (limit to 5)
-    const recentPosts = await Post.find({})
-      .populate("author", "name username profilePicture headline")
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const { adminId } = req.query; // Get adminId for SubAdmin hierarchy
 
-    // Get total posts count
-    const totalPosts = await Post.countDocuments();
+    console.log("🎯 getRecentAdminPosts - SubAdmin hierarchy check:");
+    console.log("  Current user (SubAdmin):", req.user._id);
+    console.log("  adminId from query:", adminId);
+
+    // Build query for filtering posts
+    let postQuery = {};
     
-    // Get posts created this month
+    // If adminId is provided (SubAdmin viewing specific admin's posts), filter by that admin
+    if (adminId) {
+      // SubAdmin case: Show posts where links contains the target admin OR created on behalf of the admin
+      postQuery = {
+        $or: [
+          { links: new mongoose.Types.ObjectId(adminId) },
+          { onBehalfOf: new mongoose.Types.ObjectId(adminId) },
+          { author: new mongoose.Types.ObjectId(adminId) }
+        ]
+      };
+      console.log("  SubAdmin filtering: posts related to admin:", adminId);
+    } else {
+      // Regular Admin case: Show all posts (original behavior)
+      console.log("  Admin view: Getting all posts (no filter)");
+    }
+
+    // Get recent posts (limit to 10 for SubAdmin view)
+    const limit = adminId ? 10 : 5;
+    const recentPosts = await Post.find(postQuery)
+      .populate("author", "name username profilePicture headline")
+      .populate("createdBy", "name username profilePicture headline") // SubAdmin who created the post
+      .populate("onBehalfOf", "name username profilePicture headline") // Admin on whose behalf post was created
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    // Get total posts count (with same filter)
+    const totalPosts = await Post.countDocuments(postQuery);
+    
+    // Get posts created this month (with same filter)
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
     
-    const postsThisMonth = await Post.countDocuments({
+    const monthlyPostQuery = { 
+      ...postQuery,
       createdAt: { $gte: startOfMonth }
-    });
+    };
+    
+    const postsThisMonth = await Post.countDocuments(monthlyPostQuery);
 
-    // Get engagement statistics
-    const allPosts = await Post.find({});
+    // Get engagement statistics (with same filter)
+    const allPosts = await Post.find(postQuery);
     
     const totalReactions = allPosts.reduce((sum, post) => sum + post.reactions.length, 0);
     const totalComments = allPosts.reduce((sum, post) => sum + post.comments.length, 0);
@@ -1272,7 +1358,23 @@ export const getRecentAdminPosts = async (req, res) => {
     });
 
     // Get top performing posts - Using aggregation
-    const topPosts = await Post.aggregate([
+    const aggregationPipeline = [];
+    
+    // Add match stage for filtering if adminId is provided
+    if (adminId) {
+      aggregationPipeline.push({
+        $match: {
+          $or: [
+            { links: new mongoose.Types.ObjectId(adminId) },
+            { onBehalfOf: new mongoose.Types.ObjectId(adminId) },
+            { author: new mongoose.Types.ObjectId(adminId) }
+          ]
+        }
+      });
+    }
+    
+    // Add projection and sorting stages
+    aggregationPipeline.push(
       {
         $project: {
           _id: 1,
@@ -1292,7 +1394,9 @@ export const getRecentAdminPosts = async (req, res) => {
       },
       { $sort: { totalEngagement: -1 } },
       { $limit: 3 }
-    ]);
+    );
+    
+    const topPosts = await Post.aggregate(aggregationPipeline);
     
     // Populate author data for top posts
     await Post.populate(topPosts, { path: "author", select: "name username profilePicture headline" });
@@ -1324,25 +1428,28 @@ export const getRecentAdminPosts = async (req, res) => {
       });
     }
 
-    // Calculate weekly growth rate
+    // Calculate weekly growth rate (with same filter)
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     
-    const postsLastWeek = await Post.countDocuments({
-      createdAt: { 
-        $gte: oneWeekAgo
-      }
-    });
+    const weeklyLastQuery = {
+      ...postQuery,
+      createdAt: { $gte: oneWeekAgo }
+    };
     
-    const postsPreviousWeek = await Post.countDocuments({
+    const weeklyPreviousQuery = {
+      ...postQuery,
       createdAt: { 
         $gte: twoWeeksAgo,
         $lt: oneWeekAgo
       }
-    });
+    };
+    
+    const postsLastWeek = await Post.countDocuments(weeklyLastQuery);
+    const postsPreviousWeek = await Post.countDocuments(weeklyPreviousQuery);
     
     // Calculate growth percentage
     let weeklyGrowthRate = 0;
@@ -1378,22 +1485,44 @@ export const getRecentAdminPosts = async (req, res) => {
 // Get all rejected posts for admin view
 export const getRejectedPosts = async (req, res) => {
   try {
+    const { adminId } = req.query; // Get adminId for SubAdmin hierarchy
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    console.log("🎯 getRejectedPosts - SubAdmin hierarchy check:");
+    console.log("  Current user (SubAdmin):", req.user._id);
+    console.log("  adminId from query:", adminId);
+
+    // Build query to get rejected posts
+    let query = { status: "rejected" };
+    
+    // If adminId is provided (SubAdmin viewing specific admin's posts), filter by that admin in links
+    if (adminId) {
+      // SubAdmin case: Show posts where links contains the target admin
+      query.links = new mongoose.Types.ObjectId(adminId);
+      console.log("  SubAdmin filtering: rejected posts where links contains admin:", adminId);
+    } else {
+      // Regular Admin case: Show all rejected posts (original behavior)
+      console.log("  Admin view: Getting all rejected posts (no filter)");
+    }
+
     // Find all posts with status "rejected"
-    const rejectedPosts = await Post.find({ status: "rejected" })
+    const rejectedPosts = await Post.find(query)
       .populate("author", "name username profilePicture headline")
       .populate("comments.user", "name profilePicture username headline")
       .populate("reactions.user", "name username profilePicture headline")
       .populate("adminId", "name username") // Populate admin who rejected the post
+      .populate("createdBy", "name username profilePicture headline") // SubAdmin who created the post
+      .populate("onBehalfOf", "name username profilePicture headline") // Admin on whose behalf post was created
       .sort({ reviewedAt: -1 }) // Most recently reviewed first
       .skip(skip)
       .limit(limit);
 
-    const totalItems = await Post.countDocuments({ status: "rejected" });
+    const totalItems = await Post.countDocuments(query);
     const totalPages = Math.ceil(totalItems / limit);
+
+    console.log("  Retrieved", rejectedPosts.length, "rejected posts");
 
     res.status(200).json({
       success: true,
