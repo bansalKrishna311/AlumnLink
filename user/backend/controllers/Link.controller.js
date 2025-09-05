@@ -223,10 +223,6 @@ export const getUserLinks = async (req, res) => {
         const location = req.query.location; // Get location filter
         const company = req.query.company; // Get company filter
         
-        // Debug logging
-        console.log('Filter params:', { search, location, company });
-        console.log('Company filter active:', !!(company && company.trim()));
-        
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -586,8 +582,6 @@ export const getUsersLinks = async (req, res) => {
     const location = req.query.location ? req.query.location.trim() : '';
     const skill = req.query.skill ? req.query.skill.trim() : '';
     const company = req.query.company ? req.query.company.trim() : '';
-    
-    console.log('getUsersLinks Filter params:', { search, location, skill, company });
     
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
