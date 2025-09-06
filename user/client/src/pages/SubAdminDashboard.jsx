@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useLocation } from "react-router-dom"
 import { axiosInstance } from '@/lib/axios';
 import AdminPage from '@/admin/Dashboard';
@@ -26,14 +26,12 @@ import {
   UserX,
   FileText,
   MessageSquare,
-  LogOut,
   User
 } from 'lucide-react';
 
 const SubAdminDashboard = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const queryClient = useQueryClient()
 
   // Get current user data
   const { data: authUser } = useQuery({
@@ -78,17 +76,10 @@ const SubAdminDashboard = () => {
     }
   }, [location.pathname, navItems])
 
-  // Logout mutation
-  const { mutate: logout } = useMutation({
-    mutationFn: () => axiosInstance.post("/auth/logout"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] })
-      navigate("/login", { replace: true })
-    },
-    onError: (error) => {
-      console.error("Logout failed:", error.response?.data?.message || error.message)
-    },
-  })
+  // Navigate to home function
+  const goToHome = () => {
+    navigate("/")
+  }
 
   const formatHierarchyName = (hierarchy) => {
     if (!hierarchy) return 'Alumni';
@@ -157,9 +148,9 @@ const SubAdminDashboard = () => {
           </div>
         </div>
 
-        <Button variant="destructive" className="w-full justify-start" onClick={() => logout()}>
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
+        <Button variant="outline" className="w-full justify-start" onClick={() => goToHome()}>
+          <Home className="w-4 h-4 mr-2" />
+          Back to Home
         </Button>
       </SidebarFooter>
 

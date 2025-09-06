@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '@/lib/axios';
 import { useSubAdmin } from '../context/SubAdminContext';
-import { getAccessibleNavItems, getHierarchyDisplayName } from '../utils/accessControl';
+import { getHierarchyDisplayName } from '../utils/accessControl';
 import { 
   Sidebar,
   SidebarContent,
@@ -23,7 +23,6 @@ import {
   Home,
   Users,
   UserX,
-  LogOut,
   User,
   GraduationCap,
   PlusCircle,
@@ -35,7 +34,6 @@ import {
 const SubAdminSidebar = ({ ...props }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  const queryClient = useQueryClient()
   const { targetAdminId } = useSubAdmin();
 
   // Get current user data
@@ -146,17 +144,10 @@ const SubAdminSidebar = ({ ...props }) => {
     }
   }, [location.pathname, navItems])
 
-  // Logout mutation
-  const { mutate: logout } = useMutation({
-    mutationFn: () => axiosInstance.post("/auth/logout"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] })
-      navigate("/login", { replace: true })
-    },
-    onError: (error) => {
-      console.error("Logout failed:", error.response?.data?.message || error.message)
-    },
-  })
+  // Navigate to home function
+  const goToHome = () => {
+    navigate("/")
+  }
 
   const formatHierarchyName = (hierarchy) => {
     return getHierarchyDisplayName(hierarchy);
@@ -228,9 +219,9 @@ const SubAdminSidebar = ({ ...props }) => {
           </div>
         </div>
 
-        <Button variant="destructive" className="w-full justify-start" onClick={() => logout()}>
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
+        <Button variant="outline" className="w-full justify-start" onClick={() => goToHome()}>
+          <Home className="w-4 h-4 mr-2" />
+          Back to Home
         </Button>
       </SidebarFooter>
 
