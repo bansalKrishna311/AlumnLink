@@ -18,6 +18,16 @@ import SavedPostsPage from "@/pages/SavedPostsPage";
 import UserPostsPage from "@/pages/UserPostsPage";
 import ConversationsPage from "@/pages/ConversationsPage";
 import ChatPage from "@/pages/ChatPage";
+import SubAdminDashboardPage from "@/subadmin/pages/SubAdminDashboardPage";
+import SubAdminRejectedRequests from '@/subadmin/pages/SubAdminRejectedRequests';
+import SubAdminProtectedRoute from "@/subadmin/components/SubAdminProtectedRoute";
+import SubAdminLayout from "@/subadmin/components/SubAdminLayout";
+import SubAdminManageUsers from "@/subadmin/pages/ManageUsers";
+import PostCreationPage from "@/subadmin/pages/PostCreationPage";
+import PostRequest from "@/subadmin/pages/PostRequest";
+import RejectedPosts from "@/subadmin/pages/RejectedPosts";
+import SubManageAlumni from "@/subadmin/pages/subManageAlumni";
+import SubAdminPosts from "@/subadmin/pages/SubAdminPosts";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -184,6 +194,136 @@ const ProtectedRoute = ({ children }) => {
                     <PageTitle title="Chat | AlumnLink" />
                     <ChatPage />
                 </Layout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin">
+                    <PageTitle title="Sub-Admin Dashboard | AlumnLink" />
+                    <SubAdminLayout>
+                        <SubAdminDashboardPage />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/dashboard",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/dashboard">
+                    <PageTitle title="Sub-Admin Dashboard | AlumnLink" />
+                    <SubAdminLayout>
+                        <SubAdminDashboardPage />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/manage-users",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/manage-users">
+                    <PageTitle title="Manage Users | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <SubAdminManageUsers />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/network-requests",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/network-requests">
+                    <PageTitle title="Network Requests | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <SubAdminManageUsers />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/manage-alumni",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/manage-alumni">
+                    <PageTitle title="Manage Alumni | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <SubManageAlumni />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/posts",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/posts">
+                    <PageTitle title="View Posts | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <SubAdminPosts />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/post-creation",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/post-creation">
+                    <PageTitle title="Create Post | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <PostCreationPage />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/post-requests",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/post-requests">
+                    <PageTitle title="Post Requests | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <PostRequest />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/rejected-posts",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/rejected-posts">
+                    <PageTitle title="Rejected Posts | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <RejectedPosts />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/subadmin/rejected-requests",
+        element: (
+            <ProtectedRoute>
+                <SubAdminProtectedRoute requiredPath="/subadmin/rejected-requests">
+                    <PageTitle title="Rejected Requests | AlumnLink SubAdmin" />
+                    <SubAdminLayout>
+                        <SubAdminRejectedRequests />
+                    </SubAdminLayout>
+                </SubAdminProtectedRoute>
             </ProtectedRoute>
         ),
     },

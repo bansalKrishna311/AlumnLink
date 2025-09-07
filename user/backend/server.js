@@ -182,7 +182,7 @@ app.use("/api/v1/posts", verifySession, (req, res, next) => {
   next();
 }, postRoutes);
 app.use("/api/v1/notifications", verifySession, notificationRoutes);
-app.use("/api/v1/Links", verifySession, LinkRoutes);
+app.use("/api/v1/links", verifySession, LinkRoutes);
 app.use('/api/v1/admin', verifySession, adminRoutes);
 app.use('/api/v1/messages', verifySession, messageRoutes);
 app.use('/api/v1/contact', contactRoutes);
