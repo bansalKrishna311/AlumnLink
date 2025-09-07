@@ -35,6 +35,19 @@ const LinkRequestSchema = new mongoose.Schema(
 		enum: ["pending", "accepted", "rejected"],
 		default: "pending",
 	},
+    // Hierarchical Admin System
+    adminHierarchy: {
+      type: String,
+      enum: [
+        // Institute hierarchy
+        "alumni", "faculty", "hod", "institute_management",
+        // School hierarchy  
+        "student", "school_faculty", "school_hod", "principal", "school_management",
+        // Corporate hierarchy
+        "employee", "team_lead", "manager", "director", "corporate_management"
+      ],
+      default: "alumni", // Default level for new users
+    },
 
   },
   { timestamps: true }

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Image, Calendar, Briefcase, Award, MessageCircle, X, Loader, FileText, TrendingUp, Bell, Users, AlertCircle, Check, ExternalLink, BarChart2, ChevronRight, Search, Filter, Info, Bookmark, Edit } from 'lucide-react';
 import { axiosInstance } from '@/lib/axios';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useSubAdmin } from '../context/SubAdminContext';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,6 +42,10 @@ const POST_TYPES = {
 
 const CreatePostPage = () => {
   const queryClient = useQueryClient();
+  const { targetAdminId } = useSubAdmin();
+  
+  console.log('🎯 PostCreationPage - targetAdminId:', targetAdminId);
+  
   const [formState, setFormState] = useState({
     showForm: false,
     type: '',
@@ -126,6 +131,12 @@ const CreatePostPage = () => {
       formData.append('type', formState.type);
       if (formState.image) formData.append('image', formState.image);
       
+      // Add target admin ID if available (for SubAdmin creating posts on behalf of admin)
+      if (targetAdminId) {
+        console.log('🎯 PostCreationPage - Creating post on behalf of admin:', targetAdminId);
+        formData.append('onBehalfOf', targetAdminId);
+      }
+      
       if (formState.type === 'job') {
         formData.append('jobDetails', JSON.stringify(formState.jobDetails));
       }
@@ -136,7 +147,15 @@ const CreatePostPage = () => {
         formData.append('eventDetails', JSON.stringify(formState.eventDetails));
       }
 
-      const response = await axiosInstance.post('/posts/admin/create', formData, {
+      // Build URL with adminId parameter if available
+      const params = new URLSearchParams();
+      if (targetAdminId) {
+        params.append('adminId', targetAdminId);
+      }
+      const queryString = params.toString();
+      const url = `/posts/admin/create${queryString ? `?${queryString}` : ''}`;
+
+      const response = await axiosInstance.post(url, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -440,7 +459,7 @@ const CreatePostPage = () => {
                   </button>
                   <Link 
                     to="/adminposts"
-                    className=" w-full p-2 text-left text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="block w-full p-2 text-left text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <BarChart2 className="h-4 w-4 text-[#fe6019]" />
                     View All Analytics
@@ -451,7 +470,7 @@ const CreatePostPage = () => {
                   </button>
                   <Link 
                     to="/admin/post-request"
-                    className=" w-full p-2 text-left text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="block w-full p-2 text-left text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <AlertCircle className="h-4 w-4 text-[#fe6019]" />
                     Review Pending Posts

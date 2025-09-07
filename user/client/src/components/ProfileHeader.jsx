@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3, MessageSquare } from "lucide-react";
+import { Camera, Clock, MapPin, UserCheck, UserPlus, X, Edit3, MessageSquare, UserCog } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 // Define allowed locations
@@ -28,6 +28,33 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   });
 
   const isLinked = userData.Links.some((Link) => Link === authUser._id);
+
+  // Check if user has hierarchy superior to alumni
+  const hasAdminHierarchy = useMemo(() => {
+    // For own profile, use userData.adminHierarchy
+    if (isOwnProfile) {
+      const hierarchy = userData.adminHierarchy?.toLowerCase() || '';
+      const superiorHierarchies = [
+        'faculty', 'hod', 'institute_management', 'school_faculty', 'school_hod', 
+        'principal', 'school_management', 'employee', 'team_lead', 'manager', 
+        'director', 'corporate_management'
+      ];
+      return superiorHierarchies.some(level => hierarchy.includes(level));
+    }
+    
+    // For other profiles, use hierarchy from Linkstatus API response
+    const hierarchy = Linkstatus?.data?.adminHierarchy?.toLowerCase() || '';
+    if (hierarchy === 'alumni' || hierarchy === '') {
+      return false;
+    }
+    
+    const superiorHierarchies = [
+      'faculty', 'hod', 'institute_management', 'school_faculty', 'school_hod', 
+      'principal', 'school_management', 'employee', 'team_lead', 'manager', 
+      'director', 'corporate_management'
+    ];
+    return superiorHierarchies.some(level => hierarchy.includes(level));
+  }, [userData.adminHierarchy, Linkstatus?.data?.adminHierarchy, isOwnProfile]);
 
   const { mutate: sendLinkRequest } = useMutation({
     mutationFn: (userId) => axiosInstance.post(`/Links/request/${userId}`),
@@ -88,18 +115,9 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
     switch (getLinkstatus) {
       case "Linked":
         return (
-          <div className="flex gap-2 justify-center">
-            <div className={`${baseClass} bg-[#fe6019] hover:bg-[#fe6019]/90`}>
-              <UserCheck size={20} className="mr-2" />
-              Linked
-            </div>
-            <button
-              className={`${baseClass} bg-red-500 hover:bg-red-600 text-sm`}
-              onClick={() => removeLink(userData._id)}
-            >
-              <X size={20} className="mr-2" />
-              Remove Link
-            </button>
+          <div className={`${baseClass} bg-[#fe6019] hover:bg-[#fe6019]/90`}>
+            <UserCheck size={20} className="mr-2" />
+            Linked
           </div>
         );
 
@@ -285,6 +303,22 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
           </div>
 
           {!isOwnProfile && renderLinkButton()}
+
+          {hasAdminHierarchy && (
+            <button
+              onClick={() => {
+                console.log('🚀 ProfileHeader - Sub-Admin Features clicked!');
+                console.log('🎯 ProfileHeader - Target admin ID (userData._id):', userData._id);
+                console.log('👤 ProfileHeader - Target admin username:', userData.username);
+                console.log('🌐 ProfileHeader - Navigating to: /subadmin?adminId=' + userData._id);
+                navigate(`/subadmin?adminId=${userData._id}`);
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-700 flex items-center"
+            >
+              <UserCog size={18} className="mr-2" />
+              Sub-Admin Features
+            </button>
+          )}
 
           {!isOwnProfile && (
             <button

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '@/lib/axios';
+import { useSubAdmin } from '../context/SubAdminContext';
 import * as XLSX from 'xlsx';
 import { 
   Clock, 
@@ -23,6 +24,10 @@ import HierarchyBadge from "@/components/HierarchyBadge";
 
 const UserLinks = () => {
   const navigate = useNavigate();
+  const { targetAdminId } = useSubAdmin();
+  
+  console.log('🎯 UserLinks - targetAdminId from context:', targetAdminId);
+  
   const [links, setLinks] = useState([]);
   const [allLinks, setAllLinks] = useState([]); // Store all links for client-side filtering
   const [isLoading, setIsLoading] = useState(true);
@@ -88,11 +93,12 @@ const UserLinks = () => {
     
     const searchTerm = query.toLowerCase().trim();
     return filtered.filter((link) => {
-      const name = link.user?.name?.toLowerCase() || '';
-      const username = link.user?.username?.toLowerCase() || '';
-      const rollNumber = String(link.rollNumber || '').toLowerCase();
-      const batch = String(link.batch || '').toLowerCase();
-      const location = link.user?.location?.toLowerCase() || '';
+      // Check both new API structure (alumniInfo/sender) and legacy structure (user)
+      const name = link.alumniInfo?.name?.toLowerCase() || link.sender?.name?.toLowerCase() || link.user?.name?.toLowerCase() || '';
+      const username = link.alumniInfo?.username?.toLowerCase() || link.sender?.username?.toLowerCase() || link.user?.username?.toLowerCase() || '';
+      const rollNumber = String(link.rollNumber || link.academicDetails?.rollNumber || '').toLowerCase();
+      const batch = String(link.batch || link.academicDetails?.batch || '').toLowerCase();
+      const location = link.alumniInfo?.location?.toLowerCase() || link.sender?.location?.toLowerCase() || link.user?.location?.toLowerCase() || '';
       
       return name.includes(searchTerm) ||
              username.includes(searchTerm) ||
@@ -132,48 +138,22 @@ const UserLinks = () => {
     }
   }, [searchQuery, selectedCourse]);
 
-  // Extract available courses from current admin's assigned courses only
+  // Extract available courses from alumni data
   useEffect(() => {
-    const fetchCurrentAdminCourses = async () => {
-      try {
-        // First, get current user data to get admin ID
-        const currentUserResponse = await axiosInstance.get("/auth/me");
-        const currentAdmin = currentUserResponse.data;
-        
-        if (!currentAdmin || currentAdmin.role !== 'admin') {
-          console.error('Current user is not an admin');
-          return;
+    const extractCoursesFromData = () => {
+      const allAssignedCourses = new Set(['All Courses']);
+      
+      // Extract courses directly from alumni data
+      allLinks.forEach(link => {
+        if (link.selectedCourse && link.selectedCourse.trim()) {
+          allAssignedCourses.add(link.selectedCourse.trim());
         }
-        
-        // Then fetch current admin's courses using existing endpoint
-        const response = await axiosInstance.get(`/admin/admin/${currentAdmin._id}/courses`);
-        
-        const assignedCourses = response.data.assignedCourses || [];
-        const coursesSet = new Set(['All Courses']);
-        
-        // Add current admin's assigned courses
-        assignedCourses.forEach(course => {
-          if (course && course.trim()) {
-            coursesSet.add(course.trim());
-          }
-        });
-        
-        setAvailableCourses(Array.from(coursesSet).sort());
-      } catch (error) {
-        console.error('Error fetching current admin courses:', error);
-        // Fallback to extracting from current data if API fails
-        if (allLinks.length > 0) {
-          const courses = new Set(['All Courses']);
-          allLinks.forEach(link => {
-            if (link.selectedCourse) courses.add(link.selectedCourse);
-            if (link.courseName) courses.add(link.courseName);
-          });
-          setAvailableCourses(Array.from(courses).sort());
-        }
-      }
+      });
+      
+      setAvailableCourses(Array.from(allAssignedCourses).sort());
     };
 
-    fetchCurrentAdminCourses();
+    extractCoursesFromData();
   }, [allLinks]);
 
   const fetchUserLinks = useCallback(async () => {
@@ -185,28 +165,35 @@ const UserLinks = () => {
         limit: '10000' // Get all records
       });
       
+      // Add target admin ID if available
+      if (targetAdminId) {
+        console.log('🎯 SubManageAlumni - Adding targetAdminId to API call:', targetAdminId);
+        params.append('adminId', targetAdminId);
+      } else {
+        console.log('⚠️ SubManageAlumni - No targetAdminId found, using current user');
+      }
+      
+      console.log('🌐 SubManageAlumni - Final API URL params:', params.toString());
+      
       // Add location filter to server request if it's not "All Chapters"
       if (selectedLocation && selectedLocation !== 'All Chapters') {
         params.append('location', selectedLocation);
       }
       
-      const response = await axiosInstance.get(`/links?${params}`);
+      const response = await axiosInstance.get(`/links/subadmin/managed-alumni?${params}`);
       
       // Ensure we have valid data before setting state
-      if (response && response.data && Array.isArray(response.data)) {
-        const allData = response.data;
+      if (response && response.data && response.data.success && Array.isArray(response.data.data)) {
+        const allData = response.data.data; // New API returns data in data.data
         setAllLinks(allData);
         
-        // Calculate pagination for all data
-        const totalCount = allData.length;
-        const pageSize = 10;
-        const totalPages = Math.ceil(totalCount / pageSize);
-        
+        // Use pagination info from API response
+        const paginationInfo = response.data.pagination;
         setPagination({
-          totalCount,
-          totalPages,
-          currentPage: 1,
-          pageSize
+          totalCount: paginationInfo?.totalItems || allData.length,
+          totalPages: paginationInfo?.totalPages || Math.ceil(allData.length / 10),
+          currentPage: paginationInfo?.currentPage || 1,
+          pageSize: 10
         });
         
         setError(null);
@@ -234,7 +221,7 @@ const UserLinks = () => {
       }
       setIsLoading(false);
     }
-  }, [selectedLocation]);
+  }, [selectedLocation, targetAdminId]);
 
   // Fetch data when location changes or on initial load
   useEffect(() => {
@@ -426,13 +413,16 @@ const UserLinks = () => {
       const detailedUsers = await Promise.all(
         allLinks.map(async (link) => {
           try {
-            if (link.user?.username) {
-              const userResponse = await axiosInstance.get(`/users/${link.user.username}`);
+            // Handle both new API structure and legacy structure
+            const username = link.alumniInfo?.username || link.sender?.username || link.user?.username;
+            if (username) {
+              const userResponse = await axiosInstance.get(`/users/${username}`);
               return { ...link, userDetails: userResponse.data };
             }
             return { ...link, userDetails: null };
           } catch (error) {
-            console.error(`Error fetching details for user ${link.user?.username}:`, error);
+            const username = link.alumniInfo?.username || link.sender?.username || link.user?.username;
+            console.error(`Error fetching details for user ${username}:`, error);
             return { ...link, userDetails: null };
           }
         })
@@ -440,7 +430,8 @@ const UserLinks = () => {
 
       // Prepare data for Excel export
       const excelData = detailedUsers.map((link, index) => {
-        const user = link.userDetails || link.user || {};
+        // Handle both new API structure and legacy structure
+        const user = link.userDetails || link.alumniInfo || link.sender || link.user || {};
         
         // Handle multiple experiences
         let experienceData = '';
@@ -458,10 +449,10 @@ const UserLinks = () => {
         return {
           'S.No': index + 1,
           'Name': user.name || 'N/A',
-          'Roll Number': link.rollNumber || 'N/A',
-          'Batch': link.batch || 'N/A',
-          'Course Name': link.courseName || 'N/A',
-          'Selected Course': link.selectedCourse || 'Not specified',
+          'Roll Number': link.rollNumber || link.academicDetails?.rollNumber || 'N/A',
+          'Batch': link.batch || link.academicDetails?.batch || 'N/A',
+          'Course Name': link.courseName || link.academicDetails?.courseName || 'N/A',
+          'Selected Course': link.selectedCourse || link.academicDetails?.selectedCourse || 'Not specified',
           'Location': user.location || 'N/A',
           'Experience': experienceData
         };
@@ -753,7 +744,7 @@ const UserLinks = () => {
                       variants={rowVariants}
                       custom={index}
                       layout
-                      onClick={() => handleUserProfileClick(link.user?.username)}
+                      onClick={() => handleUserProfileClick(link.alumniInfo?.username || link.sender?.username || link.user?.username)}
                       title="Click to view profile"
                     >
                       <td className="pl-3 py-4 whitespace-nowrap">
@@ -771,10 +762,10 @@ const UserLinks = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
-                          {link.user?.profilePicture ? (
+                          {(link.alumniInfo?.profilePicture || link.sender?.profilePicture || link.user?.profilePicture) ? (
                             <img
-                              src={link.user.profilePicture}
-                              alt={link.user?.name || "User"}
+                              src={link.alumniInfo?.profilePicture || link.sender?.profilePicture || link.user?.profilePicture}
+                              alt={(link.alumniInfo?.name || link.sender?.name || link.user?.name) || "User"}
                               className="w-8 h-8 rounded-full object-cover border border-gray-200"
                             />
                           ) : (
@@ -782,12 +773,12 @@ const UserLinks = () => {
                           )}
                           <div>
                             <HighlightedText
-                              text={link.user?.name || "Unknown User"}
+                              text={(link.alumniInfo?.name || link.sender?.name || link.user?.name) || "Unknown User"}
                               searchTerm={searchQuery}
                               className="text-sm text-gray-900 font-medium block"
                             />
                             <HighlightedText
-                              text={`@${link.user?.username || "username"}`}
+                              text={`@${link.alumniInfo?.username || link.sender?.username || link.user?.username || "username"}`}
                               searchTerm={searchQuery}
                               className="text-xs text-gray-500"
                             />
@@ -845,7 +836,7 @@ const UserLinks = () => {
                         <div className="flex items-center space-x-3">
                           <MapPin size={18} className="text-[#fe6019]" />
                           <HighlightedText
-                            text={link.user?.location || 'N/A'}
+                            text={(link.alumniInfo?.location || link.sender?.location || link.user?.location) || 'N/A'}
                             searchTerm={searchQuery}
                             className="text-sm text-gray-600"
                           />
@@ -887,8 +878,19 @@ const UserLinks = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="px-6 py-10 text-center text-gray-500 italic">
-                      {searchQuery ? `No connections found matching "${searchQuery}"` : "No connections found"}
+                    <td colSpan={9} className="px-6 py-10 text-center text-gray-500">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="text-6xl">👥</div>
+                        <div className="text-lg font-medium text-gray-700">
+                          {searchQuery ? `No connections found matching "${searchQuery}"` : "No Managed Alumni Yet"}
+                        </div>
+                        {!searchQuery && (
+                          <div className="text-sm text-gray-500 max-w-md text-center">
+                            You'll see alumni connections here once users request access and you accept their requests. 
+                            Alumni can request connections through the main platform.
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -943,5 +945,6 @@ const UserLinks = () => {
     </div>
   );
 };
+
 
 export default UserLinks;

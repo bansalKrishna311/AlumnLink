@@ -63,7 +63,10 @@ const postSchema = new mongoose.Schema(
             eventLocation: { type: String },
         },
         bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-        hashtags: [{ type: String, index: true }]
+        hashtags: [{ type: String, index: true }],
+        // SubAdmin management fields
+        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Who actually created the post (SubAdmin)
+        onBehalfOf: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Admin on whose behalf the post was created
     },
     { timestamps: true }
 );
