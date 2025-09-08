@@ -53,6 +53,8 @@ const HomePage = () => {
                   : 'bg-white hover:bg-gray-100 text-gray-700'
                 }`}
             >
+
+              
               {type.label}
             </button>
           ))}
