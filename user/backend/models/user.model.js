@@ -76,26 +76,6 @@ const userSchema = new mongoose.Schema(
 			},
 			default: null,  // Default type if admin role is selected
 		  },
-		adminHierarchy: {
-			type: String,
-			enum: [
-			  // Institute hierarchy
-			  "alumni", "faculty", "hod", "institute_management",
-			  // School hierarchy  
-			  "student", "school_faculty", "school_hod", "principal", "school_management",
-			  // Corporate hierarchy
-			  "employee", "team_lead", "manager", "director", "corporate_management"
-			],
-			default: function() {
-			  if (this.role === "admin" || this.role === "superadmin") {
-				// Default to highest level for admins based on their type
-				if (this.adminType === "institute") return "institute_management";
-				if (this.adminType === "school") return "school_management";  
-				if (this.adminType === "corporate") return "corporate_management";
-			  }
-			  return "alumni"; // Default for regular users
-			}
-		},
 		assignedCourses: {
 			type: [String],
 			default: [],
