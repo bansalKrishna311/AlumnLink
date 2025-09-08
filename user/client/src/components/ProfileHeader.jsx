@@ -12,6 +12,9 @@ const ALLOWED_LOCATIONS = [
   "Indore", "Chandigarh", "Nagpur"
 ];
 
+// Maximum file size limit (10MB in bytes)
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
@@ -156,6 +159,15 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > MAX_FILE_SIZE) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        toast.error(`File size is too large (${fileSizeMB}MB). Please select an image smaller than 10MB.`);
+        // Clear the file input
+        event.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setEditedData((prev) => ({ ...prev, [event.target.name]: reader.result }));
