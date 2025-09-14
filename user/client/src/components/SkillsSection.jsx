@@ -108,10 +108,10 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
 
   return (
     <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <Lightbulb className="mr-2 text-[#fe6019]"  size={22} />
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center">
+            <Lightbulb className="mr-2 text-[#fe6019]" size={20} />
             Skills
           </h2>
           {isOwnProfile && !isEditing && (
@@ -126,9 +126,9 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {skills.length === 0 && !isEditing ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-4 sm:py-6 text-gray-500">
             <Lightbulb size={32} className="mx-auto mb-3 text-gray-400" />
             <p>No skills added yet</p>
             {isOwnProfile && (
@@ -146,8 +146,8 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 bottom-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
                 <div className="flex items-center text-[#fe6019]">
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                  <span className="text-sm">Saving...</span>
+                  <Loader2 size={14} sm:size={16} className="animate-spin mr-2" />
+                  <span className="text-xs sm:text-sm">Saving...</span>
                 </div>
               </div>
             )}
@@ -177,11 +177,11 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
             </div>
           </div>
         )}        {isEditing && (
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <div className="relative">
               <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#fe6019] focus-within:border-[#fe6019] bg-white">
-                <div className="pl-3 text-gray-400">
-                  <Search size={18} />
+                <div className="pl-2 sm:pl-3 text-gray-400">
+                  <Search size={16} sm:size={18} />
                 </div>
                 <input
                   type="text"
@@ -189,7 +189,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                   value={searchTerm}
                   onChange={handleSearch}
                   onKeyDown={handleKeyDown}
-                  className="flex-grow p-3 pl-2 focus:outline-none rounded-lg"
+                  className="flex-grow p-2.5 sm:p-3 pl-1 sm:pl-2 focus:outline-none rounded-lg text-sm"
                   disabled={isLoading}
                 />
                 <button
@@ -202,9 +202,9 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                   }`}
                 >
                   {isLoading ? (
-                    <Loader2 size={20} className="animate-spin" />
+                    <Loader2 size={18} sm:size={20} className="animate-spin" />
                   ) : (
-                    <PlusCircle size={20} />
+                    <PlusCircle size={18} sm:size={20} />
                   )}
                 </button>
               </div>
@@ -238,7 +238,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+            <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => {
                   setIsEditing(false);
@@ -246,7 +246,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                   setSearchTerm("");
                   setSuggestions([]);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none w-full sm:w-auto"
               >
                 Done
               </button>

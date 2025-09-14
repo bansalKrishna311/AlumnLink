@@ -10,11 +10,16 @@ const datePickerCustomStyles = `
   }
   .react-datepicker__input-container input {
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.2s;
+  }
+  @media (min-width: 640px) {
+    .react-datepicker__input-container input {
+      padding: 12px;
+    }
   }
   .react-datepicker__input-container input:focus {
     outline: none;
@@ -25,6 +30,7 @@ const datePickerCustomStyles = `
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
   }
   .react-datepicker__header {
     background-color: #fe6019;
@@ -168,10 +174,10 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
     <>
       <style>{datePickerCustomStyles}</style>
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <Briefcase className="mr-2 text-[#fe6019]"  size={22} />
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center">
+            <Briefcase className="mr-2 text-[#fe6019]" size={20} />
             Experience
           </h2>
           {isOwnProfile && !isEditing && (
@@ -186,9 +192,9 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {experiences.length === 0 && !showAddForm && (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-4 sm:py-6 text-gray-500">
             <Briefcase size={32} className="mx-auto mb-3 text-gray-400" />
             <p>No work experience added yet</p>
             {isEditing && (
@@ -275,8 +281,8 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         )}
 
         {showAddForm && (
-          <div className="mt-6 border border-gray-200 rounded-lg p-5 bg-gray-50">
-            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="mt-4 sm:mt-6 border border-gray-200 rounded-lg p-3 sm:p-5 bg-gray-50">
+            <h3 className="font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
               {editingExperience && editingExperience._id ? (
                 <>
                   <Pencil size={18} className="mr-2" />
@@ -290,30 +296,30 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
               )}
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   type="text"
                   placeholder="Ex: Software Engineer"
                   value={editingExperience?.title || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, title: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
+                  className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition text-sm"
                 />
               </div>
               
-              <div>
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                 <input
                   type="text"
                   placeholder="Ex: Google"
                   value={editingExperience?.company || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, company: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
+                  className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition text-sm"
                 />
               </div>
               
-              <div>
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                 <DatePicker
                   selected={editingExperience?.startDate ? new Date(editingExperience.startDate) : null}
@@ -323,11 +329,11 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   showYearDropdown
                   showMonthDropdown
                   dropdownMode="select"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
+                  className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition text-sm"
                 />
               </div>
               
-              <div>
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                 <DatePicker
                   selected={editingExperience?.endDate ? new Date(editingExperience.endDate) : null}
@@ -338,7 +344,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                   showMonthDropdown
                   dropdownMode="select"
                   disabled={editingExperience?.isCurrentPosition}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
                 />
                 <div className="mt-2 flex items-center">
                   <input
@@ -352,28 +358,28 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                     })}
                     className="h-4 w-4 text-[#fe6019] focus:ring-[#fe6019] border-gray-300 rounded"
                   />
-                  <label htmlFor="currentPosition" className="ml-2 text-sm text-gray-600">
+                  <label htmlFor="currentPosition" className="ml-2 text-xs sm:text-sm text-gray-600">
                     I currently work here
                   </label>
                 </div>
               </div>
               
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2 w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   placeholder="Describe your responsibilities, achievements, and skills used in this role"
                   value={editingExperience?.description || ""}
                   onChange={(e) => setEditingExperience({ ...editingExperience, description: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
-                  rows={4}
+                  className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition text-sm"
+                  rows={3}
                 />
               </div>
             </div>
             
-            <div className="mt-4 flex gap-3">
+            <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={handleAddExperience}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
+                className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none w-full sm:w-auto"
                 disabled={!(editingExperience?.title && editingExperience?.company && editingExperience?.startDate)}
               >
                 <Save size={16} className="mr-2" />
@@ -381,7 +387,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
               </button>
               <button
                 onClick={cancelEditing}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none w-full sm:w-auto"
               >
                 <X size={16} className="mr-2" />
                 Cancel
@@ -391,13 +397,13 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         )}
 
         {isEditing && !showAddForm && experiences.length > 0 && (
-          <div className="mt-4 flex justify-between">
+          <div className="mt-3 sm:mt-4 flex justify-between">
             <button
               onClick={() => {
                 setEditingExperience(emptyExperience);
                 setShowAddForm(true);
               }}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
             >
               <Plus size={16} className="mr-2" />
               Add Another
@@ -406,7 +412,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         )}
 
         {isEditing && (
-          <div className="mt-6 border-t border-gray-200 pt-4 flex justify-end">
+          <div className="mt-4 sm:mt-6 border-t border-gray-200 pt-3 sm:pt-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
             <button
               onClick={() => {
                 setIsEditing(false);
@@ -415,14 +421,14 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                 // Reset to original data if canceled
                 setExperiences(userData.experience || []);
               }}
-              className="mr-3 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none w-full sm:w-auto order-2 sm:order-1"
               disabled={isSaving}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none disabled:bg-[#ffa07a] disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none disabled:bg-[#ffa07a] disabled:cursor-not-allowed w-full sm:w-auto order-1 sm:order-2"
               disabled={isSaving}
             >
               <Save size={16} className="mr-2" />

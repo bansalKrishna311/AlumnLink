@@ -259,27 +259,27 @@ const ContributionGraph = ({ username, isOwnProfile, activityHistory = [], class
         </div>
         
         {/* Stats */}
-        <div className="flex gap-4 mt-4 lg:mt-0">
-          <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-lg">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mt-4 lg:mt-0">
+          <div className="flex items-center gap-2 bg-orange-50 px-2 sm:px-3 py-2 rounded-lg">
             <Flame size={16} className="text-[#fe6019]" />
             <div className="text-center">
-              <div className="text-lg font-bold text-[#fe6019]">{currentStreak}</div>
+              <div className="text-sm sm:text-lg font-bold text-[#fe6019]">{currentStreak}</div>
               <div className="text-xs text-orange-600">Current Streak</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-lg">
+          <div className="flex items-center gap-2 bg-orange-50 px-2 sm:px-3 py-2 rounded-lg">
             <Award size={16} className="text-[#fe6019]" />
             <div className="text-center">
-              <div className="text-lg font-bold text-[#fe6019]">{longestStreak}</div>
+              <div className="text-sm sm:text-lg font-bold text-[#fe6019]">{longestStreak}</div>
               <div className="text-xs text-orange-600">Longest Streak</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-lg">
+          <div className="flex items-center gap-2 bg-orange-50 px-2 sm:px-3 py-2 rounded-lg col-span-2 sm:col-span-1">
             <TrendingUp size={16} className="text-[#fe6019]" />
             <div className="text-center">
-              <div className="text-lg font-bold text-[#fe6019]">{totalContributions}</div>
+              <div className="text-sm sm:text-lg font-bold text-[#fe6019]">{totalContributions}</div>
               <div className="text-xs text-orange-600">Total</div>
             </div>
           </div>
