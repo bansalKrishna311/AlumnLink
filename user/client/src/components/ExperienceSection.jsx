@@ -3,6 +3,55 @@ import { Briefcase, X, Plus, Calendar, Pencil, Building, Save, ChevronDown, Chev
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+// Custom styles for DatePicker
+const datePickerCustomStyles = `
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+  .react-datepicker__input-container input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .react-datepicker__input-container input:focus {
+    outline: none;
+    border-color: #fe6019;
+    box-shadow: 0 0 0 2px rgba(254, 96, 25, 0.2);
+  }
+  .react-datepicker {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  .react-datepicker__header {
+    background-color: #fe6019;
+    border-bottom: 1px solid #fe6019;
+  }
+  .react-datepicker__current-month,
+  .react-datepicker-time__header {
+    color: white;
+    font-weight: 600;
+  }
+  .react-datepicker__day-name {
+    color: white;
+  }
+  .react-datepicker__day--selected {
+    background-color: #fe6019;
+    color: white;
+  }
+  .react-datepicker__day--keyboard-selected {
+    background-color: #fed7ca;
+    color: #fe6019;
+  }
+  .react-datepicker__day:hover {
+    background-color: #fed7ca;
+    color: #fe6019;
+  }
+`;
+
 const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [experiences, setExperiences] = useState(userData.experience || []);
@@ -21,6 +70,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
     company: "",
     startDate: null,
     endDate: null,
+    isCurrentPosition: false,
     description: ""
   };
 
@@ -29,7 +79,8 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
       const formattedExperience = {
         ...editingExperience,
         startDate: editingExperience.startDate instanceof Date ? editingExperience.startDate.toISOString() : editingExperience.startDate,
-        endDate: editingExperience.endDate instanceof Date ? editingExperience.endDate.toISOString() : editingExperience.endDate,
+        endDate: editingExperience.isCurrentPosition ? null : (editingExperience.endDate instanceof Date ? editingExperience.endDate.toISOString() : editingExperience.endDate),
+        isCurrentPosition: editingExperience.isCurrentPosition || false,
         _id: editingExperience._id || Date.now().toString() + Math.random().toString(36).substr(2, 5)
       };
 
@@ -71,7 +122,8 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         title: exp.title,
         company: exp.company,
         startDate: exp.startDate instanceof Date ? exp.startDate.toISOString() : exp.startDate,
-        endDate: exp.endDate instanceof Date ? exp.endDate.toISOString() : exp.endDate,
+        endDate: exp.isCurrentPosition ? null : (exp.endDate instanceof Date ? exp.endDate.toISOString() : exp.endDate),
+        isCurrentPosition: exp.isCurrentPosition || false,
         description: exp.description,
       }));
       
@@ -100,7 +152,11 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
   const formatDate = (date) => {
     if (!date) return "";
     const dateObj = new Date(date);
-    return dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return dateObj.toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    });
   };
 
   const cancelEditing = () => {
@@ -109,7 +165,9 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
   };
 
   return (
-    <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
+    <>
+      <style>{datePickerCustomStyles}</style>
+      <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
@@ -168,7 +226,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                       
                       <div className="text-gray-500 text-sm flex items-center mt-1">
                         <Calendar size={14} className="mr-1" />
-                        {formatDate(exp.startDate)} - {exp.endDate ? formatDate(exp.endDate) : "Present"}
+                        {formatDate(exp.startDate)} - {exp.isCurrentPosition || (!exp.endDate && !exp.isCurrentPosition) ? "Present" : formatDate(exp.endDate)}
                       </div>
                       
                       {exp.description && (
@@ -260,9 +318,11 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                 <DatePicker
                   selected={editingExperience?.startDate ? new Date(editingExperience.startDate) : null}
                   onChange={(date) => setEditingExperience({ ...editingExperience, startDate: date })}
-                  dateFormat="MMM yyyy"
-                  showMonthYearPicker
+                  dateFormat="dd/MM/yyyy"
                   placeholderText="Select start date"
+                  showYearDropdown
+                  showMonthDropdown
+                  dropdownMode="select"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
                 />
               </div>
@@ -272,11 +332,30 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
                 <DatePicker
                   selected={editingExperience?.endDate ? new Date(editingExperience.endDate) : null}
                   onChange={(date) => setEditingExperience({ ...editingExperience, endDate: date })}
-                  dateFormat="MMM yyyy"
-                  showMonthYearPicker
-                  placeholderText="Select end date or leave blank for current position"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select end date"
+                  showYearDropdown
+                  showMonthDropdown
+                  dropdownMode="select"
+                  disabled={editingExperience?.isCurrentPosition}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fe6019] focus:border-[#fe6019] transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
+                <div className="mt-2 flex items-center">
+                  <input
+                    type="checkbox"
+                    id="currentPosition"
+                    checked={editingExperience?.isCurrentPosition || false}
+                    onChange={(e) => setEditingExperience({ 
+                      ...editingExperience, 
+                      isCurrentPosition: e.target.checked,
+                      endDate: e.target.checked ? null : editingExperience?.endDate
+                    })}
+                    className="h-4 w-4 text-[#fe6019] focus:ring-[#fe6019] border-gray-300 rounded"
+                  />
+                  <label htmlFor="currentPosition" className="ml-2 text-sm text-gray-600">
+                    I currently work here
+                  </label>
+                </div>
               </div>
               
               <div className="col-span-2">
@@ -353,6 +432,7 @@ const ExperienceSection = ({ userData, isOwnProfile, onSave }) => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

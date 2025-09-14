@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
 				company: String,
 				startDate: Date,
 				endDate: Date,
+				isCurrentPosition: { type: Boolean, default: false },
 				description: String,
 			},
 		],

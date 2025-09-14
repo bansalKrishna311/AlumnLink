@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, PlusCircle, Edit2, Save, CheckCircle2, Lightbulb, Search } from "lucide-react";
+import { X, PlusCircle, Edit2, CheckCircle2, Lightbulb, Search, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -7,6 +8,7 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
   const [newSkill, setNewSkill] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const commonSkills = [
     "JavaScript", "React", "Node.js", "Python", "Java", "HTML", "CSS", 
@@ -15,12 +17,27 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
     "Marketing", "Sales", "Customer Service", "Content Writing"
   ];
 
-  const handleAddSkill = () => {
+  const handleAddSkill = async () => {
     if (newSkill && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
+      const updatedSkills = [...skills, newSkill];
+      setSkills(updatedSkills);
       setNewSkill("");
       setSearchTerm("");
       setSuggestions([]);
+      
+      // Auto-save the skill immediately
+      try {
+        setIsLoading(true);
+        await onSave({ skills: updatedSkills });
+        toast.success(`"${newSkill}" added successfully!`);
+      } catch (error) {
+        // Revert the change if save failed
+        setSkills(skills);
+        toast.error("Failed to add skill. Please try again.");
+        console.error("Error saving skill:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -31,13 +48,23 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
     }
   };
 
-  const handleDeleteSkill = (skill) => {
-    setSkills(skills.filter((s) => s !== skill));
-  };
-
-  const handleSave = () => {
-    onSave({ skills });
-    setIsEditing(false);
+  const handleDeleteSkill = async (skill) => {
+    const updatedSkills = skills.filter((s) => s !== skill);
+    setSkills(updatedSkills);
+    
+    // Auto-save after deleting
+    try {
+      setIsLoading(true);
+      await onSave({ skills: updatedSkills });
+      toast.success(`"${skill}" removed successfully!`);
+    } catch (error) {
+      // Revert the change if save failed
+      setSkills(skills);
+      toast.error("Failed to remove skill. Please try again.");
+      console.error("Error removing skill:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSearch = (e) => {
@@ -55,10 +82,28 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
     }
   };
 
-  const selectSuggestion = (suggestion) => {
-    setNewSkill(suggestion);
-    setSearchTerm(suggestion);
-    setSuggestions([]);
+  const selectSuggestion = async (suggestion) => {
+    if (!skills.includes(suggestion)) {
+      const updatedSkills = [...skills, suggestion];
+      setSkills(updatedSkills);
+      setNewSkill("");
+      setSearchTerm("");
+      setSuggestions([]);
+      
+      // Auto-save the selected suggestion immediately
+      try {
+        setIsLoading(true);
+        await onSave({ skills: updatedSkills });
+        toast.success(`"${suggestion}" added successfully!`);
+      } catch (error) {
+        // Revert the change if save failed
+        setSkills(skills);
+        toast.error("Failed to add skill. Please try again.");
+        console.error("Error saving skill:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
@@ -97,7 +142,16 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
             )}
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="relative">
+            {isLoading && (
+              <div className="absolute top-0 left-0 right-0 bottom-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+                <div className="flex items-center text-[#fe6019]">
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  <span className="text-sm">Saving...</span>
+                </div>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
             {skills.map((skill, index) => (
               <div
                 key={index}
@@ -120,10 +174,9 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                 )}
               </div>
             ))}
+            </div>
           </div>
-        )}
-
-        {isEditing && (
+        )}        {isEditing && (
           <div className="mt-6">
             <div className="relative">
               <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#fe6019] focus-within:border-[#fe6019] bg-white">
@@ -132,22 +185,27 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Add a skill..."
+                  placeholder="Type a skill (e.g., React, JavaScript, Python)..."
                   value={searchTerm}
                   onChange={handleSearch}
                   onKeyDown={handleKeyDown}
                   className="flex-grow p-3 pl-2 focus:outline-none rounded-lg"
+                  disabled={isLoading}
                 />
                 <button
                   onClick={handleAddSkill}
-                  disabled={!newSkill}
-                  className={`mr-1 p-2 rounded-lg transition ${
-                    newSkill
+                  disabled={!newSkill || isLoading}
+                  className={`mr-1 p-2 rounded-lg transition flex items-center ${
+                    newSkill && !isLoading
                       ? "text-[#fe6019] hover:bg-[#fff1eb]"
                       : "text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <PlusCircle size={20} />
+                  {isLoading ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <PlusCircle size={20} />
+                  )}
                 </button>
               </div>
               
@@ -158,10 +216,11 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
                       <li 
                         key={index}
                         onClick={() => selectSuggestion(suggestion)}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center transition-colors"
                       >
-                        <PlusCircle size={14} className="mr-2 text-[#fe6019]" />
-                        {suggestion}
+                        <PlusCircle size={14} className="mr-2 text-[#fe6019] flex-shrink-0" />
+                        <span className="text-gray-800">{suggestion}</span>
+                        <span className="ml-auto text-xs text-gray-500">Click to add</span>
                       </li>
                     ))}
                   </ul>
@@ -169,23 +228,27 @@ const SkillsSection = ({ userData, isOwnProfile, onSave }) => {
               )}
             </div>
             
-            <div className="mt-2 text-xs text-gray-500">
-              Press Enter or click the + button to add a skill
+            <div className="mt-2 text-xs text-gray-500 flex items-center">
+              <span>Press Enter or click the + button to add a skill instantly</span>
+              {isLoading && (
+                <span className="ml-2 flex items-center text-[#fe6019]">
+                  <Loader2 size={12} className="animate-spin mr-1" />
+                  Saving...
+                </span>
+              )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end space-x-3">
+            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
               <button
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setIsEditing(false);
+                  setNewSkill("");
+                  setSearchTerm("");
+                  setSuggestions([]);
+                }}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fe6019] hover:bg-[#e04e0a] focus:outline-none"
-              >
-                <Save size={16} className="mr-2" />
-                Save Changes
+                Done
               </button>
             </div>
           </div>
