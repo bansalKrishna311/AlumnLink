@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { format } from "date-fns"
 import { Link } from "react-router-dom"
+import TopContributors from "./TopContributors"
 
 // Routes for different request types
 const REQUEST_ROUTES = {
@@ -176,10 +177,11 @@ const AdminPage = () => {
       </div>
       
       <Tabs defaultValue="charts" value={activeView} onValueChange={setActiveView} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="cards">Cards</TabsTrigger>
           <TabsTrigger value="charts">Charts</TabsTrigger>
           <TabsTrigger value="summary">Summary</TabsTrigger>
+          <TabsTrigger value="contributors">Top Contributors</TabsTrigger>
         </TabsList>
         
         <TabsContent value="cards" className="space-y-6">
@@ -442,6 +444,10 @@ const AdminPage = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="contributors" className="space-y-6">
+          <TopContributors />
         </TabsContent>
       </Tabs>
     </div>

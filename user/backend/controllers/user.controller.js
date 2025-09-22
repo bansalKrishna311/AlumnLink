@@ -3,6 +3,39 @@ import cloudinary from "../lib/cloudinary.js";
 import { uploadBase64ToSpaces } from "../lib/digitalocean.js";
 import { getUserContributions, getContributionsByUsername } from "../utils/activityTracker.js";
 
+// Helper function to get users under admin hierarchy
+const getUsersForAdmin = async (adminUser) => {
+  if (adminUser.role === 'superadmin') {
+    // Superadmin can see all users
+    return { role: 'user' };
+  } else if (adminUser.role === 'admin') {
+    // Admin can only see users from their own type and hierarchy
+    const matchConditions = {
+      role: 'user'
+    };
+
+    // Add specific filtering based on admin type
+    if (adminUser.adminType === 'institute') {
+      // Institute admin sees institute users
+      matchConditions.adminType = { $in: [null, 'institute'] };
+      // Can add more specific institute filtering if needed
+    } else if (adminUser.adminType === 'school') {
+      // School admin sees school users  
+      matchConditions.adminType = { $in: [null, 'school'] };
+      // Can add more specific school filtering if needed
+    } else if (adminUser.adminType === 'corporate') {
+      // Corporate admin sees corporate users
+      matchConditions.adminType = { $in: [null, 'corporate'] };
+      // Can add more specific corporate filtering if needed
+    }
+
+    return matchConditions;
+  } else {
+    // Regular users cannot access admin analytics
+    throw new Error('Unauthorized access');
+  }
+};
+
 
 
 export const getSuggestedLinks = async (req, res) => {
@@ -216,6 +249,274 @@ export const getMyContributions = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getMyContributions controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get top contributors for the current month
+export const getTopContributors = async (req, res) => {
+  try {
+    // Check if user is admin or superadmin
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: "Access denied. Admin access required." });
+    }
+
+    // Get current month start and end dates
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    
+    // Get user filter based on admin hierarchy
+    const userFilter = await getUsersForAdmin(req.user);
+    
+    // Find users with contribution data for the current month
+    const topContributors = await User.aggregate([
+      {
+        $match: {
+          ...userFilter,
+          activityHistory: {
+            $elemMatch: {
+              date: {
+                $gte: startOfMonth,
+                $lte: endOfMonth
+              }
+            }
+          }
+        }
+      },
+      {
+        $unwind: '$activityHistory'
+      },
+      {
+        $match: {
+          'activityHistory.date': {
+            $gte: startOfMonth,
+            $lte: endOfMonth
+          }
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          username: { $first: '$username' },
+          profilePicture: { $first: '$profilePicture' },
+          adminType: { $first: '$adminType' },
+          totalContributions: { $sum: '$activityHistory.activities.total' },
+          totalPosts: { $sum: '$activityHistory.activities.posts' },
+          totalLikes: { $sum: '$activityHistory.activities.likes' },
+          totalComments: { $sum: '$activityHistory.activities.comments' }
+        }
+      },
+      {
+        $match: {
+          totalContributions: { $gt: 0 } // Only include users with contributions
+        }
+      },
+      {
+        $sort: {
+          totalContributions: -1 // Sort by total contributions descending
+        }
+      },
+      {
+        $limit: 10 // Top 10 contributors
+      }
+    ]);
+
+    // Add rank to each contributor
+    const contributorsWithRank = topContributors.map((contributor, index) => ({
+      ...contributor,
+      rank: index + 1
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        month: now.toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+        adminInfo: {
+          role: req.user.role,
+          adminType: req.user.adminType,
+          name: req.user.name
+        },
+        contributors: contributorsWithRank,
+        totalContributors: contributorsWithRank.length
+      }
+    });
+  } catch (error) {
+    console.error("Error in getTopContributors controller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get contribution analytics for admin dashboard
+export const getContributionAnalytics = async (req, res) => {
+  try {
+    // Check if user is admin or superadmin
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: "Access denied. Admin access required." });
+    }
+
+    // Get date range from query parameters
+    const { startDate, endDate } = req.query;
+    
+    let start, end;
+    
+    if (startDate && endDate) {
+      // Use provided date range
+      start = new Date(startDate);
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Set to end of day
+    } else {
+      // Default to current month if no date range provided
+      const now = new Date();
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+
+    // Get user filter based on admin hierarchy
+    const userFilter = await getUsersForAdmin(req.user);
+    
+    // Add activity history filter to the user filter
+    const baseMatchConditions = {
+      ...userFilter,
+      activityHistory: {
+        $elemMatch: {
+          date: {
+            $gte: start,
+            $lte: end
+          }
+        }
+      }
+    };
+    
+    // Get overview stats for the date range
+    const overviewStats = await User.aggregate([
+      {
+        $match: baseMatchConditions
+      },
+      {
+        $unwind: '$activityHistory'
+      },
+      {
+        $match: {
+          'activityHistory.date': {
+            $gte: start,
+            $lte: end
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalUsers: { $addToSet: '$_id' },
+          totalContributions: { $sum: '$activityHistory.activities.total' },
+          totalPosts: { $sum: '$activityHistory.activities.posts' },
+          totalLikes: { $sum: '$activityHistory.activities.likes' },
+          totalComments: { $sum: '$activityHistory.activities.comments' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          activeUsers: { $size: '$totalUsers' },
+          totalContributions: 1,
+          totalPosts: 1,
+          totalLikes: 1,
+          totalComments: 1
+        }
+      }
+    ]);
+
+    // Get top contributors for the date range (top 10 for admin dashboard)
+    const topContributors = await User.aggregate([
+      {
+        $match: baseMatchConditions
+      },
+      {
+        $unwind: '$activityHistory'
+      },
+      {
+        $match: {
+          'activityHistory.date': {
+            $gte: start,
+            $lte: end
+          }
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          username: { $first: '$username' },
+          profilePicture: { $first: '$profilePicture' },
+          adminType: { $first: '$adminType' },
+          totalContributions: { $sum: '$activityHistory.activities.total' },
+          totalPosts: { $sum: '$activityHistory.activities.posts' },
+          totalLikes: { $sum: '$activityHistory.activities.likes' },
+          totalComments: { $sum: '$activityHistory.activities.comments' }
+        }
+      },
+      {
+        $match: {
+          totalContributions: { $gt: 0 }
+        }
+      },
+      {
+        $sort: {
+          totalContributions: -1
+        }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+
+    const stats = overviewStats[0] || {
+      activeUsers: 0,
+      totalContributions: 0,
+      totalPosts: 0,
+      totalLikes: 0,
+      totalComments: 0
+    };
+
+    // Add rank to top contributors
+    const contributorsWithRank = topContributors.map((contributor, index) => ({
+      ...contributor,
+      rank: index + 1
+    }));
+
+    // Format the date range for display
+    const dateRangeDisplay = startDate && endDate 
+      ? `${new Date(start).toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        })} - ${new Date(end).toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        })}`
+      : new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    res.json({
+      success: true,
+      data: {
+        dateRange: {
+          start: start.toISOString(),
+          end: end.toISOString(),
+          display: dateRangeDisplay
+        },
+        adminInfo: {
+          role: req.user.role,
+          adminType: req.user.adminType,
+          name: req.user.name
+        },
+        overview: stats,
+        topContributors: contributorsWithRank
+      }
+    });
+  } catch (error) {
+    console.error("Error in getContributionAnalytics controller:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

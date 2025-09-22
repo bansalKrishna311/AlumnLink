@@ -6,13 +6,17 @@ import {
     updateProfile, 
     getMentionSuggestions,
     getUserContributionData,
-    getMyContributions
+    getMyContributions,
+    getTopContributors,
+    getContributionAnalytics
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
 router.get("/suggestions", protectRoute, getSuggestedLinks);
 router.get("/mention-suggestions", protectRoute, getMentionSuggestions);
+router.get("/contributions/analytics", protectRoute, getContributionAnalytics);
+router.get("/contributions/top", protectRoute, getTopContributors);
 router.get("/contributions/me", protectRoute, getMyContributions);
 router.get("/contributions/:username", protectRoute, getUserContributionData);
 router.get("/:username", protectRoute, getPublicProfile);
