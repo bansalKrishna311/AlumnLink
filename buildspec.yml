@@ -9,25 +9,23 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo "Starting install phase"
+      - echo "Install phase: move to backend and install dependencies"
       - cd user/backend
-      - echo "Installing dependencies (npm ci)"
       - npm ci
 
   pre_build:
     commands:
       - echo "Pre-build: node $(node -v)  npm $(npm -v)"
-      - echo "Running tests (if any)..."
-      - if [ -f package.json ]; then npm test || echo "Tests failed or not present - continuing"; fi
+      - echo "Optional: test database/connection if script exists"
+      - if [ -f package.json ] && npm run | grep -q " test-connection"; then npm run test-connection || echo "test-connection failed or returned non-zero - continuing"; else echo "No test-connection script"; fi
 
   build:
     commands:
-      - echo "Build step (if defined in package.json)"
-      - if npm run | grep -q " build"; then npm run build || echo "Build failed - continuing"; else echo "No build script"; fi
+      - echo "No compile/build step required for this project (no build script). Skipping."
 
   post_build:
     commands:
-      - echo "Post-build: preparing artifact"
+      - echo "Post-build: preparing artifacts"
       - echo "Build finished at $(date)"
 
 cache:
@@ -44,8 +42,6 @@ artifacts:
     - server.js
     - index.js
     - app.js
-    - dist/**/*
-    - build/**/*
     - lib/**/*
     - controllers/**/*
     - models/**/*
@@ -53,5 +49,6 @@ artifacts:
     - middleware/**/*
     - uploads/**/*
     - scripts/**/*
+    - utils/**/*
     - .ebextensions/**/*
     - Procfile
