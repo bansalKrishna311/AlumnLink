@@ -9,24 +9,24 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo "Install phase: move to backend and install dependencies"
-      - cd user/backend
-      - npm ci
+      - 'echo "Install phase: move to backend and install dependencies"'
+      - 'cd user/backend'
+      - 'npm ci'
 
   pre_build:
     commands:
-      - echo "Pre-build: node $(node -v)  npm $(npm -v)"
-      - echo "Optional: test database/connection if script exists"
-      - if [ -f package.json ] && npm run | grep -q " test-connection"; then npm run test-connection || echo "test-connection failed or returned non-zero - continuing"; else echo "No test-connection script"; fi
+      - 'echo "Pre-build: node $(node -v)  npm $(npm -v)"'
+      - 'echo "Optional: test database/connection if script exists"'
+      - 'if [ -f package.json ] && npm run | grep -q " test-connection"; then npm run test-connection || echo "test-connection failed or returned non-zero - continuing"; else echo "No test-connection script"; fi'
 
   build:
     commands:
-      - echo "No compile/build step required for this project (no build script). Skipping."
+      - 'echo "No compile/build step required for this project (no build script). Skipping."'
 
   post_build:
     commands:
-      - echo "Post-build: preparing artifacts"
-      - echo "Build finished at $(date)"
+      - 'echo "Post-build: preparing artifacts"'
+      - 'echo "Build finished at $(date)"'
 
 cache:
   paths:
