@@ -24,8 +24,20 @@ import {
   queryOptimizationMiddleware,
   connectionPoolMiddleware
 } from "./middleware/dbActivity.middleware.js";
+import { loadSecrets, validateRequiredSecrets } from "./lib/secretsManager.js";
 
+// Load .env file first (will be overridden by AWS secrets if enabled)
 dotenv.config();
+
+// Load secrets from AWS Secrets Manager or .env
+// This is done at the top level but won't block initialization
+const secretsPromise = loadSecrets().catch(error => {
+  console.error('Failed to load secrets:', error);
+  // Don't exit in production as the app might still work with .env
+  if (process.env.NODE_ENV === 'development') {
+    process.exit(1);
+  }
+});
 
 // Initialize the app immediately
 const app = express();
@@ -190,20 +202,35 @@ app.use('/api/v1/leads', verifySession, leadRoutes);
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
-  // Connect to DB immediately in development
-  connectionManager.connect().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log('✅ Smart connection manager initialized');
-      console.log('🚀 Auto-cleanup scheduler initialized');
-    });
+  // Wait for secrets to load, then connect to DB in development
+  secretsPromise.then(async () => {
+    try {
+      // Validate required secrets are present
+      validateRequiredSecrets();
+      
+      await connectionManager.connect();
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log('✅ Smart connection manager initialized');
+        console.log('🚀 Auto-cleanup scheduler initialized');
+      });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
   }).catch(error => {
-    console.error('Failed to start server:', error);
+    console.error('Failed to load secrets:', error);
     process.exit(1);
   });
 } else {
   // In production (serverless), connection manager handles everything
-  console.log('🚀 Production mode - connection manager ready');
+  // Secrets should be loaded before any requests are processed
+  secretsPromise.then(() => {
+    console.log('🚀 Production mode - connection manager ready');
+    validateRequiredSecrets();
+  }).catch(error => {
+    console.error('⚠️  Production secrets loading failed, using environment variables');
+  });
 }
 
 // Export for Vercel serverless deployment
