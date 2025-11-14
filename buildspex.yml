@@ -1,0 +1,55 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: production
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "Entering backend directory"
+      - cd user/backend
+      - echo "Installing dev dependencies needed for build..."
+      - npm ci
+
+  pre_build:
+    commands:
+      - echo "Node: $(node -v)  npm: $(npm -v)"
+
+  build:
+    commands:
+      - echo "Running build script (if present)..."
+      - npm run build || echo "No build script defined or build failed — continuing"
+
+  post_build:
+    commands:
+      - echo "Build finished. Not including node_modules in artifact."
+
+cache:
+  paths:
+    - user/backend/.npm/**/*
+    - user/backend/node_modules/**/*
+    
+artifacts:
+  base-directory: user/backend
+  discard-paths: no
+  files:
+    - package.json
+    - package-lock.json
+    - server.js
+    - index.js
+    - app.js
+    - dist/**/*
+    - build/**/*
+    - lib/**/*
+    - controllers/**/*
+    - models/**/*
+    - routes/**/*
+    - middleware/**/*
+    - emails/**/*
+    - uploads/**/*
+    - scripts/**/*
+    - .ebextensions/**/*
+    - Procfile
