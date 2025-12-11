@@ -5,41 +5,33 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo "Navigating to backend folder..."
+      - echo "Installing dependencies..."
       - cd user/backend && npm install --omit=dev
   
   pre_build:
     commands:
       - echo "Running pre-build checks..."
-      - npm --version
-      - node --version
+      - cd user/backend && npm --version
+      - cd user/backend && node --version
   
   build:
     commands:
       - echo "Build started on `date`"
-      - echo "No build step needed for Node.js backend"
+      - echo "Copying files to deployment directory..."
+      - mkdir -p deploy
+      - cd user/backend && cp -r . ../../deploy/
+      - ls -la deploy/
   
   post_build:
     commands:
       - echo "Build completed on `date`"
-      - echo "Preparing deployment package..."
+      - echo "Deployment package ready"
+      - ls -la deploy/
 
 artifacts:
-  base-directory: user/backend
+  base-directory: deploy
   files:
     - '**/*'
-  exclude-paths:
-    - '.git/**/*'
-    - '.env'
-    - '.env.development'
-    - '*.md'
-    - 'test-*.js'
-    - 'check-*.js'
-    - 'connectionTest.js'
-    - 'revert-user.js'
-    - 'cpuMonitor.js'
-    - 'server_clean.js'
-  discard-paths: no
 
 cache:
   paths:
