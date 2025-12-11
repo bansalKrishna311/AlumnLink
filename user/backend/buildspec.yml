@@ -6,26 +6,21 @@ phases:
       nodejs: 18
     commands:
       - echo "Navigating to backend folder..."
-      - cd user/backend
-      - echo "Installing dependencies..."
-      - npm install --omit=dev
+      - cd user/backend && npm install --omit=dev
   
   pre_build:
     commands:
-      - cd user/backend
       - echo "Running pre-build checks..."
       - npm --version
       - node --version
   
   build:
     commands:
-      - cd user/backend
       - echo "Build started on `date`"
       - echo "No build step needed for Node.js backend"
   
   post_build:
     commands:
-      - cd user/backend
       - echo "Build completed on `date`"
       - echo "Preparing deployment package..."
 
