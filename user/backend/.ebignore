@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+
+# Environment files (use EB environment variables instead)
+.env
+.env.development
+.env.local
+.env.*.local
+
+# Development and test files
+*.md
+test-*.js
+check-*.js
+connectionTest.js
+revert-user.js
+cpuMonitor.js
+server_clean.js
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Vercel (not needed for AWS)
+vercel.json
+.vercel
+
+# Uploads folder (use S3/Spaces in production)
+uploads/*
+!uploads/.gitkeep
+
+# Node modules (will be installed during deployment)
+node_modules
+
+# Development dependencies
+nodemon.json
