@@ -188,26 +188,42 @@ app.use('/api/v1/messages', verifySession, messageRoutes);
 app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/leads', verifySession, leadRoutes);
 
-// For local development
-if (process.env.NODE_ENV !== "production") {
-  // Connect to DB immediately in development
+// Determine if running in serverless mode (Vercel) or traditional server mode (EB, local)
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const isElasticBeanstalk = process.env.AWS_EXECUTION_ENV || process.env.EBS_PLATFORM;
+
+// For Elastic Beanstalk or local development - run as traditional server
+if (!isServerless) {
   connectionManager.connect().then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log('✅ Smart connection manager initialized');
       console.log('🚀 Auto-cleanup scheduler initialized');
+      if (isElasticBeanstalk) {
+        console.log('🌐 Running on AWS Elastic Beanstalk');
+      }
     });
   }).catch(error => {
     console.error('Failed to start server:', error);
     process.exit(1);
   });
 } else {
-  // In production (serverless), connection manager handles everything
-  console.log('🚀 Production mode - connection manager ready');
+  // In serverless mode (Vercel/Lambda), connection manager handles everything
+  console.log('🚀 Serverless mode - connection manager ready');
 }
 
-// Export for Vercel serverless deployment
-// In production, we export the serverless handler without connecting to DB first
-export default process.env.NODE_ENV === "production"
-  ? serverless(app)
-  : app;
+// Handle graceful shutdown for Elastic Beanstalk
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  try {
+    await connectionManager.disconnect();
+    console.log('Database connection closed');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+});
+
+// Export for serverless deployment (Vercel/Lambda)
+export default isServerless ? serverless(app) : app;
