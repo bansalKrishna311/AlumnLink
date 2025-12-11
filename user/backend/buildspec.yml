@@ -1,0 +1,51 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Navigating to backend folder..."
+      - cd user/backend
+      - echo "Installing dependencies..."
+      - npm install --omit=dev
+  
+  pre_build:
+    commands:
+      - cd user/backend
+      - echo "Running pre-build checks..."
+      - npm --version
+      - node --version
+  
+  build:
+    commands:
+      - cd user/backend
+      - echo "Build started on `date`"
+      - echo "No build step needed for Node.js backend"
+  
+  post_build:
+    commands:
+      - cd user/backend
+      - echo "Build completed on `date`"
+      - echo "Preparing deployment package..."
+
+artifacts:
+  base-directory: user/backend
+  files:
+    - '**/*'
+  exclude-paths:
+    - 'node_modules/**/*'
+    - '.git/**/*'
+    - '.env'
+    - '.env.development'
+    - '*.md'
+    - 'test-*.js'
+    - 'check-*.js'
+    - 'connectionTest.js'
+    - 'revert-user.js'
+    - 'cpuMonitor.js'
+    - 'server_clean.js'
+
+cache:
+  paths:
+    - 'user/backend/node_modules/**/*'
