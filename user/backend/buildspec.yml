@@ -29,7 +29,6 @@ artifacts:
   files:
     - '**/*'
   exclude-paths:
-    - 'node_modules/**/*'
     - '.git/**/*'
     - '.env'
     - '.env.development'
@@ -40,6 +39,7 @@ artifacts:
     - 'revert-user.js'
     - 'cpuMonitor.js'
     - 'server_clean.js'
+  discard-paths: no
 
 cache:
   paths:
