@@ -6,20 +6,22 @@ phases:
       nodejs: 18
     commands:
       - echo "Installing dependencies..."
-      - cd user/backend && npm install --omit=dev
+      - cd user/backend && npm install --omit=dev && cd ../..
   
   pre_build:
     commands:
       - echo "Running pre-build checks..."
-      - cd user/backend && npm --version
-      - cd user/backend && node --version
+      - node --version
+      - npm --version
   
   build:
     commands:
       - echo "Build started on `date`"
-      - echo "Copying files to deployment directory..."
+      - echo "Copying backend files to deployment directory..."
       - mkdir -p deploy
-      - cd user/backend && cp -r . ../../deploy/
+      - cp -r user/backend/* deploy/
+      - cp -r user/backend/.ebextensions deploy/ 2>/dev/null || true
+      - cp -r user/backend/.platform deploy/ 2>/dev/null || true
       - ls -la deploy/
   
   post_build:
